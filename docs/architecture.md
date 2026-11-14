@@ -43,7 +43,7 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 2. The orchestrator runs the Data, Screening, Risk, Portfolio and Backtest agents. These are deterministic Python and do not call the LLM.
 3. The Domain Layer collects every computed number into an **Evidence Bundle**.
 4. The Explanation Agent writes the rationale and trade-offs from the bundle only, citing evidence IDs.
-5. The **Compliance Gate** validates the evidence citations, the disclaimer, the limitations list, the wording and the constraints. On failure it retries the Explanation Agent up to 2 times, then returns an explicit error.
+5. The **Compliance Gate** validates evidence, the disclaimer, limitations, wording and constraints. Repairable explanation failures share at most 2 retries, followed by one deterministic template fallback checked by the same gate. Structural failures or a failed fallback return an explicit error. See `agents-workflow.md` for the bounded sequence.
 6. The result goes to the UI together with the limitations. The whole run is written to S3.
 
 ## Design features
