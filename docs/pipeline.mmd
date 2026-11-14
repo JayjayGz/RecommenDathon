@@ -1,0 +1,27 @@
+flowchart TD
+    subgraph TEAM["Owned by teammates"]
+        Q["Questionnaire Agent (interactive, includes risk assessment)"]
+        M["Profile matching"]
+        Q --> M
+    end
+    M -->|"InvestorProfile"| ORCH["Orchestrator"]
+
+    subgraph PIPE["Recommendation pipeline (this repo)"]
+        DATAA["Data Agent"] --> SCREEN["Screening Agent"]
+        SCREEN --> RISK["Risk Agent"]
+        RISK --> PORT["Portfolio Agent (records rejected alternatives)"]
+        PORT --> BT["Backtest Agent"]
+        BT --> EV["Evidence Bundle (all computed numbers)"]
+        EV --> EXPL["Explanation Agent (cites evidence IDs only)"]
+        LIM["Limitations Registry (fixed + data-derived)"] --> GATE
+        EXPL --> GATE{"Compliance Gate"}
+        GATE -->|"fail, max 2 retries"| EXPL
+    end
+
+    ORCH --> DATAA
+    GATE -->|pass| OUT["Result: recommendation, trade-offs, limitations"]
+    OUT --> UI["Presentation Layer"]
+    ORCH -.-> AUDIT[("S3 audit trail: runs/run_id/")]
+    EV -.-> AUDIT
+    GATE -.-> AUDIT
+    OUT -.-> AUDIT
