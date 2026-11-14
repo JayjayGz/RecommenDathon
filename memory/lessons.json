@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "lessons": [
+    {
+      "id": "L-001",
+      "roles": ["all"],
+      "trigger": "Creating, renaming or routing development agent instruction files",
+      "boundary": "Does not rename the root AGENTS.md or unrelated application directories",
+      "defect": "The initial layout used one role folder containing AGENTS.md; the user requested distinct filenames instead of a folder per agent.",
+      "cause": "The initial design used nested role directories without an explicit flat-file naming convention.",
+      "evidence": [
+        "User correction in this conversation: instead of having folder for each agent have a different name based on what they do.",
+        "Current convention and routes: AGENTS.md; role files: agents/<role>-agent.md."
+      ],
+      "prevention": "Keep agent playbooks directly in agents/ as <role>-agent.md and update all routing references after a rename.",
+      "regression": "Reject agents/<role>/AGENTS.md and missing routed files; accept existing flat role files while retaining root AGENTS.md.",
+      "status": "documented",
+      "verification": []
+    },
+    {
+      "id": "L-002",
+      "roles": ["explanation", "compliance", "infrastructure"],
+      "trigger": "Changing explanation retries, fallback behavior or orchestrator error routing",
+      "boundary": "Does not authorize prose repair of structural data, missing evidence or portfolio constraint failures",
+      "defect": "Earlier responsibility descriptions separately described template fallback and final error after retries, leaving their combined ordering ambiguous.",
+      "cause": "The evidence and compliance sections described retry outcomes separately instead of sharing one explicit sequence.",
+      "evidence": [
+        "The ambiguity was identified while adding the workflow in this conversation; docs/agent-responsibilities.md and docs/architecture.md were aligned.",
+        "Canonical bounded sequence: docs/agents-workflow.md, Runtime workflow to implement."
+      ],
+      "prevention": "Use one initial explanation plus two repair generations total, then one deterministic fallback checked by the same gate; structural failures stop immediately.",
+      "regression": "When runtime code exists, exhaust both citation and wording failures together and confirm the shared limit; also confirm an initially valid result needs no repair and structural failure invokes none.",
+      "status": "documented",
+      "verification": []
+    }
+  ]
+}

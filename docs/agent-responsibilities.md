@@ -1,5 +1,7 @@
 # Agent Responsibilities
 
+For coding-request routing, see the repository root `AGENTS.md` and [file-based workflow](agents-workflow.md). Those development roles guide implementation of the application agents below. The workflow also specifies one shared retry budget, a checked template fallback and structural-failure routing, clarifying the retry descriptions below.
+
 Agents live in the Application Layer. Each has one job, a typed input and output, and calls Domain functions for any calculation. The LLM (Bedrock) is used only for language tasks: interpreting the investor and writing the explanation. It never does arithmetic.
 
 ## Ownership
@@ -30,7 +32,7 @@ Only the Explanation Agent needs the LLM in this pipeline. Everything else is de
 1. The Domain Layer builds an **Evidence Bundle**: a map of evidence ID to value, with its source file, data window and calculation method. Example: `E12: {metric: "max_drawdown", asset: "XIU.TO", value: -0.147, source: "prices_daily.csv", window: "2021-11-12..2026-11-12", method: "adj_close"}`.
 2. The Explanation Agent receives the bundle and the profile, nothing else. It must tag each factual claim with an evidence ID.
 3. A validator (plain code) checks that every cited ID exists, and that every number in the text matches a bundle value after rounding. Any unmatched number fails validation.
-4. On failure, the orchestrator retries the Explanation Agent with the validator's errors, at most 2 times. After that it falls back to a template-based explanation built directly from the bundle.
+4. On repairable failure, the orchestrator retries the Explanation Agent with structured errors, at most 2 times total across evidence and wording checks. After that it falls back once to a template-based explanation built directly from validated evidence. The fallback must pass the same Compliance Gate; otherwise the run returns an explicit error. Missing or invalid calculated evidence stops the run rather than triggering prose repair.
 
 Evidence IDs depend on the CSVs, which are still to be provided. The bundle format stays the same when the data changes.
 
@@ -56,7 +58,7 @@ The gate is the last step, and nothing reaches the user without passing it. It c
 3. No advice-style or guarantee wording (rule list, plus an optional LLM check).
 4. The portfolio respects the profile's constraints (asset weights, crypto cap, exclusions).
 
-On failure the issues go back to the Explanation Agent, up to 2 retries. If it still fails, the user sees an explicit error instead of a partial result.
+Repairable explanation issues go back to the Explanation Agent within the shared budget of 2 retries. Exhaustion triggers one template fallback, checked by the same gate without further retries. Structural data or constraint failures stop immediately. A failed fallback returns an explicit error instead of a partial result.
 
 ## Audit trail
 
