@@ -61,9 +61,11 @@ plateforme/
 
 ## Limite de raccordement au profil investisseur
 
-Le site transmet les réponses brutes `questionnaire-word-16-v2`. Le backend les valide et adapte leurs identifiants au même contrat que le formulaire français fourni. La correspondance de risque approuvée est `very_low/low -> low`, `medium -> medium`, `high/very_high -> high`. Elle sert au rapprochement avec les portefeuilles de référence ; elle ne constitue pas une évaluation validée de la capacité financière au risque et ne remplace pas le schéma normalisé `InvestorProfile`. Voir [le contrat et ses limites](../docs/questionnaire-workflow.md).
+Le site transmet les réponses brutes `questionnaire-word-16-v4`. Un adaptateur backend existe pour la version v2 et adapte ses identifiants au même contrat que le formulaire français fourni. La correspondance de risque approuvée est `very_low/low -> low`, `medium -> medium`, `high/very_high -> high`. Elle sert au rapprochement avec les portefeuilles de référence ; elle ne constitue pas une évaluation validée de la capacité financière au risque et ne remplace pas le schéma normalisé `InvestorProfile`. Voir [le contrat et ses limites](../docs/questionnaire-workflow.md).
 
 Simulation et prototype de présentation. Aucun conseil en placement et aucun ordre de transaction.
 
 Le code Python est dans `../backend/src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Le backend Python inclut l’adaptateur de questionnaire et produit le contrat HTTP ci-dessus ; les endpoints du proxy doivent pointer vers un service configuré. Voir [l’architecture](../docs/architecture.md).
 La source exacte des 16 questions et le nouveau contrat sont d?crits dans [QUESTIONNAIRE_WORD.md](docs/QUESTIONNAIRE_WORD.md).
+
+Attention : le formulaire courant utilise `questionnaire-word-16-v4`, tandis que `backend/src/alphaforge/application/word_questionnaire.py` exige encore `questionnaire-word-16-v2`. La compatibilite v4 du backend reste a traiter ; les tests du proxy ne valident pas ce raccordement.

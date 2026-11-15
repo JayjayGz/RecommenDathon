@@ -1,5 +1,5 @@
-// Source : Word fourni ; option « Discussion » retirée à la demande utilisateur.
-export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v3';
+// Source : Word fourni, avec les retraits explicites utilisateur (Discussion, situation séparée, montant visé).
+export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v4';
 export const SECTIONS = ["Situation familiale", "Revenus", "Dettes et épargne disponible", "Objectifs et besoins de liquidités", "Tolérance au risque", "Connaissances et préférences de placement", "Exclusions et précisions complémentaires"];
 export const QUESTIONS = [
   {
@@ -15,10 +15,6 @@ export const QUESTIONS = [
       [
         "partnered",
         "Je suis marié(e) ou en union de fait."
-      ],
-      [
-        "separated",
-        "Je suis séparé(e), divorcé(e) ou veuf/veuve."
       ],
       [
         "other",
@@ -266,12 +262,6 @@ export const QUESTIONS = [
             "other"
           ]
         }
-      },
-      {
-        "key": "targetAmount",
-        "label": "Montant que vous aimeriez atteindre, si connu",
-        "type": "number",
-        "required": false
       }
     ]
   },

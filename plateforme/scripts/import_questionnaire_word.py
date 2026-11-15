@@ -92,13 +92,15 @@ folder.mkdir(exist_ok=True)
 output[14]['options'] = [option for option in output[14]['options'] if option[0] != 'discussion']
 output[14]['details'][0]['label'] = 'Si limites, vos précisions facultatives'
 output[14]['details'][0]['when']['values'] = ['limits']
+output[0]['options'] = [option for option in output[0]['options'] if option[0] != 'separated']
+output[6]['details'] = [field for field in output[6]['details'] if field['key'] != 'targetAmount']
 
 data = root / 'plateforme/src/data.js'
 old = data.read_text(encoding='utf-8')
 demo = old[old.index('export const DEMO_PORTFOLIO'):old.index('export function fieldVisible')]
 helpers = old[old.index('export function fieldVisible'):]
 header = '// Source exclusive : ' + source.name + '\n'
-header += "export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v3';\n"
+header += "export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v4';\n"
 header += 'export const SECTIONS = ' + json.dumps(sections, ensure_ascii=False) + ';\n'
 header += 'export const QUESTIONS = ' + json.dumps(output, ensure_ascii=False, indent=2) + ';\n\n'
 data.write_text((header + demo + helpers).rstrip() + '\n', encoding='utf-8')

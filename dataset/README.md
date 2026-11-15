@@ -8,7 +8,6 @@ All CSV inputs live here and are ignored by Git. File contents were preserved du
 | `fx_usdcad_daily.csv` | USD/CAD conversion rates |
 | `assets_universe_nouveaux.csv` | Supplied asset metadata |
 | `asset_selection.csv` | Team asset-selection rationale |
-| `asset_descriptions.csv` | French reference descriptions and geographic exposure for every universe symbol; two sentences per description, no URLs |
 | `corporate_actions.csv` | Corporate actions for reference; do not reapply splits |
 | `macro_rates.csv` | Macro context; respect publication dates |
 | `sources_metadata.csv` | Supplied source metadata; some records still describe the original starter files |

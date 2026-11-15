@@ -22,10 +22,6 @@
           "libelle": "Je suis marié(e) ou en union de fait."
         },
         {
-          "id": "situation_conjugale_3",
-          "libelle": "Je suis séparé(e), divorcé(e) ou veuf/veuve."
-        },
-        {
           "id": "situation_conjugale_4",
           "libelle": "Autre situation."
         }
@@ -267,15 +263,6 @@
           "libelle": "Si projet précis ou autre objectif, précisez si vous le souhaitez",
           "type": "texte_libre",
           "reponse": null,
-          "facultatif": true
-        },
-        {
-          "id": "objectif_montant",
-          "libelle": "Montant que vous aimeriez atteindre, si connu",
-          "type": "montant",
-          "reponse": null,
-          "devise": "CAD",
-          "minimum": 0,
           "facultatif": true
         }
       ]

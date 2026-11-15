@@ -23,9 +23,12 @@ test('HTTP adapter accepts the typed Word contract and rejects stale or malforme
   assert.equal(accepted.status,503); // Valid input reaches the explicitly unconfigured adapter.
   assert.equal((await accepted.json()).code,'PORTFOLIO_NOT_CONNECTED');
   assert.equal((await send('rendements-seuls-v1',answers)).status,400);
+  assert.equal((await send('questionnaire-word-16-v3',answers)).status,400);
+  assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,marital:'separated'})).status,400);
+  assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,targetAmount:50000})).status,400);
   assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,emergencyFund:-5})).status,400);
   assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,unexpected:'field'})).status,400);
   assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,withdrawalTiming:undefined})).status,400);
-  for (const path of ['/', '/src/theme.css','/src/questionnaire.css','/src/illustrations.js']) assert.equal((await fetch(base+path)).status,200,path);
+  for (const path of ['/', '/src/theme.css','/src/questionnaire.css','/src/portfolio.css','/src/illustrations.js']) assert.equal((await fetch(base+path)).status,200,path);
   for (const path of ['/.env','/../.env','/docs/AGENT_INTEGRATION.md']) assert.equal((await fetch(base+path)).status,404,path);
 });

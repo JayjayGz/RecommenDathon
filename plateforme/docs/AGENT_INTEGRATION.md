@@ -16,7 +16,7 @@ Le site est un client local. Il ne contient ni agent, ni moteur de recommandatio
 | `GET /api/health` | `{ "ok": true, "service": "recommand-local" }` |
 | `GET /api/config` | `{ "agentConnected": false, "portfolioConnected": false }`. Chaque booléen devient `true` si l’URL correspondante est configurée ; cela ne vérifie pas la disponibilité du service. |
 | `POST /api/agent/chat` | Validation de la requête, puis appel de l’URL agent si elle est configurée. |
-| `POST /api/portfolio` | Validation des seize réponses, puis appel du moteur de portefeuille. |
+| `POST /api/portfolio` | Validation des réponses du questionnaire à 16 étapes, puis appel du moteur de portefeuille. |
 
 ## Requête
 
@@ -29,7 +29,7 @@ L’endpoint agent reçoit le même objet que le serveur local :
     { "role": "user", "content": "Je souhaite comprendre cette répartition." }
   ],
   "questionnaire": {
-    "version": "questionnaire-word-16-v3",
+    "version": "questionnaire-word-16-v4",
     "answers": {
       "marital": "single",
       "dependents": "none",
@@ -66,9 +66,9 @@ L’endpoint agent reçoit le même objet que le serveur local :
 
 Cet exemple complet décrit uniquement le contrat. Il n’est pas un profil évalué ou une recommandation mesurée. `questionnaire.answers` contient les identifiants et valeurs brutes produits par les contrats front-end de `src/data.js`. `portfolio` contient le portefeuille actuellement affiché. `conversation` contient l’historique récent ; `message` porte le message courant, sans être ajouté une seconde fois à cet historique par l’interface. Le client conserve jusqu’à 40 messages localement et retire les plus anciens du contexte transmis si la requête dépasse 60 Kio, sans effacer leur copie locale.
 
-Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v2`, les seize réponses valides et un portefeuille dont les poids positifs totalisent 100 %. Les champs complémentaires typés suivent les conditions de visibilité de `src/data.js` ; les textes facultatifs sont limités à 1 000 caractères, les montants sont finis et positifs ou nuls, et `withdrawalTiming` est obligatoire. Les champs inconnus, masqués ou contradictoires sont rejetés. Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
+Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v4`, les réponses valides aux 15 questions principales obligatoires, le sous-champ obligatoire `withdrawalTiming` et, si fournis, les champs facultatifs de la seizième étape (notes) et un portefeuille dont les poids positifs totalisent 100 %. Les précisions textuelles facultatives sont `maritalOther`, `dependentsOther`, `incomeOther`, `debtOther`, `goalDetails`, `cryptoDetails`, `exclusionDetails` et `notes` (1 000 caractères chacune). Les autres sous-champs sont `supportMode` (choix), `mortgageAmount` (nombre fini positif ou nul) et `noNotes` (booléen). Les champs conditionnels ne sont acceptés que lorsqu’ils sont visibles selon `src/data.js` ; `noNotes: true` exclut `notes`. L’option conjugale `separated` et le champ `targetAmount` ont été retirés : ils sont rejetés par la validation HTTP. Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
 
-Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v2", "answers": { ... } } }` avec les seize mêmes réponses. Aucun profil de risque n’est déduit par le serveur.
+Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v4", "answers": { ... } } }` avec le même contrat de réponses. Aucun profil de risque n’est déduit par le serveur.
 
 ## Réponse
 
@@ -123,7 +123,20 @@ Rôle chargé : infrastructure. Références lues : `AGENTS.md`, `agents/infrast
 Le site est dans `plateforme/`. Le moteur de calcul se construit avec `from alphaforge.bootstrap import create_engine` ; ses méthodes Python ne sont pas des endpoints HTTP. Les CSV restent côté backend dans `dataset/`, avec `prices_daily.csv` comme fichier de prix. Aucun chargement des CSV n’est fait dans le navigateur. Le mapping du questionnaire, les handlers HTTP, les preuves et la validation de conformité restent à implémenter avant de brancher les services. Voir [l’architecture](../../docs/architecture.md) et [le contrat investisseur](../../docs/investor-profile-schema.json).
 ## Source du questionnaire
 
-Le Word s?lectionn?, son empreinte et les r?gles de changement de version sont d?crits dans [QUESTIONNAIRE_WORD.md](QUESTIONNAIRE_WORD.md). Les identifiants sont des valeurs brutes de formulaire ; ils ne constituent pas une correspondance vers un profil de risque m?tier.
+Le Word sélectionné, son empreinte et les règles de changement de version sont décrits dans [QUESTIONNAIRE_WORD.md](QUESTIONNAIRE_WORD.md). Les identifiants sont des valeurs brutes de formulaire ; ils ne constituent pas une correspondance vers un profil de risque métier.
 
-Le backend accepte maintenant ce contrat Word, le formulaire français fourni et le
-contrat historique `rendements-seuls-v1`. Voir [la normalisation et les limites](../../docs/questionnaire-workflow.md).
+## Affichage de l’explication et clarification
+
+La page portefeuille expose directement `explanation`, `evidence`, `limitations` et `runId` du résultat accepté dans le bloc « Pourquoi ces choix ? ». Le texte est conservé intégralement et échappé ; aucune justification n’est calculée par l’interface. Les raisons de sélection, de pondération et les compromis effectivement enregistrés doivent être formulés par le moteur dans `explanation`. Le schéma HTTP reste inchangé.
+
+Les actions de clarification préparent un brouillon lié au portefeuille courant ou à une position précise. Elles ne déclenchent aucun envoi automatique et conservent un brouillon déjà saisi. L’envoi explicite utilise le même contrat `POST /api/agent/chat`. Sans résultat accepté, la zone annonce la démonstration et l’absence d’explication personnalisée. Détails et vérifications : [PORTFOLIO_EXPLANATION.md](PORTFOLIO_EXPLANATION.md).
+
+## Affichage immédiat des messages
+
+Dès la soumission, le message utilisateur apparaît et est sauvegardé localement avec `delivery: pending`. L’interface ajoute ensuite uniquement la réponse de l’agent. Un échec conserve la bulle avec un bouton Réessayer ; le réessai réutilise cette bulle et préserve un autre brouillon éventuel. Après rechargement, un envoi interrompu devient un échec réessayable, sans renvoi automatique.
+
+`delivery` est une métadonnée locale, exclue du transport. Le champ `message` contient le message courant ; `conversation` contient seulement les messages précédents aboutis, au format `{ role, content }`. Le message courant n’y est pas dupliqué. Aucun mécanisme d’idempotence serveur n’est ajouté. Détails et vérifications : [CHAT_DELIVERY.md](CHAT_DELIVERY.md).
+
+## Fusion des changements locaux
+
+Les ajouts backend (`analysis` et lancement local) sont conserves avec le contrat UI v4 et le chat immediat. Le delai du chat reste de 130 secondes. L’adaptateur Python existe deja pour v2 ; la mention historique indiquant que tout le mapping reste a implementer ne decrit donc pas cet adaptateur. Sa compatibilite v4 reste a traiter : `word_questionnaire.py` exige encore v2. Aucun raccordement de bout en bout n’est certifie par cette resolution de conflits.
