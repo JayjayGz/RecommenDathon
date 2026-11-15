@@ -1,6 +1,39 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AlphaForge Lambda bootstrap (health only; portfolio pipeline pending).
+Description: AlphaForge bounded proposal workflow with optional S3 and Bedrock adapters.
+
+Parameters:
+  DataBucketName:
+    Type: String
+    Default: ''
+    Description: Existing private bucket containing the three input objects.
+    AllowedPattern: '^$|[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]'
+  AuditBucketName:
+    Type: String
+    Default: ''
+    Description: Existing private bucket for append-only runs/ audit artifacts.
+    AllowedPattern: '^$|[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]'
+  DataPrefix:
+    Type: String
+    Default: inputs
+    AllowedPattern: '[A-Za-z0-9_/-]+'
+    Description: Prefix without trailing slash; contains prices_daily.csv, fx_usdcad_daily.csv and profiles.json.
+  BedrockModelId:
+    Type: String
+    Default: ''
+    Description: Optional accessible model/inference profile ID; blank uses the checked deterministic renderer.
+  RuntimePolicyArn:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|arn:(aws|aws-us-gov|aws-cn):iam::[0-9]{12}:policy/.+'
+    Description: Reviewed managed policy for exact input reads, runs/ audit writes and optional model invocation.
+
+Conditions:
+  HasRuntimePolicy: !Not [!Equals [!Ref RuntimePolicyArn, '']]
+  HasStorage: !And
+    - !Not [!Equals [!Ref DataBucketName, '']]
+    - !Not [!Equals [!Ref AuditBucketName, '']]
+    - !Condition HasRuntimePolicy
 
 Resources:
   AlphaForgeFunction:
@@ -17,9 +50,18 @@ Resources:
       Timeout: 120
       EphemeralStorage:
         Size: 512
-      Description: AlphaForge entry point; portfolio pipeline not yet connected.
-      # SAM creates a dedicated execution role with basic CloudWatch logging.
-      # Add scoped S3/Bedrock permissions when their runtime adapters are wired.
+      Description: AlphaForge reference-profile assessment workflow.
+      Environment:
+        Variables:
+          ALPHAFORGE_MODE: !If [HasStorage, s3, '']
+          DATA_BUCKET: !Ref DataBucketName
+          AUDIT_BUCKET: !Ref AuditBucketName
+          DATA_PREFIX: !Ref DataPrefix
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      Policies:
+        - !If [HasRuntimePolicy, !Ref RuntimePolicyArn, !Ref 'AWS::NoValue']
+      # SAM retains its dedicated role with basic logging and optional scoped policy.
+      # Input/audit buckets and the reviewed runtime policy are existing resources.
       # No URL, API, workshop function, dataset or secret is provisioned here.
 
   AlphaForgeLogGroup:

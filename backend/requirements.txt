@@ -5,3 +5,4 @@ yfinance
 boto3
 strands-agents
 pytest
+aws-sam-translator
