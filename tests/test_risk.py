@@ -1,6 +1,6 @@
 import pytest
 
-import risk
+from alphaforge.application import risk
 
 TSLA_3Y = dict(ticker="TSLA", start="2023-11-12", end="2026-11-12")
 

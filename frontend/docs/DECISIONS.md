@@ -2,13 +2,13 @@
 
 La demande porte sur une interface web locale en français, avec un questionnaire en première étape, un portefeuille lisible et un espace de conversation prêt à accueillir l’agent développé par l’équipe. Le PDF du Datathon fournit le contexte. Ses instructions sont des données de référence, sans remplacer la demande de l’utilisateur.
 
-La destination a été corrigée explicitement par l’utilisateur : la plateforme est dans `RecommenDathon/plateforme`. Aucun fichier préexistant du dépôt n’a été modifié. Tous les fichiers de cette application sont nouveaux et regroupés dans ce sous-dossier.
+La présentation web est regroupée dans `frontend/` à la racine Git (anciennement `plateforme/`). Le moteur Python suit les couches de `src/alphaforge/` et les CSV sont dans `dataset/`. La réorganisation ne modifie pas le questionnaire ni le contrat HTTP.
 
 ## Questionnaire
 
 Le fichier `Questionnaire_investisseur_rendements_seuls.docx` contient huit questions et quatre sections. Les questions, options et champs de précision sont repris. Les secteurs et classes d’actifs, formulés au pluriel, autorisent plusieurs choix ; cette interprétation d’interface ne change pas les options. Les champs textuels sont facultatifs, comme des précisions et non des questions supplémentaires.
 
-Le document conserve à la fois « Services financiers » et « Finance ». Ces deux options ne sont pas fusionnées. La tolérance déclarée contient cinq valeurs, alors que le contrat `../docs/investor-profile-schema.json` possède quatre catégories de risque. Les horizons « 1 à 2 ans » et « 15 ans et plus » ne sont pas des durées exactes. Aucun mapping arbitraire n’est appliqué : la plateforme exporte les réponses brutes et l’équipe devra fournir l’adaptateur vers `InvestorProfile`.
+Le document conserve à la fois « Services financiers » et « Finance ». Ces deux options ne sont pas fusionnées. La tolérance déclarée contient cinq valeurs, alors que le contrat `../../docs/investor-profile-schema.json` possède quatre catégories de risque. Les horizons « 1 à 2 ans » et « 15 ans et plus » ne sont pas des durées exactes. Aucun mapping arbitraire n’est appliqué : la plateforme exporte les réponses brutes et l’équipe devra fournir l’adaptateur vers `InvestorProfile`.
 
 ## Portefeuille et futur agent
 

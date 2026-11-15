@@ -3,7 +3,9 @@
   "lessons": [
     {
       "id": "L-001",
-      "roles": ["all"],
+      "roles": [
+        "all"
+      ],
       "trigger": "Creating, renaming or routing development agent instruction files",
       "boundary": "Does not rename the root AGENTS.md or unrelated application directories",
       "defect": "The initial layout used one role folder containing AGENTS.md; the user requested distinct filenames instead of a folder per agent.",
@@ -19,7 +21,11 @@
     },
     {
       "id": "L-002",
-      "roles": ["explanation", "compliance", "infrastructure"],
+      "roles": [
+        "explanation",
+        "compliance",
+        "infrastructure"
+      ],
       "trigger": "Changing explanation retries, fallback behavior or orchestrator error routing",
       "boundary": "Does not authorize prose repair of structural data, missing evidence or portfolio constraint failures",
       "defect": "Earlier responsibility descriptions separately described template fallback and final error after retries, leaving their combined ordering ambiguous.",
@@ -35,7 +41,11 @@
     },
     {
       "id": "L-003",
-      "roles": ["backtest", "portfolio", "evidence"],
+      "roles": [
+        "backtest",
+        "portfolio",
+        "evidence"
+      ],
       "trigger": "Changing monthly rebalancing or relying on saved portfolio metrics",
       "boundary": "Synthetic accounting checks do not establish corrected real-market results",
       "defect": "The monthly backtest discarded the price change between the previous month's last close and the new month's first close.",
@@ -47,15 +57,21 @@
       "prevention": "Value existing units at the new close before rebalancing and invalidate generated validation results after calculation-method changes.",
       "regression": "Replay boundary gains/losses, a flat-price control and hand-computable two-asset rebalancing.",
       "status": "verified",
-      "verification": [{
-        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
-        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
-        "scope": "Offline synthetic and SDK adapter tests; private CSV integration skipped; risk.py remains a stub."
-      }]
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+          "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+          "scope": "Offline synthetic and SDK adapter tests; private CSV integration skipped; risk.py remains a stub."
+        }
+      ]
     },
     {
       "id": "L-004",
-      "roles": ["portfolio", "compliance", "explanation"],
+      "roles": [
+        "portfolio",
+        "compliance",
+        "explanation"
+      ],
       "trigger": "Building or explaining a final portfolio-fit verdict",
       "boundary": "A passing historical assessment is not a future-risk guarantee or legal suitability finding",
       "defect": "Forbidden crypto could return outside_profile=false because the verdict omitted crypto permission and crypto/gold caps.",
@@ -67,15 +83,22 @@
       "prevention": "Combine every required rule into the verdict and supply profile permission flags explicitly; expose failed checks to the explanation agent.",
       "regression": "Forbidden holdings must conflict even with flat prices; a permitted exactly-at-cap allocation must pass.",
       "status": "verified",
-      "verification": [{
-        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
-        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
-        "scope": "Synthetic policy/control cases; no real-market result claims."
-      }]
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+          "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+          "scope": "Synthetic policy/control cases; no real-market result claims."
+        }
+      ]
     },
     {
       "id": "L-005",
-      "roles": ["portfolio", "compliance", "explanation", "evidence"],
+      "roles": [
+        "portfolio",
+        "compliance",
+        "explanation",
+        "evidence"
+      ],
       "trigger": "Transforming proposals or explaining feasible additions and adjusted alternatives",
       "boundary": "An invalid or unfundable request differs from an evaluable profile conflict; conditional maxima cannot be combined",
       "defect": "An oversized addition created negative bond weights, an unknown ticker appeared to pass unchanged, and a capped 5% TSLA candidate reported max_allowed=20.",
@@ -87,11 +110,46 @@
       "prevention": "Reject malformed/unfundable requests with structured status; preserve raw and adjusted outcomes separately; search uncapped trials and return null if no feasible trial exists.",
       "regression": "Reject negative-weight and unknown requests; on flat fixtures TSLA's low-band maximum is 5 additional points, not 20; verify unchanged and at-cap controls.",
       "status": "verified",
-      "verification": [{
-        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
-        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
-        "scope": "Discrete whole-point synthetic allocation/search checks; no AWS calls or profile regeneration."
-      }]
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+          "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+          "scope": "Discrete whole-point synthetic allocation/search checks; no AWS calls or profile regeneration."
+        }
+      ]
+    },
+    {
+      "id": "L-006",
+      "roles": [
+        "data",
+        "infrastructure",
+        "portfolio"
+      ],
+      "trigger": "Moving datasets or changing active price filenames and reference-portfolio inputs",
+      "boundary": "A folder or filename correction does not authorize changing allocation policy, substituting tickers or regenerating private data",
+      "defect": "After the dataset move the loader still expected prices_daily.csv; the user clarified the replacement name. Loading the replacement exposed two failing legacy dataset tests because six reference tickers are absent.",
+      "cause": "Runtime defaults and documentation retained the starter layout and assumed that the replacement dataset contained the saved profile universe.",
+      "evidence": [
+        "User correction: prices_daily was changed to historiques_actifs_2011.csv; actual disk filename is dataset/historique_actifs_2011.csv.",
+        "Observed header preserves date,ticker,adj_close,currency. Dataset inventory found AGG, CNQ.TO, JPM, SPY, XBB.TO and XIU.TO absent from saved profile holdings.",
+        "Initial renamed-file replay: tests/test_engine.py::test_robert_tsla_20 and test_robert_base_metrics failed; docs/DATA.md records the compatibility issue.",
+        "Subsequent user change: active file is now dataset/prices_daily.csv with ticker,date header order. Actual first row is AAPL,2016-01-08; loading by column names reads both correctly. Current inventory is 57,560 rows and 102 tickers with a median seven-day observation gap; earlier inventory evidence above describes the preceding snapshot."
+      ],
+      "prevention": "Resolve canonical paths through the storage adapter, inspect actual filenames/schema and compare required tickers before relying on saved real-data assertions. Keep numerical regression controls independent of local data. Select CSV fields by header name rather than position; test both ticker/date orders and re-check coverage/frequency when inputs are replaced.",
+      "regression": "Replay renamed CSV loading, default paths from a different working directory, missing-holding MISSING_INFO and an all-flat synthetic reference-build control; skip legacy real-data verdicts explicitly only when their required universe is unavailable.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+          "result": "48 passed, 8 skipped, 2 xfailed; 17 subtests passed; one pytest cache-permission warning.",
+          "scope": "Offline calculation, layer, local storage and SDK tests; legacy dataset assertions skip for missing tickers; per-ticker risk remains unimplemented. No profile regeneration, downloads or live AWS calls."
+        },
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q -p no:cacheprovider --basetemp .pytest-tmp-prices-20261114",
+          "result": "49 passed, 8 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Current prices_daily filename and both date/ticker column orders; no data rewrite, profile regeneration or change to metric frequency conventions."
+        }
+      ]
     }
   ]
 }

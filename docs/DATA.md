@@ -1,53 +1,44 @@
-# Data: what you need and where to put it
+# Data inputs and preparation
 
-The data files are **not in this repo**. The prices come from Yahoo Finance, whose terms limit redistribution, so `.gitignore` excludes the CSVs. Each teammate gets them once and puts them in the right folder.
+The canonical data folder is `dataset/` at the Git repository root. CSVs are local inputs and ignored by Git. Copy the supplied files there; do not commit market data. The [dataset README](../dataset/README.md) lists current files and observed coverage.
 
-## Files you need
+## Current price file
 
-Put these in `alphaforge_starter/` at the root of your copy of the repo:
+`prices_daily.csv` is the active file, replacing `historique_actifs_2011.csv`. The supplied header begins `ticker,date`; the loader selects `date`, `ticker`, `adj_close` and `currency` by name, so their order does not matter. No data or header swap is required. `fx_usdcad_daily.csv` supplies CAD per USD in `usdcad`.
 
-| File | Approx. rows | What it holds | Used by |
-| --- | --- | --- | --- |
-| `prices_daily.csv` | ~40,000 | Daily prices: date, ticker, open, high, low, close, adj_close, volume, currency | Risk module, `build_portfolios.py`, `backtest_viewer.py` |
-| `fx_usdcad_daily.csv` | ~1,250 | Bank of Canada USD/CAD rate (CAD per 1 USD) | CAD conversion everywhere |
-| `assets_universe.csv` | 31 | Ticker, name, asset class, market, currency, sector | Profile rules, app labels |
-| `corporate_actions.csv` | ~660 | Dividends and splits by ex-date (reference only; prices are already adjusted) | Income style, dividend checks |
-| `macro_rates.csv` | ~8,300 | Policy rates, 2y and 10y yields, CPI (Canada and U.S.), U.S. unemployment | Risk-free rate, context in explanations |
-| `sources_metadata.csv` | 6 | Source, dates, processing, limits and terms for each file | README, technical documentation |
+`LocalPortfolioRepository` defaults to the repository's `dataset/` and `profiles.json`, independent of the current shell directory. Passing an explicit folder or profile path overrides those defaults; relative overrides follow the caller's working directory.
 
-Data window: **2021-11-12 to 2026-11-12** (5 years, includes 2022).
+## Compatibility with reference portfolios
 
-## How to get them
+The current local price snapshot has 57,560 rows and 102 tickers, from 2016-01-01 through 2026-11-20. Its median within-ticker date gap is seven days, indicating weekly observations despite the filename. Existing metrics assume 252 observations/year; frequency handling requires a separate review before these observations support annualized metrics. The snapshot also contains dates beyond the current 2026-11-14 client date; simulations must define and enforce an as-of date rather than treating all rows as past history.
 
-**Option 1: copy them (fastest).**
-- On the team Kiro IDE: `cp /workshop/RecommenDathon/alphaforge_starter/*.csv alphaforge_starter/`
-- On your laptop: copy them from the organizers' starter kit (event drive or Discord) into `alphaforge_starter\`.
+FX starts on 2021-11-12 and ends on 2026-11-12. USD observations without a preceding FX rate are unavailable; do not fabricate earlier FX history. Common-date alignment can shorten the usable portfolio window further.
 
-**Option 2: rebuild them.** Needs internet and `pip install pandas yfinance`:
-```bash
-cd alphaforge_starter
-python3 build_dataset.py
-cd ..
+The saved reference portfolios require 13 tickers absent from the current file; see the [dataset inventory](../dataset/README.md) for the list. The calculation API returns `MISSING_INFO` for unavailable holdings. Tests asserting old real-market portfolio verdicts skip explicitly when that reference universe is incomplete; synthetic accounting and policy tests continue to run. Agree on compatible allocation rules before regenerating `profiles.json`.
+
+## Rebuild tools
+
+From the Git root:
+
+```powershell
+python scripts/build_dataset.py
 ```
-Rebuilt prices can differ slightly from the organizers' copy (Yahoo revises adjusted prices). Use one version for the whole team.
 
-## Check you have everything
+This is the **original 31-asset starter generator**, with its original 2021-11-12 to 2026-11-12 window. It writes to `dataset/rebuilt_starter/` to preserve the supplied active prices. Its price output uses `prices_daily.csv`; the name does not determine frequency or the generated window. This tool does not reproduce the currently supplied 102-ticker snapshot. `scripts/universe_v2.py` is a proposed universe definition, not automatically applied to the generator or saved profiles. Source metadata and asset-selection rationale are maintained by hand.
 
-```bash
-ls alphaforge_starter/*.csv
-wc -l alphaforge_starter/*.csv
+Once the team agrees on compatible inputs and rules, rebuild profiles explicitly:
+
+```powershell
+python scripts/build_portfolios.py dataset profiles.json
 ```
-You should see the six files with roughly the row counts above (plus one header line each).
 
-## Our asset list
+That command overwrites its output. It has not been run as part of the file reorganization. Rebuilding requires pandas, yfinance and network access; no download is needed for offline checks.
 
-When the team finalizes its own assets, they are listed in `asset_selection.csv` (ticker, which profiles use it, why it was chosen), and the data is rebuilt with `build_dataset.py` after editing its `UNIVERSE` list. Update this section when that happens.
+## Data rules
 
-## Rules when using the data
-
-- Use `adj_close` for returns. Don't reapply splits.
-- `.TO` tickers are in CAD; everything else is USD. Convert with `fx_usdcad_daily.csv` (last rate on or before each date).
-- Never use data dated after a simulation's as-of date. Monthly macro data is dated by reference month, not release date.
-- Cite the source, period and currency of every number shown to users.
-
-Full details: `alphaforge_starter/README.md` and `sources_metadata.csv`.
+- Use `adj_close` for returns; prices are already split-adjusted.
+- Convert USD prices with the last available Bank of Canada USD/CAD rate on or before each date (`merge_asof`, backward). Never use a future rate.
+- Align portfolios on dates where every holding has a usable price. State the resulting window, observation count and CAD currency.
+- Monthly macro reference dates are not publication dates. Do not use unpublished values in a strategy backtest.
+- Record source and processing assumptions; no ESG scores or fundamentals are supplied.
+- The original organizer pack has survivorship and back-adjustment limitations; see the [archived guide](starter-dataset.md). Its row counts and source metadata are not guarantees about the current files.

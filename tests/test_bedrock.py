@@ -1,12 +1,8 @@
 """Offline adapter contract and failure tests; no real credentials or calls."""
 
 from copy import deepcopy
-from pathlib import Path
-import sys
 import unittest
 from unittest.mock import Mock
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError

@@ -1,6 +1,6 @@
 # Reference portfolio rules
 
-These rules build the 15 reference portfolios in profiles.json (implemented in src/build_portfolios.py). All numbers are team assumptions. Educational simulation with fictional profiles; not financial advice.
+These rules build the 15 reference portfolios in profiles.json (implemented in src/alphaforge/domain/reference_portfolios.py; entry point: scripts/build_portfolios.py). All numbers are team assumptions. Educational simulation with fictional profiles; not financial advice.
 
 ## Rule 1: the risk band sets the split between asset classes (% of total)
 

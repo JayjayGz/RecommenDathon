@@ -3,13 +3,28 @@ from pathlib import Path
 
 import pytest
 
-import portfolio_engine as pe
+from alphaforge.bootstrap import create_engine
+
+pe = create_engine()
 
 # These are integration tests against the private dataset, not synthetic cases.
+DATA_DIR = Path(__file__).resolve().parents[1] / "dataset"
+
+def reference_dataset_available():
+    import pandas as pd
+    prices = DATA_DIR / "prices_daily.csv"
+    if not prices.is_file() or not (DATA_DIR / "fx_usdcad_daily.csv").is_file():
+        return False
+    config = pe.repository.load_profiles()
+    required = {t for profile in config["profiles"] for t in profile["weights"]}
+    required |= {"TSLA", "BTC-USD", "ETH-USD"}
+    available = set(pd.read_csv(prices, usecols=["ticker"])["ticker"])
+    return required <= available
+
+
 pytestmark = pytest.mark.skipif(
-    not all((Path("alphaforge_starter") / name).is_file()
-            for name in ("prices_daily.csv", "fx_usdcad_daily.csv")),
-    reason="Private CSV dataset is unavailable; synthetic regressions run separately",
+    not reference_dataset_available(),
+    reason="Legacy reference universe is incomplete in the local dataset; see docs/DATA.md",
 )
 
 ROBERT = 4   # low band, Income and stability

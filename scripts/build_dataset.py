@@ -2,8 +2,9 @@
 
 Usage:
     python -m venv .venv && .venv/bin/pip install pandas yfinance
-    .venv/bin/python build_dataset.py
+    .venv/bin/python scripts/build_dataset.py
 
+Original 31-asset, five-year starter generator; not the expanded local dataset.
 Edit UNIVERSE, START, END below and re-run. Everything is regenerated into OUT_DIR.
 """
 
@@ -17,7 +18,7 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
-OUT_DIR = Path(__file__).parent
+OUT_DIR = Path(__file__).resolve().parents[1] / "dataset" / "rebuilt_starter"
 START = "2021-11-12"
 END = "2026-11-12"  # last complete trading day, inclusive
 RETRIEVED = date.today().isoformat()
@@ -187,7 +188,7 @@ def check(universe, prices, actions, fx, macro) -> list[str]:
 
 
 def main():
-    OUT_DIR.mkdir(exist_ok=True)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     universe = build_universe()
     prices, actions = build_prices(universe)
     fx, macro = build_macro()

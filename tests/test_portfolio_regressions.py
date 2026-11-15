@@ -12,8 +12,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import backtest_viewer as bv
-import portfolio_engine as pe
+from alphaforge.domain import backtest as bv
+from alphaforge.bootstrap import create_engine
+
+pe = create_engine()
 
 
 @pytest.fixture
@@ -152,7 +154,7 @@ def test_exclude_last_bond_reports_error_instead_of_rounding_crash(market):
 def test_invalid_weights_do_not_reach_backtest(market, monkeypatch):
     def unexpected(*args, **kwargs):
         raise AssertionError("Backtest must not run for invalid weights")
-    monkeypatch.setattr(bv, "price_table", unexpected)
+    monkeypatch.setattr(bv, "portfolio_value", unexpected)
     result = pe.validate({"XBB.TO": -.25, "TSLA": 1.25}, "low", crypto_allowed=False)
     assert result["status"] == "INVALID_REQUEST"
 

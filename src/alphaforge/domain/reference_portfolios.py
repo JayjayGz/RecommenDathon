@@ -1,21 +1,6 @@
-"""Build the 15 AlphaForge reference portfolios from written rules, then validate them.
-
-Rules (team assumptions, see docs/portfolio_rules.md):
-  1. The band sets the split between bonds, stocks and alternatives.
-  2. The style decides which assets fill the stock part.
-  3. Equal weights inside each group.
-  4. Caps: single stock per band; crypto only if allowed.
-  5. Validate against band limits; if a portfolio fails, trim (crypto, then single stocks, then stocks to bonds).
-
-Educational simulation with fictional profiles. Not financial advice.
-"""
-
-import json
-import sys
-
-import pandas as pd
-
-import backtest_viewer as bv
+"""Existing team allocation rules; all thresholds remain team assumptions."""
+from .market_data import price_table
+from .backtest import metrics, portfolio_value
 
 BANDS = {
     "low":    {"bonds": {"XBB.TO": 45, "ZST.TO": 25}, "stocks": 30, "alt": 0,  "max_stock": 5,
@@ -95,8 +80,8 @@ def check_caps(w, band):
 
 
 def validate(prices, fx, w, band, start, end):
-    df = bv.price_table(prices, fx, list(w), start, end)
-    m = bv.metrics(bv.portfolio_value(df, {t: v / 100 for t, v in w.items()}, "monthly"))
+    df = price_table(prices, fx, list(w), start, end)
+    m = metrics(portfolio_value(df, {t: v / 100 for t, v in w.items()}, "monthly"))
     m = {k: (v.item() if hasattr(v, "item") else v) for k, v in m.items()}   # numpy -> plain Python for JSON
     b = BANDS[band]
     m["passes"] = bool(m["volatility_pct"] <= b["max_vol"] and m["max_drawdown_pct"] >= b["max_dd"])
@@ -127,42 +112,3 @@ def trim(w, band, style):
     return None
 
 
-def main(data_dir="data", out="profiles.json"):
-    prices, fx = bv.load_data(data_dir)
-    start, end = prices.date.min(), prices.date.max()
-    profiles, rows = [], []
-    for pid, band, style, crypto_ok, persona in PROFILES:
-        w = round_weights(build(band, style, crypto_ok))
-        assert sum(w.values()) == 100, (pid, w)
-        log = check_caps(w, band)
-        m = validate(prices, fx, w, band, start, end)
-        while not m["passes"]:
-            step = trim(w, band, style)
-            if step is None:
-                log.append("still outside limits after all trims")
-                break
-            w, line = step
-            log.append(line)
-            m = validate(prices, fx, w, band, start, end)
-        profiles.append({"id": pid, "band": band, "style": style, "persona": persona,
-                         "crypto_allowed": crypto_ok,
-                         "weights": {t: v / 100 for t, v in sorted(w.items(), key=lambda kv: -kv[1])},
-                         "validation": {**m, "adjustments": log}})
-        rows.append({"id": pid, "band": band, "style": style, "persona": persona or "",
-                     "weights": ", ".join(f"{t} {v:g}" for t, v in sorted(w.items(), key=lambda kv: -kv[1])),
-                     "vol": m["volatility_pct"], "max_dd": m["max_drawdown_pct"],
-                     "passes": m["passes"], "adjustments": "; ".join(log)})
-
-    config = {"_note": "Reference portfolios built from rules in build_portfolios.py. Educational simulation "
-                       "with fictional profiles; not financial advice.",
-              "band_limits": {k: {"max_volatility_pct": v["max_vol"], "max_drawdown_pct": v["max_dd"],
-                                  "max_single_stock_pct": v["max_stock"]} for k, v in BANDS.items()},
-              "profiles": profiles}
-    with open(out, "w") as f:
-        json.dump(config, f, indent=2)
-    pd.set_option("display.width", 250, "display.max_colwidth", 120)
-    print(pd.DataFrame(rows).to_string(index=False))
-
-
-if __name__ == "__main__":
-    main(*sys.argv[1:])

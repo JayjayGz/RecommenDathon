@@ -2,7 +2,7 @@
 
 AlphaForge AI turns an investor profile into an explained, simulated portfolio recommendation. Every number in the explanation traces back to the data, trade-offs and limitations are always shown, and each run is saved to an audit trail. Everything is simulation material and nothing is investment advice.
 
-Assumption: the datathon brief was not in the repository, so the scope below is inferred from the starter dataset (`alphaforge_starter/`). Adjust it once the brief and the final CSV files are confirmed.
+Assumption: the datathon brief was not in the repository, so the scope below is inferred from the starter dataset (`dataset/`; original pack guide in `starter-dataset.md`). Adjust it once the brief and the final CSV files are confirmed.
 
 ## Scope split
 
@@ -54,18 +54,61 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 - **Audit trail:** each run saves its profile, data manifest (file hashes and window), evidence, decisions, LLM calls, compliance results and final result under `runs/{run_id}/` in S3.
 - **Compliance gate:** final check before any output is shown.
 
-## Proposed repository layout
+## Implemented repository layout
 
+```text
+frontend/                        # Web presentation, assets and local HTTP proxy
+src/alphaforge/
+    presentation/backtest_viewer.py  # Streamlit UI
+    application/                 # Calculation orchestration; repository and LLM ports
+    domain/                      # Pure allocation, policy, FX/calendar and backtest functions
+    infrastructure/              # Local CSV/JSON repository; Bedrock adapter
+    bootstrap.py                 # Composition root wiring local ports/adapters
+scripts/                         # Developer entry points and original starter build tools
+dataset/                         # All local CSV inputs; ignored by Git
+profiles.json                    # Existing profile contract, retained at root
 ```
-RecommenDathon/
-├── alphaforge_starter/        # existing starter dataset and build script
-├── docs/                      # this documentation
-└── src/alphaforge/
-    ├── presentation/          # UI, API handlers, request/response schemas
-    ├── application/           # orchestrator, agents, evidence validator, compliance gate, ports
-    ├── domain/                # entities, risk and allocation rules, evidence, limitations
-    └── infrastructure/        # CSV repositories, Bedrock client, S3 and local audit stores
-```
+
+The web interface lives in `frontend/`. It sends raw questionnaire answers through optional HTTP adapters; a backend mapper to the investor schema and response contract is still required. The Streamlit viewer is a separate developer presentation of saved reference portfolios.
+
+Application code depends on `PortfolioRepository` and Domain functions. `LocalPortfolioRepository` implements that port; `bootstrap.create_engine()` supplies the adapter. Domain imports no presentation, application or infrastructure code and performs no I/O. LLM ports and Bedrock retain their existing layer placement.
+
+### Migration map
+
+| Previous location | Current location |
+| --- | --- |
+| `plateforme/` | `frontend/` |
+| `alphaforge_starter/dataset/*.csv` | `dataset/*.csv` |
+| `alphaforge_starter/README.md` | Archived `docs/starter-dataset.md`; current instructions in `dataset/README.md` |
+| `alphaforge_starter/build_dataset.py` | `scripts/build_dataset.py` (separate rebuild output) |
+| `historique_actifs_2011.csv` | `dataset/prices_daily.csv` (current supplied replacement; columns selected by name) |
+| `portfolio_engine.py` | `application/portfolio_engine.py` plus pure `domain/proposals.py` |
+| `backtest_viewer.py` | `presentation/backtest_viewer.py`, `application/backtests.py`, `domain/backtest.py`, `domain/market_data.py`; launch via `scripts/backtest_viewer.py` |
+| `build_portfolios.py` | `domain/reference_portfolios.py`, `application/reference_portfolios.py`; launch via `scripts/build_portfolios.py` |
+| `risk.py` | `application/risk.py` (teammate-owned, still unimplemented) |
+| `universe_v2.py` | `scripts/universe_v2.py` (proposed universe) |
+
+Python module paths in this table are under `src/alphaforge/`. Existing callers must import `create_engine` from `alphaforge.bootstrap` and call its methods instead of importing root-level `portfolio_engine`. Numerical rules and `profiles.json` contents were preserved.
+
+### Implemented versus planned
+
+The code currently provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The request flow above remains the target: full runtime orchestration, evidence validation, compliance release, Lambda handlers and S3 audit storage are not yet implemented. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
+
+The active 102-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
+
+### Reorganization verification and development handoff
+
+Inputs were the existing root Python modules, the supplied CSVs, unchanged `profiles.json`, the web presentation and these architecture notes. Financial rules, raw data contents and the profile JSON were preserved; module imports and developer launch commands changed as documented above.
+
+| Role | Task and output | Checks and evidence | Status; next owner |
+| --- | --- | --- | --- |
+| Infrastructure (primary) | Wire repository port/local adapter and composition root; update paths and instructions | Default-path and explicit-path tests; SDK regressions; workflow checker; Python compilation and JS syntax checks | Complete for reorganization; API/infrastructure implementation owner next |
+| Data | Move CSVs into `dataset/`, load renamed history, document actual coverage | Actual CSV header/inventory; fixture loader test; actual file load; `docs/DATA.md`; lesson L-006 | Complete for reorganization; data owner to reconcile universe/FX coverage |
+| Portfolio | Separate pure policy/transformations from application orchestration | Synthetic caps/funding regressions; all-flat reference-build control; profile JSON has no diff | Complete for reorganization; portfolio owner to agree compatible holdings before regeneration |
+| Risk | Relocate teammate-owned contract and preserve metric conventions | Existing expected-failure tests remain; metric regressions pass | Complete for relocation; teammate owns per-ticker implementation |
+| Backtest | Extract pure accounting/metrics and application comparison from viewer | Month-boundary gain/loss and hand-computable accounting regressions | Complete for extraction; presentation owner can use new launcher |
+
+The offline suite returned **48 passed, 8 skipped, 2 xfailed; 17 subtests passed**. The eight legacy real-data tests skip because required tickers are absent; the two expected failures concern the unimplemented per-ticker risk contract. Pytest reported one cache-directory permission warning on the successful run. The workflow structural checker passed for nine role files and six lessons; its eight self-tests also passed. Real-file checks confirmed the renamed CSV loads, missing holdings return `MISSING_INFO`, and available TSLA history computes a policy conflict. Local documentation links resolved. These are deterministic checks, not an independent review or a complete production-pipeline validation. No data downloads, profile regeneration, live AWS calls or deployment occurred.
 
 ## Data handling rules (from the starter dataset)
 
@@ -74,7 +117,7 @@ RecommenDathon/
 - Do not use monthly macro values before their publication date in backtests.
 - The universe has survivorship bias. The limitations list states this on every result.
 - The data has no ESG scores or fundamentals. The limitations list says so, and no ESG claim is made without a documented outside source.
-- The final CSVs are still to come. The pipeline reads whatever files the data manifest lists, so evidence IDs are generated, not hard-coded.
+- The supplied local CSVs are listed in `dataset/README.md`. The active loader uses `prices_daily.csv` and `fx_usdcad_daily.csv`. A manifest-driven production pipeline and generated evidence IDs remain planned.
 
 ## Cross-cutting concerns
 
