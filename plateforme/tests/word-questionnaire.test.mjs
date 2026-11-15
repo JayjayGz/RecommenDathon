@@ -59,8 +59,9 @@ test('all 15 questions match the Word snapshot with the explicit user removals',
   expected.find(q => q.id === 'goal').details = expected.find(q => q.id === 'goal').details.filter(field => field.key !== 'targetAmount');
   const exclusions = expected.find(q => q.id === 'exclusions');
   exclusions.options = exclusions.options.filter(([value]) => value !== 'discussion');
-  exclusions.details[0].label = 'Si limites, vos précisions facultatives';
+  exclusions.details[0].label = 'Précisez ce que vous voulez exclure (obligatoire)';
   exclusions.details[0].when.values = ['limits'];
+  exclusions.details[0].required = true;
   for (const q of expected) for (const f of q.details) {
     if (['maritalOther','dependentsOther','incomeOther','debtOther'].includes(f.key)) { f.required=true; f.label='Pr\u00e9cisez votre situation (obligatoire)'; }
     if (f.key==='goalDetails') { f.requiredWhen={field:'goal',values:['other']}; f.label='Pr\u00e9cisez votre objectif (obligatoire si Autre)'; }
@@ -677,6 +678,21 @@ test('Other requires nonblank context in every applicable question and preserves
     app.next(); assert.equal(app.saved().step,step+1);
   }
   assert.equal(validateAnswers({...completeAnswers(),goal:'project'}),true);
+});
+
+test('Limites requires saying what to exclude before Next; Aucune needs no details', async t => {
+  const step=QUESTIONS.findIndex(q=>q.id==='exclusions');
+  const answers={...completeAnswers(),exclusions:'limits'};
+  const app=await open(t,{answers,step});
+  assert.equal(app.$('#detail-exclusionDetails').required,true);
+  assert.equal(isAnswered(QUESTIONS[step],answers),false);
+  assert.equal(validateAnswers(answers),false);
+  assert.equal(validateAnswers({...answers,exclusionDetails:'   '}),false);
+  app.next(); assert.equal(app.saved().step,step);
+  app.type('#detail-exclusionDetails','Aucune entreprise pétrolière');
+  assert.equal(validateAnswers(app.saved().answers),true);
+  app.next(); assert.equal(app.saved().step,step+1);
+  assert.equal(validateAnswers({...completeAnswers(),exclusions:'none'}),true);
 });
 
 test('allocation explorer groups the actual weights consistently and exposes asset details accessibly', async t => {

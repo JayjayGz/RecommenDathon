@@ -490,9 +490,9 @@ export const QUESTIONS = [
     "details": [
       {
         "key": "exclusionDetails",
-        "label": "Si limites, vos précisions facultatives",
+        "label": "Précisez ce que vous voulez exclure (obligatoire)",
         "type": "text",
-        "required": false,
+        "required": true,
         "when": {
           "field": "exclusions",
           "values": [

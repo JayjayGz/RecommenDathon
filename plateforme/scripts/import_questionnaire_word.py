@@ -90,8 +90,10 @@ folder.mkdir(exist_ok=True)
 (folder / 'questionnaire-word.json').write_text(json.dumps(fixture, ensure_ascii=False, indent=2)+'\n',encoding='utf-8')
 # Keep the Word snapshot intact; apply the user's explicit UI override afterward.
 output[14]['options'] = [option for option in output[14]['options'] if option[0] != 'discussion']
-output[14]['details'][0]['label'] = 'Si limites, vos précisions facultatives'
+output[14]['details'][0]['label'] = 'Précisez ce que vous voulez exclure (obligatoire)'
 output[14]['details'][0]['when']['values'] = ['limits']
+# "Limites" without saying what to exclude cannot be applied by the engine.
+output[14]['details'][0]['required'] = True
 output[0]['options'] = [option for option in output[0]['options'] if option[0] != 'separated']
 output[6]['details'] = [field for field in output[6]['details'] if field['key'] != 'targetAmount']
 
