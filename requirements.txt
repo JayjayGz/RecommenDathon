@@ -4,3 +4,4 @@ streamlit
 yfinance
 boto3
 strands-agents
+pytest
