@@ -1,0 +1,45 @@
+{
+  "status": "complete",
+  "roles": [
+    "data",
+    "infrastructure",
+    "evidence"
+  ],
+  "next_owner": "user",
+  "selection_in_universe": 34,
+  "universe_rows": 132,
+  "price_assets": 127,
+  "price_rows": 71072,
+  "added_tickers": [
+    "CNQ.TO",
+    "MFC.TO",
+    "XBB.TO",
+    "XIU.TO"
+  ],
+  "added_rows": 2268,
+  "unpriced_universe": [
+    {
+      "ticker": "^VIX",
+      "asset_class": "index"
+    },
+    {
+      "ticker": "BD.CDN.2YR.DQ.YLD",
+      "asset_class": "bond_yield"
+    },
+    {
+      "ticker": "BD.CDN.10YR.DQ.YLD",
+      "asset_class": "bond_yield"
+    },
+    {
+      "ticker": "DGS2",
+      "asset_class": "bond_yield"
+    },
+    {
+      "ticker": "DGS10",
+      "asset_class": "bond_yield"
+    }
+  ],
+  "source_values_verified": true,
+  "existing_bytes_preserved": true,
+  "output_sha256": "16b0fb689b06656b1f61c718d869a8f62135402c4a6103d085d52484f38257e4"
+}

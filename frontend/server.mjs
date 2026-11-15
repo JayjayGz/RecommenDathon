@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { QUESTIONS, QUESTIONNAIRE_VERSION, isAnswered, validatePortfolio } from './src/data.js';
+import { QUESTIONNAIRE_VERSION, validateAnswers, validatePortfolio } from './src/data.js';
 import { validateRecommendation } from './src/integration.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -17,11 +17,7 @@ const textValue = (value, max = 160) => typeof value === 'string' && value.trim(
 
 function validQuestionnaire(input) {
   if (!object(input) || input.version !== QUESTIONNAIRE_VERSION || !object(input.answers)) return false;
-  const optional = ['otherSector', 'cryptoDetails', 'exclusionDetails'];
-  const allowed = new Set([...QUESTIONS.map(question => question.id), ...optional]);
-  return QUESTIONS.every(question => isAnswered(question, input.answers))
-    && Object.keys(input.answers).every(key => allowed.has(key))
-    && optional.every(key => input.answers[key] === undefined || (typeof input.answers[key] === 'string' && input.answers[key].length <= 1000));
+  return validateAnswers(input.answers);
 }
 
 function recommendationFields(result) {
@@ -92,7 +88,7 @@ async function upstreamJson(endpointValue, token, body, prefix) {
 
 async function chat(req, res) {
   const body = await readJson(req);
-  if (!validPayload(body)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Le message, la conversation, les huit réponses ou le portefeuille est invalide.' });
+  if (!validPayload(body)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Le message, la conversation, les réponses ou le portefeuille est invalide.' });
   const result = await upstreamJson(AGENT_URL, process.env.AGENT_API_TOKEN, body, 'AGENT');
   if (!object(result) || !textValue(result.message, 10000) || (result.proposal !== undefined && !validateRecommendation(result.proposal))) return json(res, 502, { code: 'AGENT_INVALID_RESPONSE', message: 'La réponse du service agent est invalide.' });
   return json(res, 200, { message: result.message, ...(result.proposal === undefined ? {} : { proposal: recommendationFields(result.proposal) }) });
@@ -100,7 +96,7 @@ async function chat(req, res) {
 
 async function portfolio(req, res) {
   const body = await readJson(req);
-  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les huit réponses versionnées au questionnaire sont requises.' });
+  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les réponses valides à la version actuelle du questionnaire sont requises.' });
   const result = await upstreamJson(PORTFOLIO_URL, process.env.PORTFOLIO_API_TOKEN, { questionnaire: body.questionnaire }, 'PORTFOLIO');
   if (!validateRecommendation(result)) return json(res, 502, { code: 'PORTFOLIO_INVALID_RESPONSE', message: 'Le résultat du moteur de portefeuille ne respecte pas le contrat attendu.' });
   return json(res, 200, recommendationFields(result));
@@ -141,6 +137,8 @@ const server = http.createServer(async (req, res) => {
     return json(res, error.status || 500, { code: error.status ? (error.code || 'INVALID_REQUEST') : 'SERVER_ERROR', message: error.status ? error.message : 'Une erreur locale est survenue.' });
   }
 });
+
+export { server };
 
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
   console.error('PORT doit être un entier entre 1 et 65535.');

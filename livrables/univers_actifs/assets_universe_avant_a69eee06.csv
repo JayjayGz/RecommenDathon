@@ -1,0 +1,118 @@
+asset_id,ticker,name,asset_class,market,currency,sector
+A01,RY.TO,Royal Bank of Canada,equity,TSX,CAD,Financials
+A02,TD.TO,Toronto-Dominion Bank,equity,TSX,CAD,Financials
+A03,MFC.TO,Manulife Financial,equity,TSX,CAD,Financials
+A04,ENB.TO,Enbridge,equity,TSX,CAD,Energy
+A05,CNQ.TO,Canadian Natural Resources,equity,TSX,CAD,Energy
+A06,CNR.TO,Canadian National Railway,equity,TSX,CAD,Industrials
+A07,FTS.TO,Fortis,equity,TSX,CAD,Utilities
+A08,ATD.TO,Alimentation Couche-Tard,equity,TSX,CAD,Consumer Staples
+A09,SHOP.TO,Shopify,equity,TSX,CAD,Information Technology
+A10,CSU.TO,Constellation Software,equity,TSX,CAD,Information Technology
+A11,AAPL,Apple,equity,NASDAQ,USD,Information Technology
+A12,MSFT,Microsoft,equity,NASDAQ,USD,Information Technology
+A13,NVDA,NVIDIA,equity,NASDAQ,USD,Information Technology
+A14,GOOGL,Alphabet (Class A),equity,NASDAQ,USD,Communication Services
+A15,AMZN,Amazon,equity,NASDAQ,USD,Consumer Discretionary
+A16,TSLA,Tesla,equity,NASDAQ,USD,Consumer Discretionary
+A17,JPM,JPMorgan Chase,equity,NYSE,USD,Financials
+A18,JNJ,Johnson & Johnson,equity,NYSE,USD,Health Care
+A19,PG,Procter & Gamble,equity,NYSE,USD,Consumer Staples
+A20,XOM,Exxon Mobil,equity,NYSE,USD,Energy
+A21,XIU.TO,iShares S&P/TSX 60 Index ETF,etf_equity,TSX,CAD,Broad market (Canada)
+A22,SPY,SPDR S&P 500 ETF Trust,etf_equity,NYSE Arca,USD,Broad market (U.S.)
+A23,QQQ,Invesco QQQ Trust (Nasdaq-100),etf_equity,NASDAQ,USD,Broad market (U.S. growth/tech-heavy)
+A24,ESGV,Vanguard ESG U.S. Stock ETF,etf_equity,Cboe BZX,USD,"Broad market (U.S., ESG-screened)"
+A25,XBB.TO,iShares Core Canadian Universe Bond Index ETF,etf_bond,TSX,CAD,Bonds (Canada aggregate)
+A26,ZST.TO,BMO Ultra Short-Term Bond ETF,etf_bond,TSX,CAD,Bonds (Canada ultra short-term)
+A27,AGG,iShares Core U.S. Aggregate Bond ETF,etf_bond,NYSE Arca,USD,Bonds (U.S. aggregate)
+A28,TLT,iShares 20+ Year Treasury Bond ETF,etf_bond,NASDAQ,USD,Bonds (U.S. long Treasury)
+A29,GLD,SPDR Gold Shares,etf_commodity,NYSE Arca,USD,Gold
+A30,BTC-USD,Bitcoin,crypto,Crypto (24/7),USD,Crypto asset
+A31,ETH-USD,Ether,crypto,Crypto (24/7),USD,Crypto asset
+A32,META,Meta Platforms,equity,NASDAQ,USD,Communication Services
+A33,BRK-B,Berkshire Hathaway (Class B),equity,NYSE,USD,Financials
+A34,V,Visa,equity,NYSE,USD,Financials
+A35,MA,Mastercard,equity,NYSE,USD,Financials
+A36,UNH,UnitedHealth Group,equity,NYSE,USD,Health Care
+A37,HD,Home Depot,equity,NYSE,USD,Consumer Discretionary
+A38,CVX,Chevron,equity,NYSE,USD,Energy
+A39,MRK,Merck & Co.,equity,NYSE,USD,Health Care
+A40,ABBV,AbbVie,equity,NYSE,USD,Health Care
+A41,KO,Coca-Cola,equity,NYSE,USD,Consumer Staples
+A42,PEP,PepsiCo,equity,NASDAQ,USD,Consumer Staples
+A43,COST,Costco Wholesale,equity,NASDAQ,USD,Consumer Staples
+A44,WMT,Walmart,equity,NYSE,USD,Consumer Staples
+A45,BAC,Bank of America,equity,NYSE,USD,Financials
+A46,DIS,Walt Disney,equity,NYSE,USD,Communication Services
+A47,CSCO,Cisco Systems,equity,NASDAQ,USD,Information Technology
+A48,ADBE,Adobe,equity,NASDAQ,USD,Information Technology
+A49,CRM,Salesforce,equity,NYSE,USD,Information Technology
+A50,NFLX,Netflix,equity,NASDAQ,USD,Communication Services
+A51,AMD,Advanced Micro Devices,equity,NASDAQ,USD,Information Technology
+A52,INTC,Intel,equity,NASDAQ,USD,Information Technology
+A53,ORCL,Oracle,equity,NYSE,USD,Information Technology
+A54,QCOM,Qualcomm,equity,NASDAQ,USD,Information Technology
+A55,IBM,IBM,equity,NYSE,USD,Information Technology
+A56,BA,Boeing,equity,NYSE,USD,Industrials
+A57,CAT,Caterpillar,equity,NYSE,USD,Industrials
+A58,GS,Goldman Sachs,equity,NYSE,USD,Financials
+A59,WFC,Wells Fargo,equity,NYSE,USD,Financials
+A60,T,AT&T,equity,NYSE,USD,Communication Services
+A61,VZ,Verizon,equity,NYSE,USD,Communication Services
+A62,PFE,Pfizer,equity,NYSE,USD,Health Care
+A63,LLY,Eli Lilly,equity,NYSE,USD,Health Care
+A64,MCD,McDonald's,equity,NYSE,USD,Consumer Discretionary
+A65,NKE,Nike,equity,NYSE,USD,Consumer Discretionary
+A66,SBUX,Starbucks,equity,NASDAQ,USD,Consumer Discretionary
+A67,IWM,iShares Russell 2000 ETF,etf_equity,NYSE Arca,USD,Broad market (U.S. small caps)
+A68,DIA,SPDR Dow Jones Industrial Average ETF,etf_equity,NYSE Arca,USD,Broad market (U.S. Dow 30)
+A69,EEM,iShares MSCI Emerging Markets ETF,etf_equity,NYSE Arca,USD,Emerging markets
+A70,EFA,iShares MSCI EAFE ETF,etf_equity,NYSE Arca,USD,International developed markets
+A71,VTI,Vanguard Total Stock Market ETF,etf_equity,NYSE Arca,USD,Broad market (U.S.)
+A72,VOO,Vanguard S&P 500 ETF,etf_equity,NYSE Arca,USD,Broad market (U.S.)
+A73,XLF,Financial Select Sector SPDR,etf_equity,NYSE Arca,USD,Financials
+A74,XLE,Energy Select Sector SPDR,etf_equity,NYSE Arca,USD,Energy
+A75,XLK,Technology Select Sector SPDR,etf_equity,NYSE Arca,USD,Information Technology
+A76,XLV,Health Care Select Sector SPDR,etf_equity,NYSE Arca,USD,Health Care
+A77,SLV,iShares Silver Trust,etf_commodity,NYSE Arca,USD,Silver
+A78,EWJ,iShares MSCI Japan ETF,etf_equity,NYSE Arca,USD,Japan
+A79,FXI,iShares China Large-Cap ETF,etf_equity,NYSE Arca,USD,China
+A80,EWZ,iShares MSCI Brazil ETF,etf_equity,NYSE Arca,USD,Brazil
+A81,VWO,Vanguard FTSE Emerging Markets ETF,etf_equity,NYSE Arca,USD,Emerging markets
+A82,IEMG,iShares Core MSCI Emerging Markets ETF,etf_equity,NYSE Arca,USD,Emerging markets
+A83,ARKK,ARK Innovation ETF,etf_equity,NYSE Arca,USD,Thematic (innovation)
+A84,SMH,VanEck Semiconductor ETF,etf_equity,NASDAQ,USD,Semiconductors
+A85,XBI,SPDR S&P Biotech ETF,etf_equity,NYSE Arca,USD,Biotechnology
+A86,GDX,VanEck Gold Miners ETF,etf_equity,NYSE Arca,USD,Gold miners
+A87,VNQ,Vanguard Real Estate ETF,etf_equity,NYSE Arca,USD,Real estate (REIT)
+A88,IVV,iShares Core S&P 500 ETF,etf_equity,NYSE Arca,USD,Broad market (U.S.)
+A89,VEA,Vanguard FTSE Developed Markets ETF,etf_equity,NYSE Arca,USD,International developed markets
+A90,URTH,iShares MSCI World ETF,etf_equity,NYSE Arca,USD,Broad market (global developed)
+A91,XWD.TO,iShares MSCI World Index ETF,etf_equity,TSX,CAD,Broad market (global developed)
+A92,HYG,iShares iBoxx High Yield Corporate Bond ETF,etf_bond,NYSE Arca,USD,Bonds (U.S. high yield)
+A93,LQD,iShares iBoxx Investment Grade Corporate Bond ETF,etf_bond,NYSE Arca,USD,Bonds (U.S. investment grade corporate)
+A94,IEF,iShares 7-10 Year Treasury Bond ETF,etf_bond,NASDAQ,USD,Bonds (U.S. intermediate Treasury)
+A95,DBC,Invesco DB Commodity Index Tracking Fund,etf_commodity,NYSE Arca,USD,Commodities (diversified)
+A96,XRP-USD,XRP,crypto,Crypto (24/7),USD,Crypto asset
+A97,LTC-USD,Litecoin,crypto,Crypto (24/7),USD,Crypto asset
+A98,BCH-USD,Bitcoin Cash,crypto,Crypto (24/7),USD,Crypto asset
+A99,EURUSD=X,Euro / US Dollar,fx,FX (OTC),USD,Currency pair
+A100,USDJPY=X,US Dollar / Japanese Yen,fx,FX (OTC),JPY,Currency pair
+A101,GBPUSD=X,British Pound / US Dollar,fx,FX (OTC),USD,Currency pair
+A102,USDCAD=X,US Dollar / Canadian Dollar,fx,FX (OTC),CAD,Currency pair
+A103,AUDUSD=X,Australian Dollar / US Dollar,fx,FX (OTC),USD,Currency pair
+A104,CL=F,Crude Oil (WTI) futures,commodity,NYMEX,USD,Energy
+A105,GC=F,Gold futures,commodity,COMEX,USD,Gold
+A106,SI=F,Silver futures,commodity,COMEX,USD,Silver
+A107,NG=F,Natural Gas futures,commodity,NYMEX,USD,Energy
+A108,HG=F,Copper futures,commodity,COMEX,USD,Industrial metals
+A109,^GSPC,S&P 500 Index,index,Index,USD,Broad market (U.S.)
+A110,^DJI,Dow Jones Industrial Average,index,Index,USD,Broad market (U.S.)
+A111,^IXIC,Nasdaq Composite,index,Index,USD,Broad market (U.S. tech-heavy)
+A112,^VIX,CBOE Volatility Index,index,Index,USD,Volatility
+A113,^N225,Nikkei 225,index,Index,JPY,Broad market (Japan)
+A114,BD.CDN.2YR.DQ.YLD,"Government of Canada benchmark bond yield, 2-year",bond_yield,Canada,CAD,Government bonds (Canada 2-year)
+A115,BD.CDN.10YR.DQ.YLD,"Government of Canada benchmark bond yield, 10-year",bond_yield,Canada,CAD,Government bonds (Canada 10-year)
+A116,DGS2,"U.S. Treasury constant maturity yield, 2-year",bond_yield,United States,USD,Government bonds (U.S. 2-year)
+A117,DGS10,"U.S. Treasury constant maturity yield, 10-year",bond_yield,United States,USD,Government bonds (U.S. 10-year)

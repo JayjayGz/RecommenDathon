@@ -1,0 +1,75 @@
+{
+    "status":  "complete",
+    "removed_count":  9,
+    "removed_bytes":  44501847,
+    "retained":  {
+                     "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.csv",
+                     "sha256":  "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88",
+                     "rows":  69371,
+                     "tickers":  124
+                 },
+    "source_preserved":  {
+                             "path":  "C:\\Users\\alibe\\Downloads\\asset_selection.csv",
+                             "sha256":  "34618d92e70fdc8522ced70c4e48a2dd7ffa04dbc2476728e4d768769f4ab94a"
+                         },
+    "removed":  [
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).avant_ajouts_842796ac.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).avant_ajouts_842796ac.csv",
+                        "sha256":  "842796acc71af0e2327b60ecb5e902eac0533f0061c420e3dae84fc4430e6f62"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).csv",
+                        "sha256":  "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv",
+                        "sha256":  "a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+                        "sha256":  "a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_couverture.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_couverture.csv",
+                        "sha256":  "26cc2c0c698c082aa0296a7a5d18a4482c8ec9b01bf6d4c74fd852f809cee4b7"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_couverture_ajouts.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_couverture_ajouts.csv",
+                        "sha256":  "1fa8d9e890242f35a9f0e7984c8860323d1b5f306bf4fce8a446dd97e465a58d"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_manifest.json",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_manifest.json",
+                        "sha256":  "034ab01305f5cb275e84334e0c5470e0e9356b525c25053aa3c85e71df17608b"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_manifest.moyennes_a977af97.json",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_manifest.moyennes_a977af97.json",
+                        "sha256":  "012b21f26527b23b54df5e72053b88bf5b4fb31cc4ce348b5e77514705a5da63"
+                    },
+                    {
+                        "path":  "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_sources_lignes.csv",
+                        "archive":  "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_sources_lignes.csv",
+                        "sha256":  "19586c8c2bf7ee2248cd211113fca41ec14c759bc1bdc703e671a65f87488ea1"
+                    }
+                ],
+    "checks":  [
+                   "All archived file hashes match",
+                   "Retained CSV unchanged",
+                   "Selection source unchanged",
+                   "Only one weekly-history file remains in Downloads",
+                   "No wildcard or recursive deletion"
+               ],
+    "handoff":  {
+                    "status":  "complete",
+                    "support":  "evidence",
+                    "primary":  "infrastructure",
+                    "next_owner":  "user"
+                }
+}

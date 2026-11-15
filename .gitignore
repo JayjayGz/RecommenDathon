@@ -1,6 +1,7 @@
 .venv/
 .env
 __pycache__/
+<<<<<<< Updated upstream
 .pytest_cache/
 *.egg-info/
 
@@ -9,3 +10,6 @@ __pycache__/
 samconfig.toml
 health-response.json
 .local-runs/
+=======
+node_modules/
+>>>>>>> Stashed changes

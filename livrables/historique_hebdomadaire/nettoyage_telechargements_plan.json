@@ -1,0 +1,81 @@
+{
+  "scope": "Only weekly-history artifacts created or replaced in this conversation; unrelated Downloads untouched",
+  "keep": {
+    "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.csv",
+    "sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88",
+    "rows": 69371,
+    "tickers": 124
+  },
+  "preserve_source": {
+    "path": "C:\\Users\\alibe\\Downloads\\asset_selection.csv",
+    "sha256": "34618d92e70fdc8522ced70c4e48a2dd7ffa04dbc2476728e4d768769f4ab94a"
+  },
+  "files": [
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).avant_ajouts_842796ac.csv",
+      "sha256": "842796acc71af0e2327b60ecb5e902eac0533f0061c420e3dae84fc4430e6f62",
+      "bytes": 3885855,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).avant_ajouts_842796ac.csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).csv",
+      "sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88",
+      "bytes": 8081761,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv",
+      "sha256": "a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034",
+      "bytes": 4894209,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+      "sha256": "a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034",
+      "bytes": 4894209,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_complet.moyennes_a977af97.csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_couverture.csv",
+      "sha256": "26cc2c0c698c082aa0296a7a5d18a4482c8ec9b01bf6d4c74fd852f809cee4b7",
+      "bytes": 12061,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_couverture.csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_couverture_ajouts.csv",
+      "sha256": "1fa8d9e890242f35a9f0e7984c8860323d1b5f306bf4fce8a446dd97e465a58d",
+      "bytes": 2034,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_couverture_ajouts.csv"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_manifest.json",
+      "sha256": "034ab01305f5cb275e84334e0c5470e0e9356b525c25053aa3c85e71df17608b",
+      "bytes": 118266,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_manifest.json"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_manifest.moyennes_a977af97.json",
+      "sha256": "012b21f26527b23b54df5e72053b88bf5b4fb31cc4ce348b5e77514705a5da63",
+      "bytes": 14828,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_manifest.moyennes_a977af97.json"
+    },
+    {
+      "path": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_sources_lignes.csv",
+      "sha256": "19586c8c2bf7ee2248cd211113fca41ec14c759bc1bdc703e671a65f87488ea1",
+      "bytes": 22598624,
+      "archive": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\archives_telechargements\\top100_hebdo_2016_sources_lignes.csv"
+    }
+  ],
+  "total_bytes": 44501847,
+  "handoff": {
+    "primary": "infrastructure",
+    "support": "evidence",
+    "status": "prepared",
+    "next_owner": "user",
+    "checks": [
+      "current CSV hash matches validated output",
+      "69371 nonempty close rows and 124 tickers",
+      "exact nine-file scope and file hashes recorded"
+    ]
+  }
+}

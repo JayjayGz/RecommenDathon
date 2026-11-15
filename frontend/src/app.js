@@ -1,8 +1,10 @@
-import { QUESTIONS, SECTIONS, DEMO_PORTFOLIO, isAnswered, cleanAnswers, answerLabel, makeQuestionnairePayload } from './data.js';
+import { QUESTIONS, SECTIONS, DEMO_PORTFOLIO, isAnswered, cleanAnswers, answerLabel, makeQuestionnairePayload, fieldVisible } from './data.js';
 import { portfolioCsv, createRequestGuard, boundedChatPayload } from './export.js';
 import { normalizeRecommendation, allocationGroups } from './integration.js';
 
-const STORAGE_KEY = 'recommand.platform.v1';
+import { questionIllustration, marketScenario } from './illustrations.js';
+
+const STORAGE_KEY = 'recommand.platform.word16.v2';
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const paths = {
@@ -31,7 +33,7 @@ function readState() {
     const answers = cleanAnswers(saved.answers);
     const complete = saved.complete === true && QUESTIONS.every(question => isAnswered(question, answers));
     return {
-      answers, complete, step: Number.isInteger(saved.step) ? Math.max(0, Math.min(7, saved.step)) : 0,
+      answers, complete, step: Number.isInteger(saved.step) ? Math.max(0, Math.min(QUESTIONS.length - 1, saved.step)) : 0,
       page: complete && ['portfolio', 'assistant'].includes(saved.page) ? saved.page : 'questionnaire',
       draft: typeof saved.draft === 'string' ? saved.draft.slice(0, 4000) : '',
       messages: complete && Array.isArray(saved.messages) ? saved.messages.filter(message => message && typeof message === 'object' && ['user', 'assistant'].includes(message.role) && typeof message.content === 'string').slice(-40).map(message => ({ role: message.role, content: message.content.slice(0, 10000) })) : [],
@@ -99,33 +101,52 @@ function footer() {
   return `<footer class="footer"><span><span class="footer-mark">r.</span> Une idée qui prend forme. <span class="footer-event">Datathon 2026</span></span><div><span>Simulation · Aucun conseil en placement</span><button data-action="privacy">Données locales</button><button data-action="credits">Crédits</button></div></footer>`;
 }
 
+function answeredCount() {
+  return QUESTIONS.filter((q, index) => isAnswered(q, state.answers) && (!q.optional || state.complete || index < state.step)).length;
+}
 function questionnaire() {
   const question = QUESTIONS[state.step];
-  const answered = QUESTIONS.filter(q => isAnswered(q, state.answers)).length;
-  return `<div class="onboarding page-enter"><section class="question-column" aria-label="Questionnaire investisseur">
+  const answered = answeredCount();
+  return `<div class="onboarding page-enter ${question.scenario ? 'scenario-page' : ''}"><section class="question-column" aria-label="Questionnaire investisseur">
     <div class="eyebrow"><span class="tiny-star">✳</span> L’INVESTISSEMENT, À VOTRE IMAGE</div>
     <h1>Tout commence<br>par <em>vous.</em></h1>
     <p class="hero-description">Vos envies, vos limites, votre horizon.<br>La première étape d’un portefeuille qui vous ressemble.</p>
     <div class="questionnaire-content">
-      <div class="progress-meta"><span>VOTRE PROFIL INVESTISSEUR</span><span class="question-count"><strong>${String(state.step + 1).padStart(2, '0')}</strong><span> / 08</span></span></div>
-      <div class="progress-track" role="progressbar" aria-label="Avancement du questionnaire" aria-valuenow="${answered}" aria-valuemin="0" aria-valuemax="8">${QUESTIONS.map((q, index) => `<span class="${index === state.step ? 'current' : ''} ${isAnswered(q, state.answers) ? 'filled' : ''}"></span>`).join('')}</div>
-      <div class="section-label"><span>${String(question.section + 1).padStart(2, '0')} / 04</span>${SECTIONS[question.section]}</div>
+      <div class="progress-meta"><span>VOTRE PROFIL INVESTISSEUR</span><span class="question-count"><strong>${String(state.step + 1).padStart(2, '0')}</strong><span> / ${QUESTIONS.length}</span></span></div>
+      <div class="progress-track" role="progressbar" aria-label="Avancement du questionnaire" aria-valuenow="${answered}" aria-valuemin="0" aria-valuemax="${QUESTIONS.length}">${QUESTIONS.map((q, index) => `<span class="${index === state.step ? 'current' : ''} ${isAnswered(q, state.answers) && (!q.optional || state.complete || index < state.step) ? 'filled' : ''}"></span>`).join('')}</div>
+      <div class="section-label"><span>${String(question.section + 1).padStart(2, '0')} / ${String(SECTIONS.length).padStart(2, '0')}</span>${SECTIONS[question.section]}</div>
       <form id="question-form" novalidate>
         <fieldset><legend id="question-title" class="question-title ${question.title.length > 120 ? 'long' : ''}">${escape(question.title)}</legend>
-          <p class="question-help">${escape(question.help || (question.type === 'multi' ? 'Plusieurs réponses possibles.' : 'Sélectionnez une réponse.'))}</p>
-          ${question.scenario ? scenario() : ''}
-          <div class="options ${question.layout || 'list'}">${question.options.map(([value, label], index) => option(question, value, label, index)).join('')}</div>
-          ${detailField(question)}
-          ${question.note ? `<p class="field-note">${icon('info')}${escape(question.note)}</p>` : ''}
+          <p class="question-help">${escape(question.help || (question.type === 'multi' ? 'Plusieurs réponses possibles.' : question.type === 'single' ? 'Choisissez une seule réponse.' : ''))}</p>
+          ${question.scenario ? marketScenario() : ''}
+          ${mainField(question)}
+          <div id="question-details">${detailField(question)}</div>
+          ${question.id === 'assets' ? '<p class="field-note">Si vous cochez « Toutes les catégories ci-dessus », il n’est pas nécessaire de cocher les autres choix.</p>' : ''}
         </fieldset>
         <p id="question-error" class="field-error" role="alert"></p>
-        <div class="question-actions"><button type="button" class="back-button" data-action="previous" ${state.step === 0 ? 'disabled' : ''}>${icon('back')}<span>Retour</span></button><button type="submit" class="button primary next-button">${state.step === 7 ? 'Découvrir mon portefeuille' : 'Continuer'}${icon('arrow')}</button></div>
+        <div class="question-actions"><button type="button" class="back-button" data-action="previous" ${state.step === 0 ? 'disabled' : ''}>${icon('back')}<span>Retour</span></button><button type="submit" class="button primary next-button">${state.step === QUESTIONS.length - 1 ? 'Découvrir mon portefeuille' : 'Continuer'}${icon('arrow')}</button></div>
       </form>
-      <div class="save-note">${icon('shield')}<span>${!storageAvailable ? 'Sauvegarde indisponible sur ce navigateur.' : portfolioConnected ? 'Vos réponses seront envoyées à votre moteur à la dernière étape.' : 'Vos réponses restent sur cet appareil.'}</span><span class="save-dot"></span><span>${answered}/8 ${answered > 1 ? 'réponses' : 'réponse'}</span></div>
+      <div class="save-note">${icon('shield')}<span>${!storageAvailable ? 'Sauvegarde indisponible sur ce navigateur.' : portfolioConnected ? 'Vos réponses seront envoyées à votre moteur à la dernière étape.' : 'Vos réponses restent sur cet appareil.'}</span><span class="save-dot"></span><span id="answer-count" aria-live="polite">${answered}/${QUESTIONS.length} étapes complétées</span></div>
     </div>
-  </section>${visualPanel(question.section)}
-  <div class="journey-strip"><div>${icon('file')}<span><strong>01. On fait connaissance</strong><small>8 questions, à votre rythme</small></span></div><span class="journey-line"></span><div>${icon('chart')}<span><strong>02. Une vision d’ensemble</strong><small>Une répartition facile à lire</small></span></div><span class="journey-line"></span><div>${icon('chat')}<span><strong>03. À vous de préciser</strong><small>Un espace pour votre futur agent</small></span></div></div>
+  </section>${questionIllustration(question.id)}
+  <div class="journey-strip"><div>${icon('file')}<span><strong>01. On fait connaissance</strong><small>${QUESTIONS.length} questions, à votre rythme</small></span></div><span class="journey-line"></span><div>${icon('chart')}<span><strong>02. Une vision d’ensemble</strong><small>Une répartition facile à lire</small></span></div><span class="journey-line"></span><div>${icon('chat')}<span><strong>03. À vous de préciser</strong><small>Un espace pour votre futur agent</small></span></div></div>
   </div>`;
+}
+
+function mainField(question) {
+  if (question.type === 'number') return `<div class="amount-field"><label for="main-answer">Montant disponible</label><div><input id="main-answer" data-answer="${question.id}" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex. : 100" value="${escape(state.answers[question.id] ?? '')}" aria-describedby="question-error"><span>$ CA</span></div></div>`;
+  if (question.type === 'text') return `<div class="detail-field"><label for="main-answer">Vos précisions</label><textarea id="main-answer" data-answer="${question.id}" rows="5" maxlength="1000" placeholder="Ajoutez vos précisions ici…" ${state.answers.noNotes ? 'disabled' : ''}>${escape(state.answers[question.id] || '')}</textarea></div>`;
+  return `<div class="options ${question.layout || 'list'}">${question.options.map(([value, label], index) => option(question, value, label, index)).join('')}</div>`;
+}
+
+function fieldPlaceholder(field) {
+  const examples = {
+    mortgageAmount: 'Ex. : 100 000', targetAmount: 'Ex. : 50 000',
+    goalDetails: 'Ex. : achat d’une résidence',
+    cryptoDetails: 'Précisez vos préférences…',
+    exclusionDetails: 'Ex. : secteurs ou placements à exclure',
+  };
+  return examples[field.key] || (field.type === 'number' ? 'Ex. : 100' : 'Précisez votre situation…');
 }
 
 function option(question, value, label, index) {
@@ -136,28 +157,47 @@ function option(question, value, label, index) {
 }
 
 function detailField(question) {
-  if (question.detail && state.answers[question.id]?.includes(question.detail.option)) {
-    return `<div class="detail-field"><label for="question-detail">${escape(question.detail.label)}</label><input id="question-detail" data-detail="${question.detail.key}" type="text" maxlength="1000" value="${escape(state.answers[question.detail.key] || '')}" placeholder="${escape(question.detail.placeholder)}"></div>`;
-  }
-  if (question.text && state.answers.exclusions && state.answers.exclusions !== 'none') {
-    return `<div class="detail-field"><label for="question-detail">${state.answers.exclusions === 'limits' ? 'Si vous avez des limites, précisez lesquelles' : 'Vos précisions'} <span>(facultatif)</span></label><textarea id="question-detail" data-detail="exclusionDetails" rows="3" maxlength="1000" placeholder="Vos précisions">${escape(state.answers.exclusionDetails || '')}</textarea></div>`;
-  }
-  return '';
+  return question.details.filter(field => fieldVisible(field, state.answers)).map(field => {
+    const value = state.answers[field.key];
+    const id = `detail-${field.key}`;
+    const label = escape(field.label);
+    let markup;
+    if (field.type === 'single') markup = `<fieldset><legend>${label}</legend>${field.options.map(([key,text]) => `<label class="supplement-option"><input type="radio" data-detail="${field.key}" name="${field.key}" value="${key}" ${value === key ? 'checked' : ''}><span>${escape(text)}</span></label>`).join('')}</fieldset>`;
+    else if (field.type === 'boolean') markup = `<label class="supplement-option"><input id="${id}" type="checkbox" data-detail="${field.key}" ${value ? 'checked' : ''}><span>${label}</span></label>`;
+    else markup = `<label for="${id}">${label}</label><input id="${id}" data-detail="${field.key}" type="${field.type === 'number' ? 'number' : 'text'}" ${field.type === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="1000"'} placeholder="${escape(fieldPlaceholder(field))}" value="${escape(value ?? '')}">${field.type === 'number' ? '<small>Montant en dollars canadiens</small>' : ''}`;
+    return `<div class="detail-field" data-field="${field.key}">${markup}</div>`;
+  }).join('');
 }
 
-function scenario() {
-  return `<aside class="scenario" aria-label="Mise en situation fictive"><div><span class="scenario-tag">MISE EN SITUATION FICTIVE</span><strong>Une baisse en trois mois</strong><p>10 000 $ <span>→</span> 8 000 $</p></div><svg viewBox="0 0 150 65" aria-hidden="true"><path d="m2 8 18 7 11-4 17 18 14-4 19 20 13-4 17 12 14-5 22 15" fill="none" stroke="#91684f" stroke-width="2"/><path d="M0 64h150" stroke="#ded3c8" stroke-dasharray="3 5"/></svg><small>La valeur du placement diminue de 2 000 $. Illustration fictive, sans lien avec une actualité réelle.</small></aside>`;
-}
-
-function visualPanel(section) {
-  const visuals = [
-    ['architecture.jpg', 'Façade aux formes géométriques dans une lumière douce', 'De belles perspectives.<br>À votre mesure.', 'Un point de départ personnel.'],
-    ['curves.jpg', 'Balcons courbes et ciel bleu', 'Pensez à demain.<br>À votre rythme.', 'Votre horizon donne la direction.'],
-    ['water.jpg', 'Eau calme et reliefs à Whidbey Island', 'Gardez le cap.<br>Suivez vos envies.', 'Une vision qui vous appartient.'],
-    ['architecture.jpg', 'Architecture géométrique beige et jeux d’ombres', 'Vos choix.<br>Tout simplement.', 'La clarté, dès le premier pas.'],
-  ];
-  const [file, alt, title, caption] = visuals[section];
-  return `<aside class="visual-panel"><img src="/assets/${file}" alt="${alt}" class="visual-photo"><div class="photo-shade"></div><div class="visual-top"><span class="visual-label">UN AVENIR À DESSINER</span>${spark()}</div><div class="visual-bottom"><span class="visual-small">FAITES PLACE À VOS AMBITIONS</span><h2>${title}</h2><div class="visual-caption"><span class="caption-circle">${icon('arrow')}</span><span>${caption}</span><span class="visual-pagination">${[0, 1, 2, 3].map((v) => `<i class="${section === v ? 'active' : ''}"></i>`).join('')}</span></div></div></aside>`;
+// Les réponses changent sur place : aucun démontage du formulaire ou du visuel.
+function updateQuestionSelection(question) {
+  document.querySelectorAll('#question-form .options>.option').forEach(element => {
+    const input = element.querySelector('input');
+    input.checked = question.type === 'multi' ? Boolean(state.answers[question.id]?.includes(input.value)) : state.answers[question.id] === input.value;
+    element.classList.toggle('selected', input.checked);
+    element.querySelector('.option-check').innerHTML = input.checked ? icon('check') : '';
+  });
+  const details = $('#question-details');
+  const template = document.createElement('template');
+  template.innerHTML = detailField(question);
+  const expected = [...template.content.children];
+  for (const element of [...details.children]) {
+    if (!expected.some(next => next.dataset.field === element.dataset.field)) element.remove();
+  }
+  expected.forEach((element, index) => {
+    const existing = [...details.children].find(current => current.dataset.field === element.dataset.field);
+    if (!existing) details.insertBefore(element, details.children[index] || null);
+  });
+  if (question.id === 'notes') {
+    $('#main-answer').disabled = state.answers.noNotes === true;
+    if (state.answers.noNotes) $('#main-answer').value = '';
+  }
+  const answered = answeredCount();
+  $('.progress-track').setAttribute('aria-valuenow', answered);
+  document.querySelectorAll('.progress-track>span').forEach((segment,index) => segment.classList.toggle('filled', isAnswered(QUESTIONS[index],state.answers) && (!QUESTIONS[index].optional || state.complete || index < state.step)));
+  $('#answer-count').textContent = `${answered}/${QUESTIONS.length} étapes complétées`;
+  $('#question-error').textContent = '';
+  refreshConnectionUI();
 }
 
 function portfolio() {
@@ -168,7 +208,7 @@ function portfolio() {
     <div class="portfolio-grid"><section class="allocation-card"><div class="card-heading"><div><span class="eyebrow">LA VUE D’ENSEMBLE</span><h2>Une place pour chaque actif.</h2></div><span class="soft-badge">${positions.length} positions</span></div><div class="allocation-visual"><div class="donut" role="img" aria-label="${escape(allocationGroups(selectedPortfolio).map(group => `${group.weight} % ${group.name}`).join(", "))}" style="background:${donutGradient(positions)}"><div class="donut-hole"><span>Répartition</span><strong>100<span>%</span></strong><small>${selectedPortfolio.isDemo ? "Exemple illustratif" : "Simulation du moteur"}</small></div></div><div class="allocation-legend">${allocationGroups(selectedPortfolio).map(group => `<div><span style="--dot:${group.color}"></span><div><strong>${escape(group.name)}</strong><small>${group.count} position${group.count > 1 ? 's' : ''}</small></div><b>${formatWeight(group.weight)} %</b></div>`).join('')}</div></div><div class="allocation-footnote">${icon('leaf')}Une représentation de la répartition, sans projection de rendement.</div></section>
     <aside class="agent-card"><span class="eyebrow">LA SUITE, ENSEMBLE</span>${spark('agent-spark')}<h2>Un portefeuille.<br>Encore plus <em>vous.</em></h2><p>Précisez vos préférences, explorez vos options et posez vos questions dans un seul espace.</p><button class="button dark" data-page="assistant">Ouvrir la conversation${icon('arrow')}</button><small><span class="status-dot neutral"></span>${agentConnected ? 'Service agent configuré' : 'Espace prêt · Agent à connecter'}</small></aside>
     <section class="holdings-card"><div class="card-heading"><div><span class="eyebrow">DANS LE DÉTAIL</span><h2>${selectedPortfolio.isDemo ? "De quoi se compose cet exemple ?" : "Les actifs de votre portefeuille"}</h2></div><button class="text-button" data-action="export">Exporter ${icon('download')}</button></div><div class="holdings-table-wrap"><table class="holdings-table"><thead><tr><th>Actif</th><th>Catégorie</th><th>Répartition</th><th><span class="sr-only">Détails</span></th></tr></thead><tbody>${positions.map(position => `<tr><td><button class="holding-link" data-holding="${escape(position.symbol)}"><span class="asset-icon ${position.icon}">${escape(position.initials)}</span><span><strong>${escape(position.name)}</strong><small>${escape(position.symbol)}</small></span></button></td><td class="holding-category">${escape(position.category)}</td><td><div class="weight-cell"><span class="weight-track"><i style="width:${position.weight}%;background:${position.color}"></i></span><strong>${formatWeight(position.weight)} %</strong></div></td><td><button class="row-detail" data-holding="${escape(position.symbol)}" aria-label="Détails de ${escape(position.name)}">${icon('arrow')}</button></td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td></td><td>100 %</td><td></td></tr></tfoot></table></div></section>
-    <aside class="profile-card"><div class="card-heading"><div><span class="eyebrow">LE FIL DE VOTRE PROFIL</span><h2>Ce qui compte pour vous.</h2></div></div>${profileFact('shield', 'Tolérance déclarée', answerLabel(QUESTIONS[0], state.answers))}${profileFact('clock', 'Horizon de placement', answerLabel(QUESTIONS[3], state.answers))}${profileFact('chart', 'Rendement souhaité', answerLabel(QUESTIONS[2], state.answers))}<button class="text-button" data-action="profile">Revoir mes 8 réponses ${icon('arrow')}</button><p class="profile-caveat">Vos réponses sont enregistrées. Leur interprétation sera assurée par votre futur moteur.</p></aside></div>
+    <aside class="profile-card"><div class="card-heading"><div><span class="eyebrow">LE FIL DE VOTRE PROFIL</span><h2>Ce qui compte pour vous.</h2></div></div>${profileFact('shield', 'Tolérance déclarée', answerLabel(QUESTIONS.find(q => q.id === 'risk'), state.answers))}${profileFact('clock', 'Horizon de placement', answerLabel(QUESTIONS.find(q => q.id === 'horizon'), state.answers))}${profileFact('chart', 'Objectif principal', answerLabel(QUESTIONS.find(q => q.id === 'goal'), state.answers))}<button class="text-button" data-action="profile">Revoir mes ${QUESTIONS.length} réponses ${icon('arrow')}</button><p class="profile-caveat">Vos réponses sont enregistrées. Leur interprétation sera assurée par votre futur moteur.</p></aside></div>
     ${state.result ? resultEvidence(state.result) : ""}
     <section class="bottom-editorial"><span>CHAQUE PARCOURS EST DIFFÉRENT.</span><p>Le vôtre mérite<br><em>sa propre perspective.</em></p>${spark()}<button class="text-button" data-page="assistant">La conversation commence ici ${icon('arrow')}</button></section>
   </div>`;
@@ -208,7 +248,7 @@ function proposalCard() {
 
 function assistant() {
   return `<div class="assistant-page page-enter"><div class="assistant-title"><div><div class="eyebrow"><span class="tiny-star">✳</span> VOTRE ESPACE DE CONVERSATION</div><h1>Affinons <em>la suite.</em></h1></div><button class="text-button" data-page="portfolio">Voir mon portefeuille ${icon('arrow')}</button></div>
-    <div class="conversation-layout"><aside class="conversation-sidebar"><span class="eyebrow">VOTRE POINT DE DÉPART</span><h2>La vue d’ensemble,<br>toujours à portée.</h2><div class="mini-allocation-bar">${currentPortfolio().positions.map(position => `<span style="width:${position.weight}%;background:${position.color}" title="${escape(position.symbol)} : ${formatWeight(position.weight)} %"></span>`).join('')}</div><span class="badge">${currentPortfolio().isDemo ? "ALLOCATION ILLUSTRATIVE" : "SIMULATION DU MOTEUR"}</span><div class="sidebar-positions">${currentPortfolio().positions.map(position => `<div><span style="--dot:${position.color}">${escape(position.symbol)}</span><strong>${formatWeight(position.weight)} %</strong></div>`).join('')}</div><div class="sidebar-profile">${profileFact('shield', 'Tolérance déclarée', answerLabel(QUESTIONS[0], state.answers))}${profileFact('clock', 'Votre horizon', answerLabel(QUESTIONS[3], state.answers))}</div><button class="text-button" data-action="profile">Mes réponses ${icon('arrow')}</button><div class="sidebar-image"><img src="/assets/water.jpg" alt="Un horizon calme sur l’eau"><span>De la place<br>pour vos ambitions.</span></div></aside>
+    <div class="conversation-layout"><aside class="conversation-sidebar"><span class="eyebrow">VOTRE POINT DE DÉPART</span><h2>La vue d’ensemble,<br>toujours à portée.</h2><div class="mini-allocation-bar">${currentPortfolio().positions.map(position => `<span style="width:${position.weight}%;background:${position.color}" title="${escape(position.symbol)} : ${formatWeight(position.weight)} %"></span>`).join('')}</div><span class="badge">${currentPortfolio().isDemo ? "ALLOCATION ILLUSTRATIVE" : "SIMULATION DU MOTEUR"}</span><div class="sidebar-positions">${currentPortfolio().positions.map(position => `<div><span style="--dot:${position.color}">${escape(position.symbol)}</span><strong>${formatWeight(position.weight)} %</strong></div>`).join('')}</div><div class="sidebar-profile">${profileFact('shield', 'Tolérance déclarée', answerLabel(QUESTIONS.find(q => q.id === 'risk'), state.answers))}${profileFact('clock', 'Votre horizon', answerLabel(QUESTIONS.find(q => q.id === 'horizon'), state.answers))}</div><button class="text-button" data-action="profile">Mes réponses ${icon('arrow')}</button><div class="sidebar-image"><img src="/assets/water.jpg" alt="Un horizon calme sur l’eau"><span>De la place<br>pour vos ambitions.</span></div></aside>
     <section class="chat-card" aria-label="Conversation avec votre assistant"><header class="chat-header"><div class="assistant-avatar">${spark()}</div><div><strong>Votre assistant Recommand</strong><span><i class="status-dot ${agentConnected ? '' : 'neutral'}"></i>${agentConnected ? 'Service configuré' : 'En attente de votre agent'}</span></div><button class="icon-button" data-action="agent-info" aria-label="Informations sur la connexion de l’agent">${icon('info')}</button></header>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-label="Messages de la conversation">${state.messages.length ? state.messages.map(message => `<article class="message ${message.role}"><span class="message-author">${message.role === 'user' ? 'Vous' : 'Assistant'}</span><p>${escape(message.content)}</p></article>`).join('') : chatWelcome()}${state.proposal ? proposalCard() : ""}${sending ? `<div class="sending" role="status"><span></span><span></span><span></span><small>Votre agent prépare sa réponse…</small></div>` : ''}</div>
     <div class="chat-compose-area">${!agentConnected ? `<div class="connection-note">${icon('info')}<span>Votre équipe connectera l’agent. Vous pouvez déjà préparer votre message.</span></div>` : ''}${sendError ? `<p class="field-error chat-error" role="alert">${escape(sendError)}</p>` : ''}<form id="chat-form"><label for="chat-input" class="sr-only">Votre message à l’assistant</label><textarea id="chat-input" maxlength="4000" rows="2" placeholder="Ce que vous aimeriez préciser…" ${sending ? 'disabled' : ''}>${escape(state.draft)}</textarea><div class="composer-bottom"><span>${icon('lock')}<span>${agentConnected ? 'Envoyé uniquement à votre service configuré' : 'Brouillon enregistré sur cet appareil'}</span></span><button type="submit" class="send-button" ${!agentConnected || sending || !state.draft.trim() ? 'disabled' : ''} aria-label="Envoyer le message">${icon('send')}</button></div></form><p class="chat-disclaimer">Simulation. Les échanges ne constituent pas un conseil en placement.</p></div></section></div></div>`;
@@ -227,7 +267,7 @@ function showModal(title, content, className = '') {
 }
 
 function showProfile() {
-  showModal('Votre profil, en vos mots.', `<p class="modal-intro">Les huit réponses qui serviront de point de départ à votre moteur de recommandation.</p><div class="profile-review">${QUESTIONS.map((question, index) => `<div><span class="review-number">${String(index + 1).padStart(2, '0')}</span><div><small>${escape(question.title)}</small><strong>${escape(answerLabel(question, state.answers))}</strong>${question.detail && state.answers[question.detail.key] ? `<p>${escape(state.answers[question.detail.key])}</p>` : ''}${question.text && state.answers.exclusionDetails ? `<p>${escape(state.answers.exclusionDetails)}</p>` : ''}</div><button class="icon-button" data-edit-question="${index}" aria-label="Modifier la réponse ${index + 1}">${icon('edit')}</button></div>`).join('')}</div><button class="button primary modal-full" data-action="export-json">Exporter mes réponses ${icon('download')}</button>`);
+  showModal('Votre profil, en vos mots.', `<p class="modal-intro">Les ${QUESTIONS.length} réponses qui serviront de point de départ à votre moteur de recommandation.</p><div class="profile-review">${QUESTIONS.map((question, index) => `<div><span class="review-number">${String(index + 1).padStart(2, '0')}</span><div><small>${escape(question.title)}</small><strong>${escape(answerLabel(question, state.answers))}</strong></div><button class="icon-button" data-edit-question="${index}" aria-label="Modifier la réponse ${index + 1}">${icon('edit')}</button></div>`).join('')}</div><button class="button primary modal-full" data-action="export-json">Exporter mes réponses ${icon('download')}</button>`);
 }
 
 function handleAction(action) {
@@ -243,7 +283,7 @@ function handleAction(action) {
   if (action === 'close-modal') { $('#modal').close(); return; }
   if (action === 'profile') { showProfile(); return; }
   if (action === 'help') {
-    showModal('D’abord vous. Puis la suite.', `<p class="modal-intro">Un parcours en trois étapes, pensé pour rester simple.</p><div class="concept-steps"><div><span>01</span><h3>Faites le point.</h3><p>Répondez aux huit questions du questionnaire investisseur. Vous pouvez revenir sur chaque choix.</p></div><div><span>02</span><h3>Prenez du recul.</h3><p>Découvrez une présentation lisible du portefeuille : actifs, catégories et répartition. Pour le moment, l’allocation affichée est un exemple fictif.</p></div><div><span>03</span><h3>Affinez par la conversation.</h3><p>Votre équipe branchera son agent à l’espace de discussion pour personnaliser la recommandation. Aucun agent n’est simulé dans cette version.</p></div></div><p class="modal-note">Prototype local AlphaForge AI · Datathon 2026. Aucun achat ni ordre de bourse n’est possible.</p>`);
+    showModal('D’abord vous. Puis la suite.', `<p class="modal-intro">Un parcours en trois étapes, pensé pour rester simple.</p><div class="concept-steps"><div><span>01</span><h3>Faites le point.</h3><p>Répondez aux ${QUESTIONS.length} questions du questionnaire investisseur. Vous pouvez revenir sur chaque choix.</p></div><div><span>02</span><h3>Prenez du recul.</h3><p>Découvrez une présentation lisible du portefeuille : actifs, catégories et répartition. Pour le moment, l’allocation affichée est un exemple fictif.</p></div><div><span>03</span><h3>Affinez par la conversation.</h3><p>Votre équipe branchera son agent à l’espace de discussion pour personnaliser la recommandation. Aucun agent n’est simulé dans cette version.</p></div></div><p class="modal-note">Prototype local AlphaForge AI · Datathon 2026. Aucun achat ni ordre de bourse n’est possible.</p>`);
     return;
   }
   if (action === 'privacy') {
@@ -258,7 +298,7 @@ function handleAction(action) {
   }
   if (action === 'refresh-agent') { $('#modal').close(); checkAgent(true); return; }
   if (action === 'credits') {
-    showModal('Des inspirations, une identité.', `<p class="modal-intro">Recommand est un prototype indépendant réalisé pour le Datathon 2026. Il n’est affilié à aucune institution financière.</p><div class="credits-list"><h3>Direction et parcours</h3><p>L’espace, la sobriété et la hiérarchie des pages <a href="https://www.wealthsimple.com/fr-ca/invest" target="_blank" rel="noopener noreferrer">Wealthsimple</a> ; le parcours questionnaire et portefeuille de <a href="https://www.rbcinvestease.com/how-it-works.html" target="_blank" rel="noopener noreferrer">RBC Investi-Clic</a>.</p><h3>Photographies existantes</h3><p>Mateusz Bakala, Ramiro Pianarosa et Max Anderson, via <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash</a>. Photos et sources détaillées dans <code>docs/INSPIRATIONS.md</code>.</p><h3>Questionnaire</h3><p>Les questions et les choix proviennent du document fourni, sans question supplémentaire. Les champs « Autre », « Cryptoactifs » et les précisions sont conservés.</p></div>`);
+    showModal('Des inspirations, une identité.', `<p class="modal-intro">Recommand est un prototype indépendant réalisé pour le Datathon 2026. Il n’est affilié à aucune institution financière.</p><div class="credits-list"><h3>Direction et parcours</h3><p>Un thème crème et noir inspiré de la référence Wealthsimple fournie.</p><h3>Illustrations</h3><p>Illustrations SVG originales et locales adaptées au sujet de chaque question. Le bulletin de baisse reproduit la composition de la capture fournie et reste une mise en situation fictive, sans cotations réelles. Sources des anciennes photos conservées : <code>docs/INSPIRATIONS.md</code>.</p><h3>Questionnaire</h3><p>Les 16 questions, les choix et les champs complémentaires proviennent exclusivement du Word sélectionné. Aucun profil de risque ni rendement n’est déduit par l’interface.</p></div>`);
     return;
   }
   if (action === 'export') { showModal('Gardez une copie.', `<p class="modal-intro">Exportez vos réponses, votre conversation et la répartition affichée.</p><div class="export-options"><button data-action="export-json">${icon('file')}<span><strong>Le parcours complet</strong><small>Réponses, conversation et portefeuille · JSON</small></span>${icon('download')}</button><button data-action="export-csv">${icon('chart')}<span><strong>La répartition ${currentPortfolio().isDemo ? 'illustrative' : 'du moteur'}</strong><small>${currentPortfolio().positions.length} positions et leurs poids · CSV</small></span>${icon('download')}</button></div>`); return; }
@@ -363,31 +403,36 @@ document.addEventListener('click', event => {
   }
 });
 
-document.addEventListener('change', event => {
-  if (!event.target.matches('#question-form input[type="radio"], #question-form input[type="checkbox"]')) return;
+function saveQuestionInput(target) {
   const question = QUESTIONS[state.step];
-  const value = event.target.value;
+  const wasComplete = state.complete;
   invalidateConversation();
   state.complete = false;
-  if (question.type === 'multi') {
-    const current = new Set(state.answers[question.id] || []);
-    event.target.checked ? current.add(value) : current.delete(value);
-    state.answers[question.id] = [...current];
-  } else state.answers[question.id] = value;
-  if (question.id === 'sectors' && !state.answers.sectors.includes('other')) delete state.answers.otherSector;
-  if (question.id === 'assets' && !state.answers.assets.includes('crypto')) delete state.answers.cryptoDetails;
-  if (question.id === 'exclusions' && value === 'none') delete state.answers.exclusionDetails;
-  persist(); render();
-  document.querySelector(`#question-form input[value="${value}"]`)?.focus({ preventScroll: true });
-});
+  const key = target.dataset.detail || target.dataset.answer || question.id;
+  if (target.dataset.detail || target.dataset.answer) {
+    const field = question.details.find(item => item.key === key) || question;
+    if (field.type === 'boolean') state.answers[key] = target.checked;
+    else if (target.value === '') delete state.answers[key];
+    else state.answers[key] = field.type === 'number' ? Number(target.value) : target.value;
+    if (key === 'noNotes' && target.checked) delete state.answers.notes;
+  } else if (question.type === 'multi') {
+    const selected = new Set(state.answers[question.id] || []);
+    if (question.id === 'assets' && target.value === 'all' && target.checked) selected.clear();
+    if (question.id === 'assets' && target.value !== 'all') selected.delete('all');
+    target.checked ? selected.add(target.value) : selected.delete(target.value);
+    state.answers[question.id] = [...selected];
+  } else state.answers[question.id] = target.value;
+  for (const field of question.details) if (!fieldVisible(field, state.answers)) delete state.answers[field.key];
+  persist();
+  updateQuestionSelection(question);
+  if (wasComplete) $('.header').outerHTML = header();
+}
 
+document.addEventListener('change', event => {
+  if (event.target.matches('#question-form input[type="radio"], #question-form input[type="checkbox"]')) saveQuestionInput(event.target);
+});
 document.addEventListener('input', event => {
-  if (event.target.dataset.detail) {
-    invalidateConversation();
-    if (state.complete) { state.complete = false; $('.header').outerHTML = header(); }
-    state.answers[event.target.dataset.detail] = event.target.value;
-    persist();
-  }
+  if (event.target.closest('#question-form') && (event.target.dataset.detail || event.target.dataset.answer) && !event.target.matches('[type="radio"], [type="checkbox"]')) saveQuestionInput(event.target);
   if (event.target.id === 'chat-input') { state.draft = event.target.value; persist(); $('.send-button').disabled = !agentConnected || sending || !state.draft.trim(); }
 });
 
@@ -395,8 +440,8 @@ document.addEventListener('submit', event => {
   if (event.target.id === 'question-form') {
     event.preventDefault();
     const question = QUESTIONS[state.step];
-    if (!isAnswered(question, state.answers)) { $('#question-error').textContent = question.type === 'multi' ? 'Choisissez au moins une réponse pour continuer.' : 'Choisissez une réponse pour continuer.'; $('#question-error').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); document.querySelector('#question-form input')?.focus({ preventScroll: true }); return; }
-    if (state.step < 7) { state.step++; persist(); render(); focusQuestion(); }
+    if (!isAnswered(question, state.answers)) { $('#question-error').textContent = question.type === 'number' ? 'Indiquez un montant valide, égal ou supérieur à zéro.' : 'Complétez la question et les champs requis pour continuer.'; $('#question-error').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); document.querySelector('#question-form input, #question-form textarea')?.focus({ preventScroll: true }); return; }
+    if (state.step < QUESTIONS.length - 1) { state.step++; persist(); render(); focusQuestion(); }
     else {
       const missing = QUESTIONS.findIndex(q => !isAnswered(q, state.answers));
       if (missing >= 0) { state.step = missing; persist(); render(); focusQuestion(); return; }

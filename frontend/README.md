@@ -14,9 +14,11 @@ npm.cmd start
 
 Aucune installation de dépendances et aucune compilation ne sont nécessaires. Le serveur écoute uniquement sur votre ordinateur (`127.0.0.1`). `Ctrl+C` l’arrête. Pour un autre port : `$env:PORT = '4174'; npm.cmd start`.
 
+Pour les tests de régression de l'interface uniquement : `npm.cmd ci`, puis `npm.cmd test` dans `plateforme/`. jsdom est une dépendance de développement ; le lancement du site reste sans dépendances externes. Les tests vérifient les choix, la conservation du DOM et du focus, les précisions, la progression et les illustrations SVG locales et les champs num?riques. Ils ne vérifient pas le rendu graphique d'un navigateur.
+
 ## Fonctionnement
 
-- Les huit questions et leurs choix proviennent du questionnaire fourni. Les réponses restent dans le stockage local du navigateur ; elles peuvent être exportées ou effacées depuis l’interface.
+- Les seize questions et leurs choix proviennent du questionnaire fourni. Les réponses restent dans le stockage local du navigateur ; elles peuvent être exportées ou effacées depuis l’interface.
 - Sans moteur configuré, le portefeuille affiché est un **exemple fixe et illustratif**, sans calcul de profil, sans cours de marché et sans recommandation personnalisée. Les réponses ne sont pas utilisées pour inventer une allocation.
 - Un moteur de portefeuille externe peut fournir une première recommandation après le questionnaire. Le site vérifie son contrat de réponse ; le moteur demeure responsable des calculs, des preuves et de sa validation de conformité.
 - L’agent n’est pas implémenté. Sans configuration, le site indique explicitement qu’il n’est pas connecté et conserve le brouillon localement.
@@ -51,8 +53,12 @@ frontend/
 
 ## Limite de raccordement au profil investisseur
 
-Le schéma existant `../docs/investor-profile-schema.json` attend notamment `risk_tolerance` parmi quatre valeurs et `investment_horizon_years` comme entier. Le questionnaire contient cinq choix de risque et des intervalles de durée. **Aucune correspondance n’a été inventée.** Le site transmet les réponses brutes, versionnées `rendements-seuls-v1`. L’équipe questionnaire/profil devra définir et valider l’adaptateur vers `InvestorProfile` avant toute recommandation réelle.
+Le schéma existant `../docs/investor-profile-schema.json` attend notamment `risk_tolerance` parmi quatre valeurs et `investment_horizon_years` comme entier. Le questionnaire contient cinq choix de risque et des intervalles de durée. **Aucune correspondance n’a été inventée.** Le site transmet les réponses brutes, versionnées `questionnaire-word-16-v2`. L’équipe questionnaire/profil devra définir et valider l’adaptateur vers `InvestorProfile` avant toute recommandation réelle.
 
 Simulation et prototype de présentation. Aucun conseil en placement et aucun ordre de transaction.
 
+<<<<<<< Updated upstream:frontend/README.md
 Le code Python est dans `../backend/src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Un backend doit adapter le questionnaire au contrat Python puis produire le contrat HTTP ci-dessus. Voir [l’architecture](../docs/architecture.md).
+=======
+La source exacte des 16 questions et le nouveau contrat sont d?crits dans [QUESTIONNAIRE_WORD.md](docs/QUESTIONNAIRE_WORD.md).
+>>>>>>> Stashed changes:plateforme/README.md

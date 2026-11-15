@@ -1,0 +1,608 @@
+{
+  "titre": "Questionnaire du profil investisseur",
+  "langue": "fr-CA",
+  "devise": "CAD",
+  "consignes": "Ce questionnaire recueille votre situation, vos objectifs et vos préférences pour préparer l’analyse de votre profil investisseur. Les montants peuvent être approximatifs.",
+  "avertissement": "Simulation éducative uniquement. Aucun rendement n’est garanti. Ce questionnaire ne remplace pas une analyse personnalisée par un professionnel autorisé.",
+  "questions": [
+    {
+      "numero": 1,
+      "id": "situation_conjugale",
+      "section": "Situation familiale",
+      "libelle": "Quelle est votre situation conjugale ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "situation_conjugale_1",
+          "libelle": "Je suis célibataire."
+        },
+        {
+          "id": "situation_conjugale_2",
+          "libelle": "Je suis marié(e) ou en union de fait."
+        },
+        {
+          "id": "situation_conjugale_3",
+          "libelle": "Je suis séparé(e), divorcé(e) ou veuf/veuve."
+        },
+        {
+          "id": "situation_conjugale_4",
+          "libelle": "Autre situation."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "situation_conjugale_autre",
+          "libelle": "Si autre, précisez si vous le souhaitez",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "situation_conjugale",
+            "option_id": "situation_conjugale_4"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "id": "personnes_a_charge",
+      "section": "Situation familiale",
+      "libelle": "Combien de personnes dépendent financièrement de vous ou sont sous votre responsabilité légale ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "aide": "Pensez aux enfants, aux proches que vous soutenez ou aux personnes sous votre tutelle. Aucun nom n’est nécessaire.",
+      "options": [
+        {
+          "id": "personnes_a_charge_1",
+          "libelle": "Aucune personne."
+        },
+        {
+          "id": "personnes_a_charge_2",
+          "libelle": "Une personne."
+        },
+        {
+          "id": "personnes_a_charge_3",
+          "libelle": "Deux personnes ou plus."
+        },
+        {
+          "id": "personnes_a_charge_4",
+          "libelle": "Autre situation."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "personnes_a_charge_autre",
+          "libelle": "Si autre, précisez si vous le souhaitez",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "personnes_a_charge",
+            "option_id": "personnes_a_charge_4"
+          }
+        },
+        {
+          "id": "partage_charges",
+          "libelle": "Si vous avez des personnes à charge, assumez-vous principalement ces dépenses ou les partagez-vous ?",
+          "type": "choix_unique",
+          "reponse": null,
+          "facultatif": true,
+          "options": [
+            {
+              "id": "principalement",
+              "libelle": "Je les assume principalement."
+            },
+            {
+              "id": "partagees",
+              "libelle": "Je les partage avec quelqu’un."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "id": "revenu_annuel",
+      "section": "Revenus",
+      "libelle": "Quel est votre revenu annuel personnel avant impôt ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "aide": "Incluez salaire, revenus de travail autonome, pension et autres revenus réguliers. Si vos revenus varient, indiquez une estimation annuelle.",
+      "options": [
+        {
+          "id": "revenu_annuel_1",
+          "libelle": "De 0 $ à moins de 50 000 $."
+        },
+        {
+          "id": "revenu_annuel_2",
+          "libelle": "De 50 000 $ à moins de 100 000 $."
+        },
+        {
+          "id": "revenu_annuel_3",
+          "libelle": "De 100 000 $ à moins de 150 000 $."
+        },
+        {
+          "id": "revenu_annuel_4",
+          "libelle": "150 000 $ ou plus."
+        },
+        {
+          "id": "revenu_annuel_5",
+          "libelle": "Autre situation."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "revenu_annuel_autre",
+          "libelle": "Si autre, précisez si vous le souhaitez",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "revenu_annuel",
+            "option_id": "revenu_annuel_5"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "id": "stabilite_revenus",
+      "section": "Revenus",
+      "libelle": "Vos revenus sont-ils prévisibles pour les douze prochains mois ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "aide": "Salaire, pension ou autres revenus réguliers peuvent être concernés.",
+      "options": [
+        {
+          "id": "stabilite_revenus_1",
+          "libelle": "Réguliers — Je prévois des revenus assez stables."
+        },
+        {
+          "id": "stabilite_revenus_2",
+          "libelle": "Variables — Ils changent d’un mois à l’autre, mais je peux les estimer."
+        },
+        {
+          "id": "stabilite_revenus_3",
+          "libelle": "Fragiles — Une baisse importante ou une interruption est possible."
+        },
+        {
+          "id": "stabilite_revenus_4",
+          "libelle": "Inconnus — Je ne sais pas encore."
+        }
+      ]
+    },
+    {
+      "numero": 5,
+      "id": "dettes",
+      "section": "Dettes et épargne disponible",
+      "libelle": "À combien estimez-vous le montant total de vos dettes actuelles ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "aide": "Indiquez le solde restant à rembourser, pas vos paiements mensuels. Incluez cartes et marges de crédit, prêts automobiles, étudiants et hypothécaires.",
+      "options": [
+        {
+          "id": "dettes_1",
+          "libelle": "Aucune dette."
+        },
+        {
+          "id": "dettes_2",
+          "libelle": "Plus de 0 $ à moins de 25 000 $."
+        },
+        {
+          "id": "dettes_3",
+          "libelle": "De 25 000 $ à moins de 100 000 $."
+        },
+        {
+          "id": "dettes_4",
+          "libelle": "100 000 $ ou plus."
+        },
+        {
+          "id": "dettes_5",
+          "libelle": "Autre situation."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "dettes_autre",
+          "libelle": "Si autre, précisez si vous le souhaitez",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "dettes",
+            "option_id": "dettes_5"
+          }
+        },
+        {
+          "id": "dette_hypothecaire",
+          "libelle": "Part approximative correspondant à un prêt hypothécaire, si applicable et connue",
+          "type": "montant",
+          "reponse": null,
+          "devise": "CAD",
+          "minimum": 0,
+          "facultatif": true
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "id": "fonds_urgence",
+      "section": "Dettes et épargne disponible",
+      "libelle": "Quel montant avez-vous actuellement de côté pour faire face aux imprévus ?",
+      "type": "montant",
+      "reponse": null,
+      "aide": "Votre fonds d’urgence correspond à l’argent rapidement accessible pour une dépense imprévue ou une interruption de revenu. N’incluez pas vos limites de crédit. Inscrivez 0 si vous n’avez pas encore de fonds d’urgence.",
+      "devise": "CAD",
+      "minimum": 0
+    },
+    {
+      "numero": 7,
+      "id": "objectif_investissement",
+      "section": "Objectifs et besoins de liquidités",
+      "libelle": "Quel est votre objectif principal pour cet investissement ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "objectif_investissement_1",
+          "libelle": "Préparer ma retraite — Constituer une épargne pour mes besoins futurs."
+        },
+        {
+          "id": "objectif_investissement_2",
+          "libelle": "Financer un projet précis — Par exemple, une propriété, des études ou un projet personnel."
+        },
+        {
+          "id": "objectif_investissement_3",
+          "libelle": "Développer mon patrimoine — Faire croître mon épargne sans projet de dépense précis pour le moment."
+        },
+        {
+          "id": "objectif_investissement_4",
+          "libelle": "Autre objectif — Par exemple, obtenir un complément de revenu."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "objectif_details",
+          "libelle": "Si projet précis ou autre objectif, précisez si vous le souhaitez",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true
+        },
+        {
+          "id": "objectif_montant",
+          "libelle": "Montant que vous aimeriez atteindre, si connu",
+          "type": "montant",
+          "reponse": null,
+          "devise": "CAD",
+          "minimum": 0,
+          "facultatif": true
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "id": "horizon",
+      "section": "Objectifs et besoins de liquidités",
+      "libelle": "Quel est votre horizon de placement ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "horizon_1",
+          "libelle": "1 à 2 ans."
+        },
+        {
+          "id": "horizon_2",
+          "libelle": "5 ans."
+        },
+        {
+          "id": "horizon_3",
+          "libelle": "10 ans."
+        },
+        {
+          "id": "horizon_4",
+          "libelle": "15 ans et plus."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "delai_retrait",
+          "libelle": "Quand pourriez-vous avoir besoin de retirer une partie importante de cet argent ?",
+          "type": "choix_unique",
+          "reponse": null,
+          "options": [
+            {
+              "id": "moins_1_an",
+              "libelle": "Moins d’un an."
+            },
+            {
+              "id": "1_3_ans",
+              "libelle": "De 1 à 3 ans."
+            },
+            {
+              "id": "4_6_ans",
+              "libelle": "De 4 à 6 ans."
+            },
+            {
+              "id": "7_ans_plus",
+              "libelle": "7 ans ou plus."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "numero": 9,
+      "id": "besoin_imprevu",
+      "section": "Objectifs et besoins de liquidités",
+      "libelle": "Si vous aviez une dépense imprévue importante, devriez-vous utiliser cet investissement ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "besoin_imprevu_1",
+          "libelle": "Non."
+        },
+        {
+          "id": "besoin_imprevu_2",
+          "libelle": "En partie."
+        },
+        {
+          "id": "besoin_imprevu_3",
+          "libelle": "Oui."
+        },
+        {
+          "id": "besoin_imprevu_4",
+          "libelle": "Je ne sais pas."
+        }
+      ]
+    },
+    {
+      "numero": 10,
+      "id": "tolerance_risque",
+      "section": "Tolérance au risque",
+      "libelle": "Quelle est votre tolérance au risque ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "tolerance_risque_1",
+          "libelle": "Très basse."
+        },
+        {
+          "id": "tolerance_risque_2",
+          "libelle": "Basse."
+        },
+        {
+          "id": "tolerance_risque_3",
+          "libelle": "Moyenne."
+        },
+        {
+          "id": "tolerance_risque_4",
+          "libelle": "Élevée."
+        },
+        {
+          "id": "tolerance_risque_5",
+          "libelle": "Très élevée."
+        }
+      ],
+      "aide": "La tolérance au risque décrit votre aisance face aux fluctuations et aux pertes possibles. Elle est distincte de votre capacité financière à supporter ces pertes."
+    },
+    {
+      "numero": 11,
+      "id": "reaction_baisse",
+      "section": "Tolérance au risque",
+      "libelle": "Si 10 000 $ investis devenaient, sur une période de 3 mois, 8 000 $, quel en serait l’effet sur votre perception de la bourse ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "aide": "Mise en situation fictive. La valeur du placement diminue de 2 000 $.",
+      "options": [
+        {
+          "id": "reaction_baisse_1",
+          "libelle": "Inquiet — Je perdrais confiance et voudrais retirer mon argent."
+        },
+        {
+          "id": "reaction_baisse_2",
+          "libelle": "Hésitant — Je serais stressé et aurais besoin de conseils avant de décider."
+        },
+        {
+          "id": "reaction_baisse_3",
+          "libelle": "Préoccupé — La baisse me dérangerait, mais je pourrais rester investi si le portefeuille me convient toujours."
+        },
+        {
+          "id": "reaction_baisse_4",
+          "libelle": "Serein — J’accepte que de fortes baisses puissent arriver. Je pourrais rester investi, même sans savoir quand ni si la valeur remontera."
+        }
+      ]
+    },
+    {
+      "numero": 12,
+      "id": "connaissances",
+      "section": "Connaissances et préférences de placement",
+      "libelle": "Comment décririez-vous vos connaissances en placement ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "connaissances_1",
+          "libelle": "Débutant — Je découvre les placements et les marchés financiers."
+        },
+        {
+          "id": "connaissances_2",
+          "libelle": "Quelques connaissances — Je connais les principaux types de placements."
+        },
+        {
+          "id": "connaissances_3",
+          "libelle": "Bonne compréhension — Je comprends leurs risques et les principes de diversification."
+        },
+        {
+          "id": "connaissances_4",
+          "libelle": "Expérience approfondie — Je connais plusieurs produits et suis régulièrement les marchés."
+        }
+      ]
+    },
+    {
+      "numero": 13,
+      "id": "secteurs",
+      "section": "Connaissances et préférences de placement",
+      "libelle": "Quels secteurs vous intéressent particulièrement ?",
+      "type": "choix_multiple",
+      "reponse": null,
+      "options": [
+        {
+          "id": "secteurs_1",
+          "libelle": "Technologie — Informatique, logiciels et semi-conducteurs."
+        },
+        {
+          "id": "secteurs_2",
+          "libelle": "Santé — Médicaments, soins de santé et biotechnologie."
+        },
+        {
+          "id": "secteurs_3",
+          "libelle": "Finance — Banques, assurances et services financiers."
+        },
+        {
+          "id": "secteurs_4",
+          "libelle": "Énergie — Pétrole et gaz."
+        },
+        {
+          "id": "secteurs_5",
+          "libelle": "Immobilier — Via un FNB immobilier."
+        },
+        {
+          "id": "secteurs_6",
+          "libelle": "Industrie — Transport, aéronautique et équipements industriels."
+        },
+        {
+          "id": "secteurs_7",
+          "libelle": "Consommation — Alimentation, commerce et biens de consommation."
+        },
+        {
+          "id": "secteurs_8",
+          "libelle": "Communications — Télécommunications, médias et divertissement."
+        },
+        {
+          "id": "secteurs_9",
+          "libelle": "Services aux collectivités — Services publics."
+        }
+      ]
+    },
+    {
+      "numero": 14,
+      "id": "classes_actifs",
+      "section": "Connaissances et préférences de placement",
+      "libelle": "Quelles sont les classes d’actifs qui vous intéressent le plus ?",
+      "type": "choix_multiple",
+      "reponse": null,
+      "options": [
+        {
+          "id": "classes_actifs_1",
+          "libelle": "Actions — Titres de sociétés canadiennes et américaines."
+        },
+        {
+          "id": "classes_actifs_2",
+          "libelle": "FNB d’actions — Fonds diversifiés ou sectoriels."
+        },
+        {
+          "id": "classes_actifs_3",
+          "libelle": "Revenu fixe — Via des FNB obligataires."
+        },
+        {
+          "id": "classes_actifs_4",
+          "libelle": "Immobilier et matières premières — Via des fonds cotés."
+        },
+        {
+          "id": "classes_actifs_5",
+          "libelle": "Cryptoactifs — Bitcoin, Ether, XRP, Litecoin et Bitcoin Cash."
+        },
+        {
+          "id": "classes_actifs_6",
+          "libelle": "Contrats à terme sur matières premières — Pétrole, gaz, or, argent et cuivre."
+        },
+        {
+          "id": "classes_actifs_7",
+          "libelle": "Devises — Paires de devises, dont EUR/USD et USD/CAD."
+        },
+        {
+          "id": "classes_actifs_8",
+          "libelle": "Toutes les catégories ci-dessus."
+        }
+      ],
+      "consigne": "Si vous cochez « Toutes les catégories ci-dessus », il n’est pas nécessaire de cocher les autres choix.",
+      "option_toutes_id": "classes_actifs_8",
+      "champs_complementaires": [
+        {
+          "id": "crypto_details",
+          "libelle": "Si cryptoactifs, vos précisions facultatives",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "classes_actifs",
+            "option_ids": [
+              "classes_actifs_5",
+              "classes_actifs_8"
+            ],
+            "operateur": "au_moins_une"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 15,
+      "id": "exclusions",
+      "section": "Exclusions et précisions complémentaires",
+      "libelle": "Y a-t-il des placements ou des activités que vous ne voulez pas dans votre portefeuille ?",
+      "type": "choix_unique",
+      "reponse": null,
+      "options": [
+        {
+          "id": "exclusions_1",
+          "libelle": "Aucune — Je n’ai aucune exclusion particulière."
+        },
+        {
+          "id": "exclusions_2",
+          "libelle": "Limites — Oui, je veux exclure certains placements ou certaines activités."
+        },
+        {
+          "id": "exclusions_3",
+          "libelle": "Discussion — J’aimerais comprendre les possibilités avant de préciser mes limites."
+        }
+      ],
+      "champs_complementaires": [
+        {
+          "id": "exclusions_details",
+          "libelle": "Si limites ou discussion, vos précisions facultatives",
+          "type": "texte_libre",
+          "reponse": null,
+          "facultatif": true,
+          "afficher_si": {
+            "question_id": "exclusions",
+            "option_ids": [
+              "exclusions_2",
+              "exclusions_3"
+            ],
+            "operateur": "au_moins_une"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 16,
+      "id": "precisions_finales",
+      "section": "Exclusions et précisions complémentaires",
+      "libelle": "Avez-vous d’autres précisions à apporter pour nous aider à comprendre votre situation ?",
+      "type": "texte_libre",
+      "reponse": null,
+      "aide": "Vous pouvez préciser un projet à venir, une dépense importante, un changement familial ou professionnel, une contrainte ou une préoccupation concernant vos placements. N’inscrivez aucun numéro de compte ni renseignement bancaire confidentiel. Réponse facultative.",
+      "facultatif": true,
+      "champ_rien_a_ajouter": {
+        "id": "rien_a_ajouter",
+        "libelle": "Je n’ai rien à ajouter.",
+        "type": "booleen",
+        "reponse": null
+      }
+    }
+  ]
+}

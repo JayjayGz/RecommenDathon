@@ -1,0 +1,3937 @@
+{
+  "method": "friday-1600-toronto-last-observed-v1",
+  "requested_start": "2016-01-01",
+  "as_of": "2026-11-15",
+  "timezone": "America/Toronto",
+  "label": "Dernier cours hebdomadaire",
+  "price_methods": {
+    "shares_etfs": "last available regular-session close in the Friday-ending week",
+    "crypto": "Bitstamp published hourly close for the candle ending Friday 16:00 America/Toronto; DST handled",
+    "other_markets": "last daily Close published by Yahoo in the Friday-ending week"
+  },
+  "previous": {
+    "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\top100_hebdo_2016_complet.csv",
+    "sha256": "a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034",
+    "rows": 69400,
+    "preserved_backups": [
+      "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+      "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv",
+      "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\top100_hebdo_2016_complet.moyennes_a977af97.csv"
+    ]
+  },
+  "inputs": {
+    "C:\\Users\\alibe\\Downloads\\asset_selection.csv": "34618d92e70fdc8522ced70c4e48a2dd7ffa04dbc2476728e4d768769f4ab94a",
+    "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\download_manifest.json": "b94f3fdf228935bb2cab8ec3ae0d7de195ae161820274a41b8209459d1aab908",
+    "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_bitstamp\\download_manifest.json": "8cced341fd2eae85ab3420c18a7a19570766ca34fa9529377868f4ff829f4786"
+  },
+  "sources": {
+    "yahoo": "Yahoo Finance Chart API; daily interval; unmodified JSON responses",
+    "crypto": "Bitstamp official public OHLC API"
+  },
+  "other_markets_policy": "official-close",
+  "official_daily_close_tickers": [
+    "AUDUSD=X",
+    "CL=F",
+    "EURUSD=X",
+    "GBPUSD=X",
+    "GC=F",
+    "HG=F",
+    "NG=F",
+    "SI=F",
+    "USDCAD=X",
+    "USDJPY=X"
+  ],
+  "total_rows": 71072,
+  "tickers": 127,
+  "selected_tickers": 34,
+  "selection_covered": 34,
+  "verified_close_rows": 71072,
+  "missing_close_rows": 0,
+  "crypto_source_zero_volume_hourly_rows": 2077,
+  "crypto_selected_zero_volume_candles": 10,
+  "crypto_last_bar_lag_hours_max": 0.0,
+  "source_ohlc_bounds_findings": [
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2016-07-22",
+      "open": 0.7505817413330078,
+      "high": 0.7506380081176758,
+      "low": 0.7443799376487732,
+      "close": 0.7506943941116333,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 145
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2016-08-19",
+      "open": 0.767754316329956,
+      "high": 0.767754316329956,
+      "low": 0.7600516676902771,
+      "close": 0.7678722143173218,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 165
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2018-03-23",
+      "open": 0.7698229551315308,
+      "high": 0.7742934823036194,
+      "low": 0.7696393132209778,
+      "close": 0.7693490982055664,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 580
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2018-04-13",
+      "open": 0.7761203050613403,
+      "high": 0.7811279296875,
+      "low": 0.7760360240936279,
+      "close": 0.7757349610328674,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 595
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2020-02-07",
+      "open": 0.6732193231582642,
+      "high": 0.6732646822929382,
+      "low": 0.6662700176239014,
+      "close": 0.6733997464179993,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1070
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2020-11-20",
+      "open": 0.7271299362182617,
+      "high": 0.7324998378753662,
+      "low": 0.7271299362182617,
+      "close": 0.7269100546836853,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1275
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2022-03-11",
+      "open": 0.7365397214889526,
+      "high": 0.7365701198577881,
+      "low": 0.7304602265357971,
+      "close": 0.7365999817848206,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1615
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2022-06-17",
+      "open": 0.704049825668335,
+      "high": 0.704020082950592,
+      "low": 0.6898198127746582,
+      "close": 0.704049825668335,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1685
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2023-02-03",
+      "open": 0.7074687480926514,
+      "high": 0.7074001431465149,
+      "low": 0.693341851234436,
+      "close": 0.7074687480926514,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1850
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2023-04-21",
+      "open": 0.6743178963661194,
+      "high": 0.6743001937866211,
+      "low": 0.6678599119186401,
+      "close": 0.6743178963661194,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1905
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2023-07-28",
+      "open": 0.6711859703063965,
+      "high": 0.6710999608039856,
+      "low": 0.6623802185058594,
+      "close": 0.6711859703063965,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 1975
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2024-03-15",
+      "open": 0.6579297780990601,
+      "high": 0.657912015914917,
+      "low": 0.6553294658660889,
+      "close": 0.6579297780990601,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2140
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-06-13",
+      "open": 0.6527500152587891,
+      "high": 0.6527500152587891,
+      "low": 0.645999014377594,
+      "close": 0.6527999043464661,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2465
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-07-11",
+      "open": 0.6593696475028992,
+      "high": 0.6593783497810364,
+      "low": 0.6557807326316833,
+      "close": 0.6594000458717346,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2485
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-12-05",
+      "open": 0.6607419848442078,
+      "high": 0.6648799180984497,
+      "low": 0.6607101559638977,
+      "close": 0.660641610622406,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2590
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2026-05-22",
+      "open": 0.7145301699638367,
+      "high": 0.7147298455238342,
+      "low": 0.7117401957511902,
+      "close": 0.7148299813270569,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2710
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2026-07-24",
+      "open": 0.6967999935150146,
+      "high": 0.7000800967216492,
+      "low": 0.6967999935150146,
+      "close": 0.6967198848724365,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2755
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2026-08-21",
+      "open": 0.7120680809020996,
+      "high": 0.717875063419342,
+      "low": 0.7120680809020996,
+      "close": 0.7119398713111877,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2775
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2026-10-16",
+      "open": 0.6918787360191345,
+      "high": 0.697009801864624,
+      "low": 0.6918787360191345,
+      "close": 0.6918500065803528,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\AUDUSD%3DX.json",
+      "source_index": 2815
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2016-04-29",
+      "open": 1.1357957124710083,
+      "high": 1.1460003852844238,
+      "low": 1.1357957124710083,
+      "close": 1.135589361190796,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 85
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2017-03-10",
+      "open": 1.058133840560913,
+      "high": 1.0669056177139282,
+      "low": 1.058133840560913,
+      "close": 1.0578428506851196,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 310
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2018-06-29",
+      "open": 1.15644371509552,
+      "high": 1.1682379245758057,
+      "low": 1.15644371509552,
+      "close": 1.1562966108322144,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 650
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2019-08-30",
+      "open": 1.1059622764587402,
+      "high": 1.106096863746643,
+      "low": 1.0987199544906616,
+      "close": 1.1061947345733643,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 955
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2020-09-11",
+      "open": 1.1826202869415283,
+      "high": 1.1876484155654907,
+      "low": 1.1825922727584839,
+      "close": 1.1824384927749634,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 1225
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2022-04-29",
+      "open": 1.0504201650619507,
+      "high": 1.0590416193008423,
+      "low": 1.0505415201187134,
+      "close": 1.0504201650619507,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 1650
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2024-08-16",
+      "open": 1.0972732305526733,
+      "high": 1.1004369258880615,
+      "low": 1.0973695516586304,
+      "close": 1.0972732305526733,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 2250
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2025-04-18",
+      "open": 1.1396790742874146,
+      "high": 1.1396400928497314,
+      "low": 1.13413405418396,
+      "close": 1.1396790742874146,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 2424
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2026-05-22",
+      "open": 1.1615750789642334,
+      "high": 1.1618449687957764,
+      "low": 1.1589365005493164,
+      "close": 1.1621150970458984,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\EURUSD%3DX.json",
+      "source_index": 2710
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2016-04-22",
+      "open": 1.4326647520065308,
+      "high": 1.4450867176055908,
+      "low": 1.4323979616165161,
+      "close": 1.432295322418213,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 80
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2016-08-19",
+      "open": 1.3163090944290161,
+      "high": 1.3163090944290161,
+      "low": 1.3024225234985352,
+      "close": 1.3166556358337402,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 165
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2017-01-06",
+      "open": 1.2423903942108154,
+      "high": 1.2423903942108154,
+      "low": 1.2303149700164795,
+      "close": 1.2425447702407837,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 265
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2017-05-26",
+      "open": 1.2929919958114624,
+      "high": 1.2931592464447021,
+      "low": 1.2779062986373901,
+      "close": 1.293326497077942,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 365
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2017-06-16",
+      "open": 1.2760798931121826,
+      "high": 1.2802950143814087,
+      "low": 1.2759984731674194,
+      "close": 1.275835633277893,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 380
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2018-12-14",
+      "open": 1.265390396118164,
+      "high": 1.265390396118164,
+      "low": 1.2534940242767334,
+      "close": 1.2655024528503418,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 770
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2020-04-03",
+      "open": 1.2391880750656128,
+      "high": 1.2394031286239624,
+      "low": 1.2207329273223877,
+      "close": 1.2394952774047852,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1110
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2020-05-01",
+      "open": 1.25809907913208,
+      "high": 1.25809907913208,
+      "low": 1.2504063844680786,
+      "close": 1.2581465244293213,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1130
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2020-11-20",
+      "open": 1.3250473737716675,
+      "high": 1.3295574188232422,
+      "low": 1.324959635734558,
+      "close": 1.3249244689941406,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1275
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2022-04-01",
+      "open": 1.314578652381897,
+      "high": 1.3146132230758667,
+      "low": 1.308866262435913,
+      "close": 1.314699649810791,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1630
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2022-04-29",
+      "open": 1.2468050718307495,
+      "high": 1.258352279663086,
+      "low": 1.2467273473739624,
+      "close": 1.2463854551315308,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1650
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2022-06-17",
+      "open": 1.2350252866744995,
+      "high": 1.2350252866744995,
+      "low": 1.2174040079116821,
+      "close": 1.2354830503463745,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 1685
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2023-09-22",
+      "open": 1.2292109727859497,
+      "high": 1.2292261123657227,
+      "low": 1.2234361171722412,
+      "close": 1.2294225692749023,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 2015
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2024-07-05",
+      "open": 1.2756078243255615,
+      "high": 1.2813777923583984,
+      "low": 1.2756078243255615,
+      "close": 1.2755752801895142,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 2220
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2024-07-19",
+      "open": 1.294967770576477,
+      "high": 1.294967770576477,
+      "low": 1.2901561260223389,
+      "close": 1.2951691150665283,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 2230
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-05-23",
+      "open": 1.3421378135681152,
+      "high": 1.3533447980880737,
+      "low": 1.3419395685195923,
+      "close": 1.3419216871261597,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 2450
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-09-12",
+      "open": 1.3574045896530151,
+      "high": 1.3576072454452515,
+      "low": 1.3525211811065674,
+      "close": 1.3576626777648926,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\GBPUSD%3DX.json",
+      "source_index": 2530
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2019-05-17",
+      "open": 2.759999990463257,
+      "high": 2.750499963760376,
+      "low": 2.740000009536743,
+      "close": 2.747999906539917,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\HG%3DF.json",
+      "source_index": 848
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2016-08-19",
+      "open": 1.2778199911117554,
+      "high": 1.2891199588775635,
+      "low": 1.2777800559997559,
+      "close": 1.2775800228118896,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 165
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2017-04-14",
+      "open": 1.3336199522018433,
+      "high": 1.3336199522018433,
+      "low": 1.3309600353240967,
+      "close": 1.3336399793624878,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 335
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2018-08-31",
+      "open": 1.298609972000122,
+      "high": 1.3085399866104126,
+      "low": 1.2985999584197998,
+      "close": 1.2985899448394775,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 695
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2018-10-26",
+      "open": 1.3072400093078613,
+      "high": 1.315619945526123,
+      "low": 1.3072400093078613,
+      "close": 1.307070016860962,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 735
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2018-11-09",
+      "open": 1.3144500255584717,
+      "high": 1.322849988937378,
+      "low": 1.3144500255584717,
+      "close": 1.3142800331115723,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 745
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2020-09-04",
+      "open": 1.3133000135421753,
+      "high": 1.3138999938964844,
+      "low": 1.3078500032424927,
+      "close": 1.3139699697494507,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 1220
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2020-11-20",
+      "open": 1.3085099458694458,
+      "high": 1.3085099458694458,
+      "low": 1.3039499521255493,
+      "close": 1.3085700273513794,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 1275
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2022-01-07",
+      "open": 1.2726900577545166,
+      "high": 1.2729599475860596,
+      "low": 1.2642600536346436,
+      "close": 1.2730200290679932,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 1570
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2023-02-03",
+      "open": 1.3316600322723389,
+      "high": 1.3422600030899048,
+      "low": 1.3316999673843384,
+      "close": 1.3316600322723389,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 1850
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2023-12-01",
+      "open": 1.3556499481201172,
+      "high": 1.3554600477218628,
+      "low": 1.3494000434875488,
+      "close": 1.3556499481201172,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2065
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-05-23",
+      "open": 1.3858000040054321,
+      "high": 1.3857799768447876,
+      "low": 1.3752599954605103,
+      "close": 1.3858000040054321,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2450
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-12-05",
+      "open": 1.3959200382232666,
+      "high": 1.3959200382232666,
+      "low": 1.3853700160980225,
+      "close": 1.3959699869155884,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2590
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2026-05-22",
+      "open": 1.3779799938201904,
+      "high": 1.382099986076355,
+      "low": 1.3779799938201904,
+      "close": 1.3775899410247803,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2710
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2026-08-21",
+      "open": 1.378000020980835,
+      "high": 1.3781299591064453,
+      "low": 1.3732600212097168,
+      "close": 1.3781399726867676,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2775
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2026-10-30",
+      "open": 1.3983999490737915,
+      "high": 1.3983999490737915,
+      "low": 1.3941600322723389,
+      "close": 1.3986400365829468,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDCAD%3DX.json",
+      "source_index": 2825
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2017-06-09",
+      "open": 109.91200256347656,
+      "high": 110.78700256347656,
+      "low": 109.91200256347656,
+      "close": 109.85900115966797,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 375
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2017-07-07",
+      "open": 113.16500091552734,
+      "high": 114.16799926757812,
+      "low": 113.16500091552734,
+      "close": 113.14900207519531,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 395
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2017-11-24",
+      "open": 111.25900268554688,
+      "high": 111.5719985961914,
+      "low": 111.25900268554688,
+      "close": 111.25399780273438,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 495
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2018-04-13",
+      "open": 107.27999877929688,
+      "high": 107.77400207519531,
+      "low": 107.25900268554688,
+      "close": 107.22200012207031,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 595
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2018-06-01",
+      "open": 108.76499938964844,
+      "high": 109.72000122070312,
+      "low": 108.76200103759766,
+      "close": 108.7490005493164,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 630
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2018-10-19",
+      "open": 112.21099853515625,
+      "high": 112.62300109863281,
+      "low": 112.1989974975586,
+      "close": 112.18499755859375,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 730
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2019-03-01",
+      "open": 111.37100219726562,
+      "high": 111.97599792480469,
+      "low": 111.37100219726562,
+      "close": 111.35700225830078,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 825
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2019-04-12",
+      "open": 111.64900207519531,
+      "high": 112.0199966430664,
+      "low": 111.63500213623047,
+      "close": 111.62100219726562,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 855
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2019-07-05",
+      "open": 107.81400299072266,
+      "high": 108.61299896240234,
+      "low": 107.80899810791016,
+      "close": 107.80799865722656,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 915
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-02-28",
+      "open": 109.65799713134766,
+      "high": 109.65799713134766,
+      "low": 107.77799987792969,
+      "close": 109.66000366210938,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1085
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-03-13",
+      "open": 104.70899963378906,
+      "high": 107.47100067138672,
+      "low": 104.69100189208984,
+      "close": 104.61000061035156,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1095
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-04-17",
+      "open": 107.93399810791016,
+      "high": 107.94300079345703,
+      "low": 107.30599975585938,
+      "close": 107.94499969482422,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1120
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-07-24",
+      "open": 106.83599853515625,
+      "high": 106.83599853515625,
+      "low": 105.75900268554688,
+      "close": 106.83799743652344,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1190
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-09-04",
+      "open": 106.09100341796875,
+      "high": 106.49500274658203,
+      "low": 106.09100341796875,
+      "close": 106.08599853515625,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1220
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-10-23",
+      "open": 104.90699768066406,
+      "high": 104.90699768066406,
+      "low": 104.55000305175781,
+      "close": 104.9209976196289,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1255
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2020-12-11",
+      "open": 104.16799926757812,
+      "high": 104.16799926757812,
+      "low": 103.82599639892578,
+      "close": 104.18199920654297,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1290
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2022-04-29",
+      "open": 130.81100463867188,
+      "high": 130.80999755859375,
+      "low": 129.4600067138672,
+      "close": 130.81100463867188,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1650
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2022-06-10",
+      "open": 134.41799926757812,
+      "high": 134.38099670410156,
+      "low": 133.38699340820312,
+      "close": 134.41799926757812,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1680
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2022-08-19",
+      "open": 135.7949981689453,
+      "high": 137.1999969482422,
+      "low": 135.83399963378906,
+      "close": 135.7949981689453,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1730
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2023-06-09",
+      "open": 138.86300659179688,
+      "high": 139.71499633789062,
+      "low": 138.89999389648438,
+      "close": 138.86300659179688,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 1940
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2023-10-06",
+      "open": 148.46299743652344,
+      "high": 149.48800659179688,
+      "low": 148.46499633789062,
+      "close": 148.46299743652344,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2025
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2023-10-20",
+      "open": 149.802001953125,
+      "high": 149.99200439453125,
+      "low": 149.80499267578125,
+      "close": 149.802001953125,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2035
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2023-11-03",
+      "open": 150.4969940185547,
+      "high": 150.4929962158203,
+      "low": 149.25900268554688,
+      "close": 150.4969940185547,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2045
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2024-12-13",
+      "open": 152.58700561523438,
+      "high": 153.77099609375,
+      "low": 152.60000610351562,
+      "close": 152.58700561523438,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2335
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-02-21",
+      "open": 149.4080047607422,
+      "high": 150.73500061035156,
+      "low": 149.41099548339844,
+      "close": 149.4080047607422,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2385
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-03-21",
+      "open": 148.5959930419922,
+      "high": 149.6510009765625,
+      "low": 148.5970001220703,
+      "close": 148.5959930419922,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2405
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-06-06",
+      "open": 143.54200744628906,
+      "high": 145.0749969482422,
+      "low": 143.5449981689453,
+      "close": 143.54200744628906,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2460
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-10-03",
+      "open": 147.14999389648438,
+      "high": 147.81100463867188,
+      "low": 147.17100524902344,
+      "close": 147.14999389648438,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2545
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2026-01-09",
+      "open": 156.89599609375,
+      "high": 158.16099548339844,
+      "low": 156.88499450683594,
+      "close": 156.8800048828125,
+      "source_path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\sources_yahoo\\USDJPY%3DX.json",
+      "source_index": 2615
+    }
+  ],
+  "discarded_empty_daily_source_rows": [
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2017-07-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2017-11-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2019-05-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-04-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "CL=F",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "CL=F",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "CL=F",
+      "date": "2023-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "CL=F",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "CL=F",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2017-07-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2017-11-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2019-05-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2025-04-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "EURUSD=X",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2017-07-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2017-11-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2019-05-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-04-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GC=F",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GC=F",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GC=F",
+      "date": "2018-01-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GC=F",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "GC=F",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2018-01-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "HG=F",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "NG=F",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "NG=F",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "NG=F",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "NG=F",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2018-01-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2023-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "SI=F",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2017-07-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2017-11-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2019-05-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-04-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDCAD=X",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2017-07-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2017-11-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2019-05-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-04-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "USDJPY=X",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-07-17",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-08-11",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-09-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-10-09",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-11-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2017-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-01-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-01-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-01-08",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-02-12",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-03-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-04-30",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-05-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-05-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-09-17",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-09-24",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-10-08",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-12-24",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^N225",
+      "date": "2018-12-31",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-03-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-05-30",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-09-05",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-11-24",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2016-12-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-01-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-01-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-02-20",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-04-14",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-05-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-09-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2017-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-01-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-02-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-03-30",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-05-28",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-09-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-11-22",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-12-05",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2018-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-01-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-02-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-04-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-05-27",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-09-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-11-28",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2019-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-01-20",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-02-17",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-04-10",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-05-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-07-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-09-07",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-11-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2020-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-01-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-02-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-04-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-05-31",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-07-05",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-09-06",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-11-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2021-12-24",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-01-17",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-02-21",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-04-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-05-30",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-06-20",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-09-05",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-11-24",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2022-12-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-01-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-01-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-02-20",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-04-07",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-05-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-09-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-11-23",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2023-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-01-15",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-02-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-03-29",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-05-27",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-09-02",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-11-28",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2024-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-01-09",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-01-20",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-02-17",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-04-18",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-05-26",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-07-04",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-09-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-11-27",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2025-12-25",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-01-01",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-01-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-02-16",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-04-03",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-06-19",
+      "reason": "Source has no OHLC observations"
+    },
+    {
+      "ticker": "^VIX",
+      "date": "2026-07-03",
+      "reason": "Source has no OHLC observations"
+    }
+  ],
+  "coverage": [
+    {
+      "ticker": "AAPL",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ABBV",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ADBE",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "AGG",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "AMD",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "AMZN",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ARKK",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ATD.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "AUDUSD=X",
+      "kind": "CURRENCY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 1,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "BA",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "BAC",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "BCH-USD",
+      "kind": "CRYPTOCURRENCY",
+      "currency": "USD",
+      "provider": "Bitstamp official exchange API",
+      "rows": 467,
+      "verified_prices": 467,
+      "missing_prices": 0,
+      "first_price_week": "2017-12-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 101,
+      "price_method": "crypto_hourly_close",
+      "prior_session_rows": 0,
+      "crypto_missing_adjusted_close": true
+    },
+    {
+      "ticker": "BND",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "BRK-B",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "BTC-USD",
+      "kind": "CRYPTOCURRENCY",
+      "currency": "USD",
+      "provider": "Bitstamp official exchange API",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "crypto_hourly_close",
+      "prior_session_rows": 0,
+      "crypto_missing_adjusted_close": true
+    },
+    {
+      "ticker": "CAT",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CL=F",
+      "kind": "FUTURE",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CNR.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "COST",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CRM",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CSCO",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CSU.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CVX",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "DBC",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "DIA",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "DIS",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "EEM",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "EFA",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ENB.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ESGV",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 426,
+      "verified_prices": 426,
+      "missing_prices": 0,
+      "first_price_week": "2018-09-21",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 142,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 15,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ETH-USD",
+      "kind": "CRYPTOCURRENCY",
+      "currency": "USD",
+      "provider": "Bitstamp official exchange API",
+      "rows": 483,
+      "verified_prices": 483,
+      "missing_prices": 0,
+      "first_price_week": "2017-08-18",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 85,
+      "price_method": "crypto_hourly_close",
+      "prior_session_rows": 0,
+      "crypto_missing_adjusted_close": true
+    },
+    {
+      "ticker": "EURUSD=X",
+      "kind": "CURRENCY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 1,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "EWJ",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "EWZ",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "FTS.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "FXI",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "kind": "CURRENCY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 1,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GC=F",
+      "kind": "FUTURE",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GDX",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GLD",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GOOGL",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "GS",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "HD",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "HG=F",
+      "kind": "FUTURE",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "HYG",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "IBM",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "IEF",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "IEMG",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "INTC",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "IVV",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "IWM",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "JNJ",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "JPM",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "KO",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "LLY",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "LQD",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "LTC-USD",
+      "kind": "CRYPTOCURRENCY",
+      "currency": "USD",
+      "provider": "Bitstamp official exchange API",
+      "rows": 492,
+      "verified_prices": 492,
+      "missing_prices": 0,
+      "first_price_week": "2017-06-16",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 76,
+      "price_method": "crypto_hourly_close",
+      "prior_session_rows": 0,
+      "crypto_missing_adjusted_close": true
+    },
+    {
+      "ticker": "MA",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "MCD",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "META",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "MRK",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "MSFT",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "NFLX",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "NG=F",
+      "kind": "FUTURE",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "NKE",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "NVDA",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ORCL",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "PEP",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "PFE",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "PG",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "QCOM",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "QQQ",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "RY.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SBUX",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SCHD",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SHOP.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SI=F",
+      "kind": "FUTURE",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SLV",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SMH",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "SPY",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "T",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "TD.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "TLT",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "TSLA",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "UNH",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "URTH",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "USDCAD=X",
+      "kind": "CURRENCY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 1,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "USDJPY=X",
+      "kind": "CURRENCY",
+      "currency": "JPY",
+      "provider": "Yahoo Finance",
+      "rows": 568,
+      "verified_prices": 568,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-01",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 0,
+      "price_method": "official_daily_close",
+      "prior_session_rows": 1,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "V",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VBAL.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 459,
+      "verified_prices": 459,
+      "missing_prices": 0,
+      "first_price_week": "2018-02-02",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 109,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 13,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VCNS.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 459,
+      "verified_prices": 459,
+      "missing_prices": 0,
+      "first_price_week": "2018-02-02",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 109,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 13,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VDY.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VEA",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VFV.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VGRO.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 459,
+      "verified_prices": 459,
+      "missing_prices": 0,
+      "first_price_week": "2018-02-02",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 109,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 13,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VNQ",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VOO",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VTI",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VWO",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "VZ",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "WFC",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "WMT",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XBI",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XEC.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XEF.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XESG.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 398,
+      "verified_prices": 398,
+      "missing_prices": 0,
+      "first_price_week": "2019-04-05",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 170,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 12,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XIC.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XIT.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XLE",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XLF",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XLK",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XLV",
+      "kind": "ETF",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XOM",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XRB.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XRP-USD",
+      "kind": "CRYPTOCURRENCY",
+      "currency": "USD",
+      "provider": "Bitstamp official exchange API",
+      "rows": 518,
+      "verified_prices": 518,
+      "missing_prices": 0,
+      "first_price_week": "2016-12-16",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 50,
+      "price_method": "crypto_hourly_close",
+      "prior_session_rows": 0,
+      "crypto_missing_adjusted_close": true
+    },
+    {
+      "ticker": "XSB.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XWD.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ZAG.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "ZST.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "^DJI",
+      "kind": "INDEX",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "^GSPC",
+      "kind": "INDEX",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "^IXIC",
+      "kind": "INDEX",
+      "currency": "USD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 18,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "^N225",
+      "kind": "INDEX",
+      "currency": "JPY",
+      "provider": "Yahoo Finance",
+      "rows": 566,
+      "verified_prices": 566,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 2,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 24,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "CNQ.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "MFC.TO",
+      "kind": "EQUITY",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XBB.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    },
+    {
+      "ticker": "XIU.TO",
+      "kind": "ETF",
+      "currency": "CAD",
+      "provider": "Yahoo Finance",
+      "rows": 567,
+      "verified_prices": 567,
+      "missing_prices": 0,
+      "first_price_week": "2016-01-08",
+      "last_price_week": "2026-11-13",
+      "weeks_without_price": 1,
+      "price_method": "regular_session_close",
+      "prior_session_rows": 16,
+      "crypto_missing_adjusted_close": false
+    }
+  ],
+  "checks": {
+    "no_averages_used": true,
+    "source_hashes_verified": true,
+    "duplicates": 0,
+    "all_requested_tickers_present": true,
+    "future_labels": 0,
+    "csv_roundtrip_exact": true,
+    "input_averages_not_modified_by_builder": true
+  },
+  "limitations": [
+    "No prices generated before the first source observation or through unobserved weeks.",
+    "Crypto uses actual Bitstamp USD trades; exchange prices differ from Yahoo aggregate quotes.",
+    "Crypto close is the exact published close of the hourly candle ending at the cutoff, not an hourly average; zero-volume source quotes are preserved.",
+    "Bitstamp does not provide adj_close; this field stays empty for crypto.",
+    "Yahoo OHLC/volume describe the selected daily session; crypto OHLC/volume describe the selected hour, not a weekly candle.",
+    "Yahoo close inherits Yahoo historical split adjustments; adj_close also inherits dividend adjustments.",
+    "Prior-session fallback uses only the same observed week; dates are explicit in the line-source audit.",
+    "Nikkei uses its Tokyo session close; FX/futures/VIX use the daily Close field supplied by Yahoo.",
+    "Some Yahoo FX OHLC rows have source inconsistencies: close/open outside the reported high/low. Values are preserved and each is flagged, not silently repaired.",
+    "Backtests/returns must be recomputed after this change; missing fields must be handled explicitly."
+  ],
+  "outputs": {
+    "weekly": {
+      "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\top100_hebdo_2016_complet.csv",
+      "sha256": "16b0fb689b06656b1f61c718d869a8f62135402c4a6103d085d52484f38257e4"
+    },
+    "audit": {
+      "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\top100_hebdo_2016_sources_lignes.csv",
+      "sha256": "56fb604ee45a716d27573c5109d5562a605f54eaa611c51e12c87fdfb25ace79"
+    },
+    "coverage": {
+      "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\clotures_vendredi\\top100_hebdo_2016_couverture.csv",
+      "sha256": "6bbe15b539e81c668c99beb617e16576ab13e376b2cc6352db27db69e8550852"
+    }
+  },
+  "user_exclusions": [
+    "^VIX"
+  ],
+  "locked_original_download": "C:/Users/alibe/Downloads/top100_hebdo_2016_complet.csv remains locked by another process; replacement pending",
+  "exclusion_change": {
+    "previous_sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88",
+    "removed_rows": 567,
+    "backup": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\avant_retrait_vix",
+    "check": "All non-VIX CSV lines preserved byte-for-byte",
+    "roles": [
+      "data",
+      "evidence"
+    ],
+    "status": "complete",
+    "next_owner": "user"
+  },
+  "previous_publication": [
+    {
+      "target": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.csv",
+      "backup": "C:\\Users\\alibe\\Downloads\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+      "sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88"
+    },
+    {
+      "target": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).csv",
+      "backup": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\top100_hebdo_2016 (2).moyennes_a977af97.csv",
+      "sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88"
+    },
+    {
+      "target": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\top100_hebdo_2016_complet.csv",
+      "backup": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\top100_hebdo_2016_complet.moyennes_a977af97.csv",
+      "sha256": "6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88"
+    }
+  ],
+  "publication": [
+    {
+      "target": "C:\\Users\\alibe\\Downloads\\price_weekly_compelt.csv",
+      "sha256": "16b0fb689b06656b1f61c718d869a8f62135402c4a6103d085d52484f38257e4"
+    }
+  ],
+  "universe_completion": {
+    "universe": "C:\\Users\\alibe\\Downloads\\Datathon2026\\Datathon2026\\alphaforge_starter\\assets_universe_complet.csv",
+    "universe_sha256": "82a9d112f4ff6beb46f34d51196ba35cf3db7cc16969455a9593eeb0c50b6ba0",
+    "selection_sha256": "34618d92e70fdc8522ced70c4e48a2dd7ffa04dbc2476728e4d768769f4ab94a",
+    "added_tickers": [
+      "CNQ.TO",
+      "MFC.TO",
+      "XBB.TO",
+      "XIU.TO"
+    ],
+    "added_rows": 2268,
+    "sources": [
+      {
+        "ticker": "CNQ.TO",
+        "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\complement_univers\\CNQ.TO.json",
+        "sha256": "ab4c2b51c192c569638a7f457434fee8642882913650a1cabfc9c0adf77e9825",
+        "url": "https://query2.finance.yahoo.com/v8/finance/chart/CNQ.TO?period1=1451606400&period2=1794787200&interval=1d&events=history&includeAdjustedClose=true",
+        "status": "complete",
+        "retrieved_at_utc": "2026-11-15T17:09:44.530129+00:00"
+      },
+      {
+        "ticker": "MFC.TO",
+        "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\complement_univers\\MFC.TO.json",
+        "sha256": "ba8c22b4f8384dae9a1f63c96ecc101cefe5aa4722b5f744e7b1cc90f1371770",
+        "url": "https://query2.finance.yahoo.com/v8/finance/chart/MFC.TO?period1=1451606400&period2=1794787200&interval=1d&events=history&includeAdjustedClose=true",
+        "status": "complete",
+        "retrieved_at_utc": "2026-11-15T17:09:44.903913+00:00"
+      },
+      {
+        "ticker": "XBB.TO",
+        "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\complement_univers\\XBB.TO.json",
+        "sha256": "fe12cea4cbe7230ea6193d251f801750e4706eb110330cc99c71ec98c5242015",
+        "url": "https://query2.finance.yahoo.com/v8/finance/chart/XBB.TO?period1=1451606400&period2=1794787200&interval=1d&events=history&includeAdjustedClose=true",
+        "status": "complete",
+        "retrieved_at_utc": "2026-11-15T17:09:45.226989+00:00"
+      },
+      {
+        "ticker": "XIU.TO",
+        "path": "C:\\Users\\alibe\\RecommenDathon\\livrables\\historique_hebdomadaire\\complement_univers\\XIU.TO.json",
+        "sha256": "b5402453292389506ae646408e1eaae26e74d7a08613d8ec92f3320290235724",
+        "url": "https://query2.finance.yahoo.com/v8/finance/chart/XIU.TO?period1=1451606400&period2=1794787200&interval=1d&events=history&includeAdjustedClose=true",
+        "status": "complete",
+        "retrieved_at_utc": "2026-11-15T17:09:45.575017+00:00"
+      }
+    ],
+    "excluded_from_price_requirement": [
+      {
+        "ticker": "^VIX",
+        "asset_class": "index"
+      },
+      {
+        "ticker": "BD.CDN.2YR.DQ.YLD",
+        "asset_class": "bond_yield"
+      },
+      {
+        "ticker": "BD.CDN.10YR.DQ.YLD",
+        "asset_class": "bond_yield"
+      },
+      {
+        "ticker": "DGS2",
+        "asset_class": "bond_yield"
+      },
+      {
+        "ticker": "DGS10",
+        "asset_class": "bond_yield"
+      }
+    ],
+    "all_eligible_universe_assets_have_prices": true
+  }
+}
