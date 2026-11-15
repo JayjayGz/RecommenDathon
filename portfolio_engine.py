@@ -74,6 +74,7 @@ def _apply(profile, changes, enforce_caps, data_dir, profiles_path):
 
     w = {t: v * 100 for t, v in profile["weights"].items()}
     notes = []
+    unsupported = []
 
     for change in changes:
         if "exclude" in change:
@@ -91,6 +92,7 @@ def _apply(profile, changes, enforce_caps, data_dir, profiles_path):
         ticker, requested = change["ticker"], change["add_pct"]
         if ticker not in valid_tickers:
             notes.append(f"{ticker}: not in dataset")
+            unsupported.append(ticker)
             continue
         if ticker in BONDS:
             notes.append(f"{ticker}: bonds are protected, change not applied")
@@ -119,30 +121,40 @@ def _apply(profile, changes, enforce_caps, data_dir, profiles_path):
                     notes.append(f"{ticker}: requested {requested:g}%, applied {delta:g}% "
                                  f"({band} band {label})")
 
+        pool = {t: w[t] for t in w if t not in BONDS and t != ticker}
+        pool_total = sum(pool.values())
+        if delta > 0 and delta > pool_total:
+            notes.append(f"{ticker}: requested {requested:g}%, only {pool_total:g}% available from "
+                         f"other holdings, applied {pool_total:g}%")
+            delta = pool_total
+        elif delta < 0 and -delta > current:
+            delta = -current
+
         if delta != 0:
-            pool = {t: w[t] for t in w if t not in BONDS and t != ticker}
-            pool_total = sum(pool.values())
             for t in pool:
                 w[t] -= delta * (pool[t] / pool_total)
             w[ticker] = current + delta
 
     rounded = round_weights(w)
-    return {t: v / 100 for t, v in rounded.items()}, notes
+    weights = {t: v / 100 for t, v in rounded.items()}
+    return weights, notes, unsupported
 
 
 def apply_changes(profile, changes, data_dir="alphaforge_starter", profiles_path="profiles.json"):
-    """Apply proposed changes with band caps enforced. Returns {"weights", "notes"}."""
-    weights, notes = _apply(profile, changes, enforce_caps=True,
-                             data_dir=data_dir, profiles_path=profiles_path)
-    return {"weights": weights, "notes": notes}
+    """Apply proposed changes with band caps enforced. Returns {"weights", "notes", "unsupported"}."""
+    weights, notes, unsupported = _apply(profile, changes, enforce_caps=True,
+                                          data_dir=data_dir, profiles_path=profiles_path)
+    return {"weights": weights, "notes": notes, "unsupported": unsupported}
 
 
-def validate(weights, band, start=None, end=None, rebalance="monthly",
+def validate(weights, band, crypto_allowed=True, start=None, end=None, rebalance="monthly",
               data_dir="alphaforge_starter", profiles_path="profiles.json"):
     """Backtest weights (fractions summing to 1) and check them against band limits.
 
     Default period: last 5 years of data in data_dir. Currency: CAD throughout
     (see backtest_viewer.cad_prices). Only days when every holding traded.
+    crypto_allowed defaults to True (permissive) for callers that don't know the
+    profile; evaluate() always passes the profile's actual flag.
     """
     prices, fx = _load_data(data_dir)
     end_ts = pd.Timestamp(end) if end else prices["date"].max()
@@ -155,6 +167,9 @@ def validate(weights, band, start=None, end=None, rebalance="monthly",
     limits = _load_profiles(profiles_path)["band_limits"][band]
     single_stock_pct = max([weights[t] * 100 for t in weights if t not in ETFS and t not in CRYPTO],
                             default=0.0)
+    gold_pct = weights.get("GLD", 0) * 100
+    crypto_pct = sum(weights.get(t, 0) for t in CRYPTO) * 100
+    crypto_limit = EXTRA_CAPS[band]["crypto"] if crypto_allowed else 0
     checks = {
         "max_volatility_pct": {"limit": limits["max_volatility_pct"], "value": metrics["volatility_pct"],
                                 "passes": metrics["volatility_pct"] <= limits["max_volatility_pct"]},
@@ -162,6 +177,10 @@ def validate(weights, band, start=None, end=None, rebalance="monthly",
                               "passes": metrics["max_drawdown_pct"] >= limits["max_drawdown_pct"]},
         "max_single_stock_pct": {"limit": limits["max_single_stock_pct"], "value": round(single_stock_pct, 1),
                                   "passes": single_stock_pct <= limits["max_single_stock_pct"]},
+        "max_gold_pct": {"limit": EXTRA_CAPS[band]["gold"], "value": round(gold_pct, 1),
+                          "passes": gold_pct <= EXTRA_CAPS[band]["gold"]},
+        "max_crypto_pct": {"limit": crypto_limit, "value": round(crypto_pct, 1),
+                            "passes": crypto_pct <= crypto_limit},
     }
     return {**metrics, "checks": checks, "passes": all(c["passes"] for c in checks.values())}
 
@@ -169,36 +188,42 @@ def validate(weights, band, start=None, end=None, rebalance="monthly",
 def evaluate(profile_id, changes, data_dir="alphaforge_starter", profiles_path="profiles.json"):
     """The function agents call: base vs. as-requested (no caps) vs. adjusted (capped)."""
     profile = get_profile(profile_id, profiles_path)
-    band = profile["band"]
+    band, crypto_allowed = profile["band"], profile["crypto_allowed"]
 
     def run(enforce_caps):
-        weights, notes = _apply(profile, changes, enforce_caps, data_dir, profiles_path)
-        return {"weights": weights, "validation": validate(weights, band, data_dir=data_dir,
-                                                             profiles_path=profiles_path)}, notes
+        weights, notes, unsupported = _apply(profile, changes, enforce_caps, data_dir, profiles_path)
+        validation = validate(weights, band, crypto_allowed, data_dir=data_dir, profiles_path=profiles_path)
+        return {"weights": weights, "validation": validation}, notes, unsupported
 
-    base = {"weights": profile["weights"],
-            "validation": validate(profile["weights"], band, data_dir=data_dir, profiles_path=profiles_path)}
-    as_requested, pre_cap_notes = run(enforce_caps=False)
-    adjusted, cap_notes = run(enforce_caps=True)
+    base_validation = validate(profile["weights"], band, crypto_allowed,
+                                data_dir=data_dir, profiles_path=profiles_path)
+    base = {"weights": profile["weights"], "validation": base_validation}
+    as_requested, pre_cap_notes, unsupported = run(enforce_caps=False)
+    adjusted, cap_notes, _ = run(enforce_caps=True)
 
     notes = list(pre_cap_notes)
     notes += [n for n in cap_notes if n not in notes]
     outside_profile = not as_requested["validation"]["passes"]
 
+    # {ticker: {"requested_pct": largest raw request that still passes once capped,
+    #           "realized_pct": what the ticker's weight actually becomes at that request}}
     max_allowed = {}
     if outside_profile:
         for i, change in enumerate(changes):
             if "ticker" in change and change.get("add_pct", 0) > 0:
                 requested = change["add_pct"]
-                found = 0
+                found, realized = 0, 0.0
                 for x in range(requested, -1, -1):
                     trial = changes[:i] + [{**change, "add_pct": x}] + changes[i + 1:]
-                    weights, _ = _apply(profile, trial, enforce_caps=True,
-                                         data_dir=data_dir, profiles_path=profiles_path)
-                    if validate(weights, band, data_dir=data_dir, profiles_path=profiles_path)["passes"]:
+                    weights, _, _ = _apply(profile, trial, enforce_caps=True,
+                                            data_dir=data_dir, profiles_path=profiles_path)
+                    if validate(weights, band, crypto_allowed, data_dir=data_dir,
+                                profiles_path=profiles_path)["passes"]:
                         found = x
+                        realized = weights.get(change["ticker"], 0) * 100
                         break
-                max_allowed[change["ticker"]] = found
+                max_allowed[change["ticker"]] = {"requested_pct": found, "realized_pct": round(realized, 1)}
 
     return {"base": base, "as_requested": as_requested, "adjusted": adjusted,
-            "notes": notes, "outside_profile": outside_profile, "max_allowed": max_allowed}
+            "notes": notes, "unsupported": unsupported,
+            "outside_profile": outside_profile, "max_allowed": max_allowed}

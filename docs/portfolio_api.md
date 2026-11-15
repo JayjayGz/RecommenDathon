@@ -37,7 +37,11 @@ combined, requires `crypto_allowed`): low 5/10/0, medium 10/15/3, high 15/15/10
 (percentage points). Bonds (XBB.TO, ZST.TO, AGG) are protected — a change is
 funded from, or given back to, the other holdings proportionally, never bonds.
 `{"exclude": ticker}` removes a holding and redistributes its weight within its
-own group (bonds or non-bonds). An unknown ticker is not applied, with a note.
+own group (bonds or non-bonds). An unknown ticker is not applied, with a note,
+and its ticker is listed in `unsupported` — treat any non-empty `unsupported`
+list as "this request could not be fully evaluated," not as a pass. A requested
+change can never exceed what the non-bond holdings can actually fund (or go
+below 0%) — if it would, it's clamped to what's feasible, with a note.
 
 **Input:**
 ```json
@@ -52,19 +56,26 @@ own group (bonds or non-bonds). An unknown ticker is not applied, with a note.
     "RY.TO": 0.02, "TD.TO": 0.02, "FTS.TO": 0.02, "ENB.TO": 0.02,
     "PG": 0.02, "JNJ": 0.02, "JPM": 0.02, "TSLA": 0.05
   },
-  "notes": ["TSLA: requested 20%, applied 5% (low band single-stock cap)"]
+  "notes": ["TSLA: requested 20%, applied 5% (low band single-stock cap)"],
+  "unsupported": []
 }
 ```
 (XBB.TO moved from 45% to 48% here — that's `build_portfolios.round_weights()`'s
 "leftover to the largest bond" rounding fix-up, not a change caused by TSLA.)
 
-## validate(weights, band, start=None, end=None, rebalance="monthly", data_dir="alphaforge_starter", profiles_path="profiles.json")
+## validate(weights, band, crypto_allowed=True, start=None, end=None, rebalance="monthly", data_dir="alphaforge_starter", profiles_path="profiles.json")
 
-Backtests a weight set and checks it against the band's three limits from
-`profiles.json`. Default period: last 5 years of data in `data_dir`. Default
-rebalance: monthly, back to target weights.
+Backtests a weight set and checks it against five things: the band's three
+limits from `profiles.json` (volatility, drawdown, single-stock), plus gold and
+combined-crypto caps (team assumptions, not in `profiles.json`). Pass the
+profile's `crypto_allowed` flag explicitly — it defaults to `True` (permissive)
+only for callers that don't have a profile to check against; `evaluate()` always
+passes the real flag, so a crypto position on a profile that doesn't allow
+crypto fails here even if volatility/drawdown alone would have passed.
+Default period: last 5 years of data in `data_dir`. Default rebalance: monthly,
+back to target weights.
 
-**Input:** `validate(<Robert's base weights>, "low")`
+**Input:** `validate(<Robert's base weights>, "low", crypto_allowed=False)`
 
 **Output:**
 ```json
@@ -77,7 +88,9 @@ rebalance: monthly, back to target weights.
   "checks": {
     "max_volatility_pct": {"limit": 7, "value": 4.7, "passes": true},
     "max_drawdown_pct": {"limit": -15, "value": -9.4, "passes": true},
-    "max_single_stock_pct": {"limit": 5, "value": 3.0, "passes": true}
+    "max_single_stock_pct": {"limit": 5, "value": 3.0, "passes": true},
+    "max_gold_pct": {"limit": 10, "value": 0, "passes": true},
+    "max_crypto_pct": {"limit": 0, "value": 0, "passes": true}
   },
   "passes": true
 }
@@ -114,17 +127,25 @@ the profile, plus the largest whole-percent add that would still pass.
                    "passes": true, "checks": "..."}
   },
   "notes": ["TSLA: requested 20%, applied 5% (low band single-stock cap)"],
+  "unsupported": [],
   "outside_profile": true,
-  "max_allowed": {"TSLA": 20}
+  "max_allowed": {"TSLA": {"requested_pct": 20, "realized_pct": 5.0}}
 }
 ```
 
-`max_allowed.TSLA` is 20 (the original request), not 5: once the single-stock
-cap clamps TSLA to 5%, the *capped* portfolio already passes every band limit,
-so the full requested amount is fine to send through `apply_changes` — the cap
-is what makes it fit. `outside_profile` is true because the *raw, uncapped*
-request would not have fit on its own; that's the signal that the user's request
-needed adjustment, not a verdict on the adjusted portfolio.
+`max_allowed.TSLA.requested_pct` is 20 (the original request), not 5:
+once the single-stock cap clamps TSLA to 5% (`realized_pct`), the *capped*
+portfolio already passes every band limit, so the full requested amount is
+fine to send through `apply_changes` — the cap is what makes it fit.
+`outside_profile` is true because the *raw, uncapped* request would not have
+fit on its own; that's the signal that the user's request needed adjustment,
+not a verdict on the adjusted portfolio. Read `requested_pct` as "the largest
+number the user could have typed," and `realized_pct` as "what they'd actually
+end up holding" — they are deliberately different numbers.
+
+If `unsupported` is non-empty (an unknown ticker), treat the whole result as
+unevaluated for that ticker, not as a pass — `outside_profile` can still be
+`False` in that case because nothing changed, which is not the same as "fits."
 
 ## risk.py — risk_measures(ticker, start=None, end=None, data_dir="alphaforge_starter")
 

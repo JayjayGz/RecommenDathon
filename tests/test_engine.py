@@ -31,7 +31,9 @@ def test_robert_tsla_20():
     assert result["adjusted"]["validation"]["passes"] is True
     assert result["as_requested"]["validation"]["passes"] is False
     assert result["outside_profile"] is True
-    assert 0 <= result["max_allowed"]["TSLA"] <= 20
+    allowed = result["max_allowed"]["TSLA"]
+    assert 0 <= allowed["requested_pct"] <= 20
+    assert allowed["realized_pct"] == pytest.approx(5.0, abs=0.5)
 
 
 def test_robert_base_metrics():
@@ -68,3 +70,30 @@ def test_unknown_ticker_gives_note_and_leaves_weights_unchanged():
     assert any("not in dataset" in n for n in result["notes"])
     for t, v in profile["weights"].items():
         assert result["weights"].get(t, 0) == pytest.approx(v, abs=0.01)
+
+
+def test_unknown_ticker_marked_unsupported_not_silently_passed():
+    profile = pe.get_profile(ROBERT)
+    result = pe.evaluate(ROBERT, [{"ticker": "NOTREAL", "add_pct": 10}])
+    assert result["unsupported"] == ["NOTREAL"]
+
+
+def test_small_disallowed_crypto_still_fails_validation():
+    # Regression: validate() used to only check vol/drawdown/single-stock, so a
+    # small crypto add on a profile with crypto_allowed=False could pass even
+    # though crypto isn't allowed at all for that profile.
+    profile = pe.get_profile(6)  # medium band, crypto_allowed False
+    assert profile["crypto_allowed"] is False
+    result = pe.evaluate(6, [{"ticker": "BTC-USD", "add_pct": 2}])
+    assert result["as_requested"]["validation"]["checks"]["max_crypto_pct"]["passes"] is False
+    assert result["outside_profile"] is True
+
+
+def test_extreme_request_never_produces_negative_weights():
+    # Regression: an uncapped request larger than the available non-bond
+    # holdings used to push weights (including bonds) negative.
+    profile = pe.get_profile(ROBERT)
+    result = pe.evaluate(ROBERT, [{"ticker": "TSLA", "add_pct": 100}])
+    for view in ("as_requested", "adjusted"):
+        for t, v in result[view]["weights"].items():
+            assert v >= 0, f"{view} has negative weight for {t}: {v}"
