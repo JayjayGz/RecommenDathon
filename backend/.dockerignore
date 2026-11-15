@@ -1,0 +1,10 @@
+# Only the application and runtime dependency manifest enter the build context.
+**
+!Dockerfile
+!requirements-lambda.txt
+!src/
+!src/alphaforge/
+!src/alphaforge/**
+**/__pycache__/
+**/*.pyc
+**/*.egg-info/

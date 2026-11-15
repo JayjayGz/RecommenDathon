@@ -20,7 +20,7 @@ pe = create_engine()
 
 @pytest.fixture
 def market(monkeypatch):
-    config = json.loads((Path(__file__).resolve().parents[1] / "profiles.json").read_text())
+    config = json.loads((Path(__file__).resolve().parents[2] / "profiles.json").read_text())
     tickers = {t for profile in config["profiles"] for t in profile["weights"]}
     tickers |= {"TSLA", "GLD", "BTC-USD", "ETH-USD"}
     dates = pd.bdate_range("2025-01-02", periods=64)

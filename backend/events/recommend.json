@@ -1,0 +1,7 @@
+{
+  "action": "recommend",
+  "request": {
+    "profile_id": 4,
+    "changes": []
+  }
+}

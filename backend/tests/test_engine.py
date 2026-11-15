@@ -8,7 +8,7 @@ from alphaforge.bootstrap import create_engine
 pe = create_engine()
 
 # These are integration tests against the private dataset, not synthetic cases.
-DATA_DIR = Path(__file__).resolve().parents[1] / "dataset"
+DATA_DIR = Path(__file__).resolve().parents[2] / "dataset"
 
 def reference_dataset_available():
     import pandas as pd

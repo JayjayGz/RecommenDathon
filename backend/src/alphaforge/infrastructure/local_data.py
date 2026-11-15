@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import pandas as pd
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_DATA_DIR = REPOSITORY_ROOT / "dataset"
 DEFAULT_PROFILES_PATH = REPOSITORY_ROOT / "profiles.json"
 

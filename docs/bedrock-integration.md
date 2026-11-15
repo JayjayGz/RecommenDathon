@@ -2,9 +2,9 @@
 
 ## What is implemented
 
-`src/alphaforge/application/llm.py` defines a model-independent text-generation port. `src/alphaforge/infrastructure/bedrock.py` implements it with boto3 Converse, SDK credential discovery, bounded transport retries and explicit failed/incomplete responses. All text blocks are joined even when reasoning appears first. Usage, request ID, model ID and raw successful/incomplete output are available for a future AuditStore integration; this adapter does not persist artifacts itself.
+`backend/src/alphaforge/application/llm.py` defines a model-independent text-generation port. `backend/src/alphaforge/infrastructure/bedrock.py` implements it with boto3 Converse, SDK credential discovery, bounded transport retries and explicit failed/incomplete responses. All text blocks are joined even when reasoning appears first. Usage, request ID, model ID and raw successful/incomplete output are available for a future AuditStore integration; this adapter does not persist artifacts itself.
 
-`scripts/bedrock_smoke_test.py` makes one logical live generation request only when explicitly run. `tests/test_bedrock.py` uses mocks and a botocore stub, with no network or real credentials.
+`backend/scripts/bedrock_smoke_test.py` makes one logical live generation request only when explicitly run. `backend/tests/test_bedrock.py` uses mocks and a botocore stub, with no network or real credentials.
 
 This change does not implement a production explanation prompt, Evidence Bundle validation, compliance gate, S3 audit persistence, Lambda handler or Strands tool loop. Never present its raw output as a validated recommendation.
 
@@ -29,21 +29,21 @@ The development files under `agents/` are not production system prompts. They co
 Use the SAME PowerShell terminal where the event's temporary credentials worked. From the inner Git repository containing `AGENTS.md`, use your configured Python interpreter:
 
 ```powershell
-python scripts/bedrock_smoke_test.py
+python backend/scripts/bedrock_smoke_test.py
 ```
 
 On the current machine, the existing virtual environment is in the parent workspace. If it is not activated, the equivalent command is:
 
 ```powershell
-..\.venv\Scripts\python.exe scripts/bedrock_smoke_test.py
+..\.venv\Scripts\python.exe backend/scripts/bedrock_smoke_test.py
 ```
 
-The script uses `us-east-1` and the team's test profile `global.amazon.nova-2-lite-v1:0`. It prints the active account ID, model/profile and response. This is a billable model call and may cause SDK transport retries; no live call is part of offline tests. Account access has not been verified by adding this code. Installing dependencies uses `python -m pip install -r requirements.txt` with the chosen interpreter if needed.
+The script uses `us-east-1` and the team's test profile `global.amazon.nova-2-lite-v1:0`. It prints the active account ID, model/profile and response. This is a billable model call and may cause SDK transport retries; no live call is part of offline tests. Account access has not been verified by adding this code. Installing dependencies uses `python -m pip install -r backend/requirements.txt` with the chosen interpreter if needed.
 
 To use another accessible model/profile:
 
 ```powershell
-python scripts/bedrock_smoke_test.py --model-id YOUR_MODEL_OR_INFERENCE_PROFILE_ID
+python backend/scripts/bedrock_smoke_test.py --model-id YOUR_MODEL_OR_INFERENCE_PROFILE_ID
 ```
 
 `CLAUDE.md` names `global.anthropic.claude-sonnet-5` for explanation/reasoning and Haiku for extraction. These are team configuration choices, not proof that the event account can invoke them. Start with the connection test; confirm any model in the Bedrock console before production use. The adapter sends no temperature/topP and uses at least 1000 output tokens to follow the team convention. A global profile may process requests in other regions even though the source client is us-east-1.
@@ -76,7 +76,7 @@ Record prompts, returned metadata/raw output and failures through AuditStore whe
 ## Offline checks
 
 ```powershell
-python -m unittest discover -s tests -v
+python -m pytest backend/tests -q
 ```
 
 Sources: [Converse API and permissions](https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-runtime/client/converse.html), [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html), [cross-region inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html), [Nova 2 Lite profile IDs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-amazon-nova-2-lite.html).

@@ -21,15 +21,15 @@ The saved reference portfolios require 13 tickers absent from the current file; 
 From the Git root:
 
 ```powershell
-python scripts/build_dataset.py
+python backend/scripts/build_dataset.py
 ```
 
-This is the **original 31-asset starter generator**, with its original 2021-11-12 to 2026-11-12 window. It writes to `dataset/rebuilt_starter/` to preserve the supplied active prices. Its price output uses `prices_daily.csv`; the name does not determine frequency or the generated window. This tool does not reproduce the currently supplied 102-ticker snapshot. `scripts/universe_v2.py` is a proposed universe definition, not automatically applied to the generator or saved profiles. Source metadata and asset-selection rationale are maintained by hand.
+This is the **original 31-asset starter generator**, with its original 2021-11-12 to 2026-11-12 window. It writes to `dataset/rebuilt_starter/` to preserve the supplied active prices. Its price output uses `prices_daily.csv`; the name does not determine frequency or the generated window. This tool does not reproduce the currently supplied 102-ticker snapshot. `backend/scripts/universe_v2.py` is a proposed universe definition, not automatically applied to the generator or saved profiles. Source metadata and asset-selection rationale are maintained by hand.
 
 Once the team agrees on compatible inputs and rules, rebuild profiles explicitly:
 
 ```powershell
-python scripts/build_portfolios.py dataset profiles.json
+python backend/scripts/build_portfolios.py dataset profiles.json
 ```
 
 That command overwrites its output. It has not been run as part of the file reorganization. Rebuilding requires pandas, yfinance and network access; no download is needed for offline checks.

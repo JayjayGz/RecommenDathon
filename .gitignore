@@ -6,3 +6,6 @@ __pycache__/
 *.egg-info/
 
 .pytest-tmp*/
+.aws-sam/
+samconfig.toml
+health-response.json

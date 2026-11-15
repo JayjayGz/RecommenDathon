@@ -1,6 +1,6 @@
 # PortfolioEngine: calculation API for agents
 
-The engine computes weights, historical metrics and profile-rule decisions in Python. Agents explain its outputs; they do not calculate returns, invent reasons or override the verdict. `src/alphaforge/application/risk.py` remains a separate, unimplemented per-ticker module owned by the teammate.
+The engine computes weights, historical metrics and profile-rule decisions in Python. Agents explain its outputs; they do not calculate returns, invent reasons or override the verdict. `backend/src/alphaforge/application/risk.py` remains a separate, unimplemented per-ticker module owned by the teammate.
 
 Weights are fractions summing to one. Changes use whole percentage points: `add_pct: 5` adds five points to the existing holding; it does not set the holding to 5%. Fractional changes, NaN, infinity and booleans are rejected explicitly. The engine uses the team's whole-percent rounding rule. `profiles.json` is read-only.
 
@@ -11,7 +11,7 @@ from alphaforge.bootstrap import create_engine
 engine = create_engine()
 ```
 
-The operations below are methods of `engine`, implemented in `src/alphaforge/application/portfolio_engine.py`. For custom storage, construct `PortfolioEngine(repository)` using the `PortfolioRepository` port. Root-level Python modules have been removed; update existing imports. `data_dir=None` resolves to the repository's `dataset/`, and `profiles_path=None` to its `profiles.json`. The active price filename is `prices_daily.csv`. Explicit paths override these defaults. See [data compatibility](DATA.md): the current file lacks 13 legacy profile tickers, so affected assessments return `MISSING_INFO`.
+The operations below are methods of `engine`, implemented in `backend/src/alphaforge/application/portfolio_engine.py`. For custom storage, construct `PortfolioEngine(repository)` using the `PortfolioRepository` port. Root-level Python modules have been removed; update existing imports. `data_dir=None` resolves to the repository's `dataset/`, and `profiles_path=None` to its `profiles.json`. The active price filename is `prices_daily.csv`. Explicit paths override these defaults. See [data compatibility](DATA.md): the current file lacks 13 legacy profile tickers, so affected assessments return `MISSING_INFO`.
 
 ## get_profile(profile_id, profiles_path=None)
 
@@ -106,4 +106,4 @@ Run the offline suite with the project interpreter:
 ..\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-Synthetic regressions cover month-boundary gains/losses, hand-computable rebalancing, policy conflicts, invalid requests and valid controls. Dataset integration tests explicitly skip when the local reference universe is absent or incomplete. Once the team has the agreed data, regenerate reference portfolios with `python scripts/build_portfolios.py dataset profiles.json`, review changed metrics/allocations, and rerun the dataset tests. This overwrites the generated output; regeneration was not performed during this correction.
+Synthetic regressions cover month-boundary gains/losses, hand-computable rebalancing, policy conflicts, invalid requests and valid controls. Dataset integration tests explicitly skip when the local reference universe is absent or incomplete. Once the team has the agreed data, regenerate reference portfolios with `python backend/scripts/build_portfolios.py dataset profiles.json`, review changed metrics/allocations, and rerun the dataset tests. This overwrites the generated output; regeneration was not performed during this correction.

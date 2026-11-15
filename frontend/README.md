@@ -55,4 +55,4 @@ Le schéma existant `../docs/investor-profile-schema.json` attend notamment `ris
 
 Simulation et prototype de présentation. Aucun conseil en placement et aucun ordre de transaction.
 
-Le code Python est dans `../src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Un backend doit adapter le questionnaire au contrat Python puis produire le contrat HTTP ci-dessus. Voir [l’architecture](../docs/architecture.md).
+Le code Python est dans `../backend/src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Un backend doit adapter le questionnaire au contrat Python puis produire le contrat HTTP ci-dessus. Voir [l’architecture](../docs/architecture.md).
