@@ -13,7 +13,10 @@ flowchart LR
     Match --> Price[Validate assets and price history]
     Price --> Macro[Check macro context for bond assets only]
     Macro --> Evaluate[Evaluate captured prices and constraints]
-    Edit[Personalized request and current portfolio] --> Match
+    Edit[Personalized request and current portfolio] --> Universe{Requested asset in assets_universe.csv?}
+    Universe -->|No| Reject[Reject without calling the engine]
+    Universe -->|Yes, supported holding| Match
+    Universe -->|Unsupported asset class| Reject
     Evaluate --> Evidence[Composition, reasons, trade-offs and limitations]
     Evidence --> Gate[Evidence and release gate]
     Gate --> Audit[Save audit]
@@ -99,6 +102,23 @@ permission to claim the exclusion was satisfied. No matching candidate returns
 `NO_COMPATIBLE_REFERENCE_PROFILE`, with no automatic relaxation or substitution.
 
 ## Follow-up requests
+
+After a completed questionnaire, each requested asset addition passes the
+`VALIDATE_REQUESTED_ASSETS` stage before reference matching or engine construction.
+The workflow resolves a name or ticker against `assets_universe.csv`; structured
+edits use the same membership check. An absent asset returns `ASSET_NOT_IN_UNIVERSE`.
+An existing index, yield series or other unsupported holding returns
+`UNSUPPORTED_ASSET_CLASS`. Neither case calls the calculation engine or loads
+bond macro context. This stage runs after the input snapshot has been parsed;
+invalid snapshot files can still block the request before asset validation.
+
+For a supported asset, the workflow validates its `prices_weekly.csv` history,
+currency and observation cadence together with the current portfolio, then calls
+the deterministic engine to evaluate the requested change and portfolio impact.
+Bond ETFs also require `macro_rates.csv` context. Macro rates are not bond prices
+and cannot supply portfolio returns. The engine's existing funding policy still
+rejects direct bond-weight changes; passing the membership check does not promise
+that an allocation is feasible or permitted.
 
 Use `action: personalize` (or `POST /chat` through an existing HTTP adapter) with
 the same questionnaire and the current `portfolio` in the returned frontend format.

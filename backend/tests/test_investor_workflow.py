@@ -223,6 +223,63 @@ def test_limits_never_produce_a_fabricated_portfolio(investor_source, updates, c
     assert "portfolio" not in outcome.payload and not llm.calls
 
 
+@pytest.mark.parametrize("change,code", [
+    ({"ticker": "NONEXISTENT-XYZ", "add_pct": 5}, "ASSET_NOT_IN_UNIVERSE"),
+    ({"ticker": "DGS10", "add_pct": 5}, "UNSUPPORTED_ASSET_CLASS"),
+])
+def test_requested_asset_gate_precedes_matching_macro_and_engine(investor_source, monkeypatch, change, code):
+    def unexpected(*args, **kwargs):
+        pytest.fail("Rejected asset reached matching, macro loading or the engine")
+    monkeypatch.setattr("alphaforge.application.investor_workflow.match_profile", unexpected)
+    monkeypatch.setattr("alphaforge.application.orchestrator.PortfolioEngine", unexpected)
+    monkeypatch.setattr(investor_source, "load_macro", unexpected)
+    outcome, records = run(investor_source, investor_request(changes=[change]))
+    assert outcome.payload["error"]["code"] == code
+    assert "VALIDATE_REQUESTED_ASSETS" in records["result"]["states"]
+    assert "MATCH_PROFILE" not in records["result"]["states"]
+    assert "portfolio" not in outcome.payload
+
+
+def test_known_addition_without_prices_stops_before_engine(investor_source, monkeypatch):
+    path = investor_source.paths["prices"]
+    prices = pd.read_csv(path)
+    prices[prices.ticker != "NVDA"].to_csv(path, index=False)
+    def unexpected(*args, **kwargs):
+        pytest.fail("Missing requested history reached the engine")
+    monkeypatch.setattr("alphaforge.application.orchestrator.PortfolioEngine", unexpected)
+    outcome, _ = run(investor_source, investor_request(changes=[{"ticker": "NVDA", "add_pct": 5}]))
+    assert outcome.payload["error"]["code"] == "MISSING_HOLDING_HISTORY"
+    assert outcome.payload["error"]["tickers"] == ["NVDA"]
+
+
+@pytest.mark.parametrize("ticker", ["NVDA", "XBB.TO"])
+def test_supported_addition_reaches_engine_after_universe_price_and_bond_checks(investor_source, monkeypatch, ticker):
+    from alphaforge.application.portfolio_engine import PortfolioEngine
+    calls = []
+    evaluate = PortfolioEngine.evaluate
+    def checked_evaluate(engine, profile_id, changes, **kwargs):
+        assert changes == [{"ticker": ticker, "add_pct": 5}]
+        assert ticker in engine.repository.assets
+        assert ticker in set(engine.repository.prices.ticker)
+        assert "macro" in engine.repository.manifest["inputs"]  # baseline contains bonds
+        calls.append(ticker)
+        return evaluate(engine, profile_id, changes, **kwargs)
+    monkeypatch.setattr(PortfolioEngine, "evaluate", checked_evaluate)
+    outcome, records = run(investor_source, investor_request(changes=[{"ticker": ticker, "add_pct": 5}]))
+    assert calls == [ticker]
+    states = records["result"]["states"]
+    assert states.index("VALIDATE_REQUESTED_ASSETS") < states.index("MATCH_PROFILE")
+    assert states.index("CHECK_MACRO_CONTEXT") < states.index("EVALUATE_PORTFOLIO")
+    if ticker == "XBB.TO":
+        # Routing to the engine does not change its existing funding policy.
+        assert outcome.status == "INVALID_REQUEST"
+        assert "Direct bond changes are unsupported" in outcome.payload["message"]
+        assert "portfolio" not in outcome.payload
+    else:
+        assert outcome.status in {"PASS", "CONFLICT"}
+        assert set(outcome.payload["macro_context"]["applies_to_tickers"]) == {"XBB.TO", "ZST.TO"}
+
+
 def test_uninterpretable_activity_exclusion_is_not_silently_ignored(investor_source):
     form = questionnaire()
     form["answers"].update(exclusions="limits", exclusionDetails="No fossil fuels in funds either")
