@@ -1,134 +1,100 @@
-# portfolio_engine.py — API for agents
+# portfolio_engine.py: calculation API for agents
 
-`portfolio_engine.py` is the deterministic calculation layer. Plain Python, no LLM
-calls, no network. Agents call these functions as tools and explain the results;
-they never compute numbers themselves. `risk.py` (stub, not yet implemented) is a
-companion module for per-ticker risk measures.
+The engine computes weights, historical metrics and profile-rule decisions in Python. Agents explain its outputs; they do not calculate returns, invent reasons or override the verdict. `risk.py` remains a separate, unimplemented per-ticker module owned by the teammate.
 
-All weights are fractions (sum to 1), rounded to whole percent internally. All
-prices are in CAD. `profiles.json` is read-only — nothing here writes to it.
+Weights are fractions summing to one. Changes use whole percentage points: `add_pct: 5` adds five points to the existing holding; it does not set the holding to 5%. Fractional changes, NaN, infinity and booleans are rejected explicitly. The engine uses the team's whole-percent rounding rule. `profiles.json` is read-only.
 
 ## get_profile(profile_id, profiles_path="profiles.json")
 
-Loads one of the 15 base profiles.
+Returns a copy of one reference profile's `id`, `band`, `style`, `crypto_allowed` and `weights`. The ID must be an integer matching a configured profile. Evaluating a proposal does not change the stored profile.
 
-**Input:** `get_profile(4)`
+## apply_changes(profile, changes, ...)
 
-**Output:**
-```json
-{
-  "id": 4,
-  "band": "low",
-  "style": "Income and stability",
-  "crypto_allowed": false,
-  "weights": {
-    "XBB.TO": 0.45, "ZST.TO": 0.25, "XIU.TO": 0.09,
-    "RY.TO": 0.03, "TD.TO": 0.03, "FTS.TO": 0.03,
-    "ENB.TO": 0.03, "PG": 0.03, "JNJ": 0.03, "JPM": 0.03
-  }
-}
+Returns `{"weights": ..., "notes": ...}` after applying caps. This transforms weights; it does not establish historical risk fit. Call `evaluate` for the complete agent-facing assessment.
+
+Supported changes:
+
+```python
+[{"ticker": "TSLA", "add_pct": 20}]
+[{"exclude": "ENB.TO"}]
 ```
 
-## apply_changes(profile, changes, data_dir="alphaforge_starter", profiles_path="profiles.json")
+Caps remain existing team assumptions: single-stock limits come from `profiles.json`; combined crypto and GLD limits come from `EXTRA_CAPS`. Crypto also requires the profile's permission flag. Redistribution can cause another holding to exceed a limit, so a capped candidate must still pass `validate`.
 
-Applies a list of proposed changes **with band caps enforced**. Caps: single-stock
-(from `profiles.json`'s `band_limits`), gold (GLD), and crypto (BTC-USD+ETH-USD
-combined, requires `crypto_allowed`): low 5/10/0, medium 10/15/3, high 15/15/10
-(percentage points). Bonds (XBB.TO, ZST.TO, AGG) are protected — a change is
-funded from, or given back to, the other holdings proportionally, never bonds.
-`{"exclude": ticker}` removes a holding and redistributes its weight within its
-own group (bonds or non-bonds). An unknown ticker is not applied, with a note.
+Funding comes proportionally from other non-bond holdings. Direct changes to protected bonds are unsupported, including liquidating bonds to buy stocks. Exclusions redistribute within the same bond/non-bond group; excluding its final holding is rejected. The rounding residual still goes to the largest bond, with a note when this changes bond weights.
 
-**Input:**
-```json
-{"profile": "<Robert, profile 4>", "changes": [{"ticker": "TSLA", "add_pct": 20}]}
+Unknown tickers, malformed changes, insufficient funding and unsupported operations raise `ProposalError` with a stable `code`. They are not silently skipped. No negative weights, shorting or leverage is introduced to satisfy a request. A list with an invalid member is rejected as a whole; no partial proposal is returned.
+
+## validate(weights, band, ..., crypto_allowed=None)
+
+```python
+validate(weights, band, start=None, end=None, rebalance="monthly",
+         data_dir="alphaforge_starter", profiles_path="profiles.json",
+         crypto_allowed=None)
 ```
 
-**Output:**
-```json
-{
-  "weights": {
-    "XBB.TO": 0.48, "ZST.TO": 0.25, "XIU.TO": 0.08,
-    "RY.TO": 0.02, "TD.TO": 0.02, "FTS.TO": 0.02, "ENB.TO": 0.02,
-    "PG": 0.02, "JNJ": 0.02, "JPM": 0.02, "TSLA": 0.05
-  },
-  "notes": ["TSLA: requested 20%, applied 5% (low band single-stock cap)"]
-}
-```
-(XBB.TO moved from 45% to 48% here — that's `build_portfolios.round_weights()`'s
-"leftover to the largest bond" rounding fix-up, not a change caused by TSLA.)
+Checks long-only, finite weights summing to one before backtesting. All required policy checks contribute to the verdict:
 
-## validate(weights, band, start=None, end=None, rebalance="monthly", data_dir="alphaforge_starter", profiles_path="profiles.json")
+- Historical volatility and maximum drawdown limits.
+- Largest single-stock weight.
+- Combined BTC/ETH weight and crypto permission.
+- GLD weight.
 
-Backtests a weight set and checks it against the band's three limits from
-`profiles.json`. Default period: last 5 years of data in `data_dir`. Default
-rebalance: monthly, back to target weights.
+If crypto is held but the caller omits `crypto_allowed`, the verdict is `MISSING_INFO`. With no crypto held, an omitted flag does not block assessment. `evaluate` always supplies the selected profile's flag.
 
-**Input:** `validate(<Robert's base weights>, "low")`
+Returns metrics plus:
 
-**Output:**
-```json
-{
-  "annual_growth_pct": 5.6,
-  "volatility_pct": 4.7,
-  "max_drawdown_pct": -9.4,
-  "worst_drawdown_date": "2022-10-12",
-  "end_value": 13031.0,
-  "checks": {
-    "max_volatility_pct": {"limit": 7, "value": 4.7, "passes": true},
-    "max_drawdown_pct": {"limit": -15, "value": -9.4, "passes": true},
-    "max_single_stock_pct": {"limit": 5, "value": 3.0, "passes": true}
-  },
-  "passes": true
-}
+| Field | Meaning |
+| --- | --- |
+| `status` | `PASS`, `CONFLICT`, `INVALID_REQUEST`, or `MISSING_INFO` |
+| `passes` | True only after all required checks pass |
+| `checks` | Each rule's value, limit and pass result; missing information may use null |
+| `reasons` | Failed/unknown rule records for successfully calculated assessments |
+| `errors` | Error codes/messages for invalid or unavailable assessments |
+| `period` | Actual first/last observation dates and observation count |
+| `currency` | CAD |
+| `rebalance`, `method` | Historical calculation method |
+
+Invalid weights are not backtested. Missing files, unavailable asset history or fewer than three usable observations return `MISSING_INFO`, without fabricated risk numbers. The default window remains the last five years available in the dataset; mixed holdings use common observation dates. These historical measures are not future-loss guarantees.
+
+### Corrected monthly method
+
+`monthly_first_observed_close_v2` values existing units at the first common observed close of the new month, then rebalances to target weights. It preserves the return since the previous month's last close. Buy-and-hold uses `buy_and_hold_v1`.
+
+The old implementation discarded that boundary return. Stored validation metrics, trimming decisions and pass flags in `profiles.json` are therefore stale until regenerated using the agreed private CSVs. Synthetic tests establish accounting correctness, not corrected real-market results. The previous API's numerical examples must not be cited as current measurements.
+
+## evaluate(profile_id, changes, ...)
+
+```python
+result = evaluate(4, [{"ticker": "TSLA", "add_pct": 20}])
 ```
 
-## evaluate(profile_id, changes, data_dir="alphaforge_starter", profiles_path="profiles.json")
+This is the main function agents should call:
 
-**The one function agents should call.** Runs the proposal three ways — base
-(untouched), as-requested (no caps, to see if the raw request fits), adjusted
-(caps applied) — validates each, and reports whether the raw request was outside
-the profile, plus the largest whole-percent add that would still pass.
+| Field | Meaning |
+| --- | --- |
+| `base` | Original profile weights with freshly computed validation |
+| `as_requested` | Requested changes without applying policy caps |
+| `adjusted` | Separate capped candidate with its own validation; passing is not guaranteed |
+| `status` | Verdict for `as_requested`, never replaced with the adjusted verdict |
+| `outside_profile` | True for `CONFLICT`, false for `PASS`, null when invalid or unevaluable |
+| `notes` | Adjustments, unsupported operations and rounding explanations |
+| `max_allowed` | Feasible additional whole points, searched without capping trials |
 
-**Input:** `evaluate(4, [{"ticker": "TSLA", "add_pct": 20}])` (Robert + TSLA 20%)
+Each evaluable scenario has `weights` and `validation`. If a raw request cannot be funded, its weights are null with a structured error; a separately feasible capped alternative may still be returned. Malformed/unknown requests fail before scenario calculation: `base` and `adjusted` are null. Data unavailability returns `MISSING_INFO`.
 
-**Output:**
-```json
-{
-  "base": {
-    "weights": {"XBB.TO": 0.45, "ZST.TO": 0.25, "XIU.TO": 0.09, "RY.TO": 0.03,
-                "TD.TO": 0.03, "FTS.TO": 0.03, "ENB.TO": 0.03, "PG": 0.03,
-                "JNJ": 0.03, "JPM": 0.03},
-    "validation": {"annual_growth_pct": 5.6, "volatility_pct": 4.7,
-                   "max_drawdown_pct": -9.4, "worst_drawdown_date": "2022-10-12",
-                   "end_value": 13031.0, "passes": true, "checks": "..."}
-  },
-  "as_requested": {
-    "weights": {"...": "...", "TSLA": 0.2},
-    "validation": {"volatility_pct": 12.4, "max_drawdown_pct": -22.3,
-                   "passes": false, "checks": "..."}
-  },
-  "adjusted": {
-    "weights": {"...": "...", "TSLA": 0.05},
-    "validation": {"volatility_pct": 5.7, "max_drawdown_pct": -10.9,
-                   "passes": true, "checks": "..."}
-  },
-  "notes": ["TSLA: requested 20%, applied 5% (low band single-stock cap)"],
-  "outside_profile": true,
-  "max_allowed": {"TSLA": 20}
-}
+`max_allowed` is searched only for a `CONFLICT` and only up to the requested amount. With several changes, it varies one addition while keeping every other requested change fixed. These conditional maxima must not be combined into a supposedly approved portfolio. Repeated additions to one ticker omit that ambiguous maximum. Null means no passing trial was found, including zero; zero means the zero-addition trial actually passed.
+
+Example using **fabricated flat prices**: Robert's low-band profile plus a 20-point TSLA addition returns `CONFLICT`; raw TSLA weight is 20%, the capped candidate is 5%, and `max_allowed.TSLA` is 5 additional points if the rest of the scenario passes. Real prices can lower that feasible maximum. The earlier value of 20 referred to a request already clamped to the cap; that interpretation is no longer used.
+
+A `CONFLICT` is a valid result for the UI to explain. The release gate must check that the explanation accurately describes the failed proposal and the alternative's separate verdict. It must not hide the conflict or request prose retries to change computed facts.
+
+## Verification and regeneration
+
+Run the offline suite with the project interpreter:
+
+```powershell
+..\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-`max_allowed.TSLA` is 20 (the original request), not 5: once the single-stock
-cap clamps TSLA to 5%, the *capped* portfolio already passes every band limit,
-so the full requested amount is fine to send through `apply_changes` — the cap
-is what makes it fit. `outside_profile` is true because the *raw, uncapped*
-request would not have fit on its own; that's the signal that the user's request
-needed adjustment, not a verdict on the adjusted portfolio.
-
-## risk.py — risk_measures(ticker, start=None, end=None, data_dir="alphaforge_starter")
-
-Stub only (not yet implemented; calls currently raise `NotImplementedError`).
-Will return `volatility_pct`, `max_drawdown_pct`, `annual_growth_pct`,
-`years_of_data`, `first_date`, `last_date` for a single ticker, in CAD. See the
-docstring in `risk.py` for exact definitions.
+Synthetic regressions cover month-boundary gains/losses, hand-computable rebalancing, policy conflicts, invalid requests and valid controls. Dataset integration tests explicitly skip when the private CSVs are absent. Once the team has the agreed data, regenerate reference portfolios with `python build_portfolios.py alphaforge_starter profiles.json`, review changed metrics/allocations, and rerun the dataset tests. This overwrites the generated output; regeneration was not performed during this correction.
