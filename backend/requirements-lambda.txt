@@ -1,0 +1,5 @@
+# Direct runtime versions from the existing, tested development environment.
+# Install inside the Linux image; do not copy Windows site-packages to Lambda.
+numpy==2.5.4
+pandas==3.1.1
+boto3==1.44.3

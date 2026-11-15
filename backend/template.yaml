@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AlphaForge Lambda bootstrap (health only; portfolio pipeline pending).
+
+Resources:
+  AlphaForgeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+      DockerTag: python313-v1
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      MemorySize: 1024
+      Timeout: 120
+      EphemeralStorage:
+        Size: 512
+      Description: AlphaForge entry point; portfolio pipeline not yet connected.
+      # SAM creates a dedicated execution role with basic CloudWatch logging.
+      # Add scoped S3/Bedrock permissions when their runtime adapters are wired.
+      # No URL, API, workshop function, dataset or secret is provisioned here.
+
+  AlphaForgeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AlphaForgeFunction}'
+      RetentionInDays: 14
+
+Outputs:
+  FunctionName:
+    Description: Name for authenticated Lambda Invoke calls.
+    Value: !Ref AlphaForgeFunction
+  FunctionArn:
+    Value: !GetAtt AlphaForgeFunction.Arn

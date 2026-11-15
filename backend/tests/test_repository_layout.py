@@ -13,12 +13,15 @@ from alphaforge.infrastructure.local_data import (
     DEFAULT_DATA_DIR, DEFAULT_PROFILES_PATH, LocalPortfolioRepository,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+BACKEND = Path(__file__).resolve().parents[1]
+ROOT = BACKEND.parent
 
 
 def test_layer_imports_and_domain_io_boundaries():
     for layer in ("domain", "application"):
-        for file in (ROOT / "src/alphaforge" / layer).glob("*.py"):
+        files = list((BACKEND / "src/alphaforge" / layer).glob("*.py"))
+        assert files, f"Missing {layer} modules"
+        for file in files:
             tree = ast.parse(file.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if isinstance(node, ast.ImportFrom):

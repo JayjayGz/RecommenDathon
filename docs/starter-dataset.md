@@ -1,4 +1,4 @@
-> Archived organizer starter guide. Its filenames, counts and window describe the original 31-asset pack, not the current dataset. See [current dataset instructions](DATA.md). The generator is now `scripts/build_dataset.py` and writes a separate rebuild folder.
+> Archived organizer starter guide. Its filenames, counts and window describe the original 31-asset pack, not the current dataset. See [current dataset instructions](DATA.md). The generator is now `backend/scripts/build_dataset.py` and writes a separate rebuild folder.
 
 # AlphaForge AI starter dataset
 

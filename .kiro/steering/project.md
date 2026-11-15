@@ -1,6 +1,6 @@
 # Current layout and precedence
 
-Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `src/alphaforge/`; launch tools through `scripts/`.
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/`.
 
 # Project conventions (AlphaForge AI, PolyFinances Datathon 2026)
 

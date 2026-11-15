@@ -1,6 +1,6 @@
 # Current layout and precedence
 
-Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `src/alphaforge/`; launch tools through `scripts/`.
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/`.
 
 # Project conventions (AlphaForge AI, PolyFinances Datathon 2026)
 
@@ -58,7 +58,7 @@ An advisor-style simulation. A judge confirmed this framing is allowed if it is 
 1. Questionnaire (checkboxes and single choices). "I'm not sure" on hard questions opens a short chat; the agent maps the conversation back to a form answer and the user confirms.
 2. Scoring in code: risk capacity (horizon, liquidity, income stability) and risk tolerance (loss reaction, trade-off, experience), each 1-6. Risk level = the lower of the two.
 3. Profile = risk band (low 1-2, medium 3-4, high 5-6) x investment style (Broad diversifier, Home country, Growth and innovation, Income and stability, Responsible ESG) = 15 profiles, plus flags (crypto allowed, ESG screen, exclusions, home bias).
-4. Each profile has a reference portfolio built by rules (docs/portfolio_rules.md, src/alphaforge/domain/reference_portfolios.py) and validated against its band's limits.
+4. Each profile has a reference portfolio built by rules (docs/portfolio_rules.md, backend/src/alphaforge/domain/reference_portfolios.py) and validated against its band's limits.
 5. The user proposes an action (e.g. "move 20% into TSLA"). Agents analyze it against the profile and explain whether it fits, with sourced numbers, assumptions, limits and alternatives. The trace of agent and tool calls is shown.
 
 Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Amira -> profile 13.
@@ -72,11 +72,11 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 
 ## Key files
 - profiles.json: the contract. Band limits, 15 profiles with weights and validation results.
-- src/alphaforge/domain/reference_portfolios.py: builds profiles.json from the rules.
-- src/alphaforge/presentation/backtest_viewer.py: Streamlit page to inspect each profile's backtest.
+- backend/src/alphaforge/domain/reference_portfolios.py: builds profiles.json from the rules.
+- backend/src/alphaforge/presentation/backtest_viewer.py: Streamlit page to inspect each profile's backtest.
 
 ## Open decisions
-- Final asset list (team is picking its own assets; rebuild data with the starter generator in scripts/build_dataset.py).
+- Final asset list (team is picking its own assets; rebuild data with the starter generator in backend/scripts/build_dataset.py).
 - Growth style is too aggressive for low and medium bands (profiles 3 and 8 needed trimming).
 - ESG profiles are 100% U.S. (ESGV); consider adding a Canadian ESG ETF.
 - Equal weights vs inverse-volatility weights inside groups.
@@ -91,11 +91,11 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 
 # My files
 
-- scripts/build_portfolios.py: builds the 15 reference portfolios from rules and validates them against band limits. Run: `python scripts/build_portfolios.py dataset profiles.json`
-- scripts/backtest_viewer.py: Streamlit page to inspect profile backtests. Run: `python -m streamlit run scripts/backtest_viewer.py` (the sidebar defaults to dataset/)
+- backend/scripts/build_portfolios.py: builds the 15 reference portfolios from rules and validates them against band limits. Run: `python backend/scripts/build_portfolios.py dataset profiles.json`
+- backend/scripts/backtest_viewer.py: Streamlit page to inspect profile backtests. Run: `python -m streamlit run backend/scripts/backtest_viewer.py` (the sidebar defaults to dataset/)
 - profiles.json: output contract read by the questionnaire, agents and app.
-- docs/portfolio_rules.md: the allocation rules in words. Keep it in sync with src/alphaforge/domain/reference_portfolios.py.
-- dataset/asset_selection.csv and scripts/universe_v2.py: our own 34-ticker universe (replaces the starter tickers once the data is rebuilt with build_dataset.py).
+- docs/portfolio_rules.md: the allocation rules in words. Keep it in sync with backend/src/alphaforge/domain/reference_portfolios.py.
+- dataset/asset_selection.csv and backend/scripts/universe_v2.py: our own 34-ticker universe (replaces the starter tickers once the data is rebuilt with build_dataset.py).
 
 # Pending decisions (proposed, not yet applied)
 
@@ -106,4 +106,4 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 
 # How I want to work
 
-I'm learning: explain what you change and why, in plain language. I write the risk calculation module (src/alphaforge/application/risk.py) myself; review it and write tests for it, but don't write it for me unless I ask.
+I'm learning: explain what you change and why, in plain language. I write the risk calculation module (backend/src/alphaforge/application/risk.py) myself; review it and write tests for it, but don't write it for me unless I ask.

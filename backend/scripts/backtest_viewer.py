@@ -1,4 +1,4 @@
-"""Run with: python -m streamlit run scripts/backtest_viewer.py."""
+"""Run with: python -m streamlit run backend/scripts/backtest_viewer.py."""
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))

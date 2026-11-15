@@ -1,4 +1,4 @@
-"""Streamlit reference portfolio viewer; run scripts/backtest_viewer.py."""
+"""Streamlit reference portfolio viewer; run backend/scripts/backtest_viewer.py."""
 import json
 import pandas as pd
 from alphaforge.application.backtests import run_all

@@ -58,13 +58,17 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 
 ```text
 frontend/                        # Web presentation, assets and local HTTP proxy
-src/alphaforge/
+backend/src/alphaforge/
     presentation/backtest_viewer.py  # Streamlit UI
     application/                 # Calculation orchestration; repository and LLM ports
     domain/                      # Pure allocation, policy, FX/calendar and backtest functions
     infrastructure/              # Local CSV/JSON repository; Bedrock adapter
     bootstrap.py                 # Composition root wiring local ports/adapters
-scripts/                         # Developer entry points and original starter build tools
+backend/scripts/                 # Backend entry points and original starter build tools
+backend/tests/                   # Offline backend tests
+backend/pyproject.toml           # Python package configuration
+backend/requirements.txt         # Python dependencies
+scripts/                         # Project workflow checks
 dataset/                         # All local CSV inputs; ignored by Git
 profiles.json                    # Existing profile contract, retained at root
 ```
@@ -78,21 +82,25 @@ Application code depends on `PortfolioRepository` and Domain functions. `LocalPo
 | Previous location | Current location |
 | --- | --- |
 | `plateforme/` | `frontend/` |
+| `src/alphaforge/` | `backend/src/alphaforge/` |
+| `tests/` | `backend/tests/` |
+| Backend tools in `scripts/` | `backend/scripts/`; workflow checker stays in `scripts/` |
+| `pyproject.toml`, `requirements.txt` | `backend/pyproject.toml`, `backend/requirements.txt` |
 | `alphaforge_starter/dataset/*.csv` | `dataset/*.csv` |
 | `alphaforge_starter/README.md` | Archived `docs/starter-dataset.md`; current instructions in `dataset/README.md` |
-| `alphaforge_starter/build_dataset.py` | `scripts/build_dataset.py` (separate rebuild output) |
+| `alphaforge_starter/build_dataset.py` | `backend/scripts/build_dataset.py` (separate rebuild output) |
 | `historique_actifs_2011.csv` | `dataset/prices_daily.csv` (current supplied replacement; columns selected by name) |
 | `portfolio_engine.py` | `application/portfolio_engine.py` plus pure `domain/proposals.py` |
-| `backtest_viewer.py` | `presentation/backtest_viewer.py`, `application/backtests.py`, `domain/backtest.py`, `domain/market_data.py`; launch via `scripts/backtest_viewer.py` |
-| `build_portfolios.py` | `domain/reference_portfolios.py`, `application/reference_portfolios.py`; launch via `scripts/build_portfolios.py` |
+| `backtest_viewer.py` | `presentation/backtest_viewer.py`, `application/backtests.py`, `domain/backtest.py`, `domain/market_data.py`; launch via `backend/scripts/backtest_viewer.py` |
+| `build_portfolios.py` | `domain/reference_portfolios.py`, `application/reference_portfolios.py`; launch via `backend/scripts/build_portfolios.py` |
 | `risk.py` | `application/risk.py` (teammate-owned, still unimplemented) |
-| `universe_v2.py` | `scripts/universe_v2.py` (proposed universe) |
+| `universe_v2.py` | `backend/scripts/universe_v2.py` (proposed universe) |
 
-Python module paths in this table are under `src/alphaforge/`. Existing callers must import `create_engine` from `alphaforge.bootstrap` and call its methods instead of importing root-level `portfolio_engine`. Numerical rules and `profiles.json` contents were preserved.
+Python module paths in this table are under `backend/src/alphaforge/`. Existing callers must import `create_engine` from `alphaforge.bootstrap` and call its methods instead of importing root-level `portfolio_engine`. Numerical rules and `profiles.json` contents were preserved.
 
 ### Implemented versus planned
 
-The code currently provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The request flow above remains the target: full runtime orchestration, evidence validation, compliance release, Lambda handlers and S3 audit storage are not yet implemented. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
+The code currently provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. A [Lambda bootstrap](lambda-setup.md) supplies a health handler, container image definition and deployment template; portfolio requests explicitly remain unavailable. The request flow above remains the target: full runtime orchestration, evidence validation, compliance release, application API mapping and S3 audit storage are not yet implemented. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
 
 The active 102-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
 
