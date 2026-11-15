@@ -13,7 +13,8 @@ const key = 'recommand.platform.word16.v2';
 const appUrl = new URL('../src/app.js', import.meta.url);
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const completeAnswers = () => Object.fromEntries([
-  ...QUESTIONS.filter(q => !q.optional).map(q => [q.id, q.type === 'number' ? 0 : q.type === 'multi' ? [q.options[0][0]] : q.options[0][0]]),
+  ...QUESTIONS.filter(q => !q.optional && q.type !== 'text').map(q => [q.id, q.type === 'number' ? 0 : q.type === 'multi' ? [q.options[0][0]] : q.options[0][0]]),
+  ['noNotes', true], // final notes: explicitly nothing to add
 ]);
 
 async function open(t, saved = {}, legacy = false, options = {}) {
@@ -62,6 +63,10 @@ test('all 15 questions match the Word snapshot with the explicit user removals',
   exclusions.details[0].label = 'Précisez ce que vous voulez exclure (obligatoire)';
   exclusions.details[0].when.values = ['limits'];
   exclusions.details[0].required = true;
+  const notesQuestion = expected.find(q => q.id === 'notes');
+  delete notesQuestion.optional;
+  notesQuestion.help = notesQuestion.help.replace('Réponse facultative.', 'Écrivez vos précisions ou cochez « Je n’ai rien à ajouter ».');
+  notesQuestion.confirmField = 'noNotes';
   for (const q of expected) for (const f of q.details) {
     if (['maritalOther','dependentsOther','incomeOther','debtOther'].includes(f.key)) { f.required=true; f.label='Pr\u00e9cisez votre situation (obligatoire)'; }
     if (f.key==='goalDetails') { f.requiredWhen={field:'goal',values:['other']}; f.label='Pr\u00e9cisez votre objectif (obligatoire si Autre)'; }
@@ -240,13 +245,32 @@ test('all assets is exclusive, crypto details persist for all and are cleared wh
   assert.equal(app.saved().answers.cryptoDetails, undefined);
 });
 
-test('optional final notes can be empty, typed or explicitly declined', async t => {
-  const app = await open(t, { step: 14, answers: completeAnswers() });
+test('final notes need text or an explicit "rien à ajouter"; blank is rejected', async t => {
+  const { noNotes, ...withoutConfirmation } = completeAnswers();
+  const app = await open(t, { step: 14, answers: withoutConfirmation });
+  app.next(); assert.notEqual(app.saved().complete, true);
+  assert.match(app.$('#question-error').textContent, /Complétez/);
   app.type('[data-answer="notes"]', 'Mon projet');
   app.$('[data-detail="noNotes"]').click();
   assert.equal(app.$('[data-answer="notes"]').disabled, true);
   assert.equal(app.saved().answers.notes, undefined);
   app.next(); assert.equal(app.saved().complete, true); assert.ok(app.$('.dashboard'));
+});
+
+test('typed final notes alone also complete the questionnaire', async t => {
+  const { noNotes, ...withoutConfirmation } = completeAnswers();
+  const app = await open(t, { step: 14, answers: withoutConfirmation });
+  app.type('[data-answer="notes"]', 'Projet de maison dans trois ans');
+  app.next(); assert.equal(app.saved().complete, true);
+});
+
+test('the final button explains why it jumps back to an incomplete question', async t => {
+  const answers = { ...completeAnswers(), exclusions: 'limits' }; // Limites with no details
+  const app = await open(t, { step: QUESTIONS.length - 1, answers });
+  app.next();
+  assert.equal(app.saved().step, QUESTIONS.findIndex(q => q.id === 'exclusions'));
+  assert.notEqual(app.saved().complete, true);
+  assert.match(app.$('#question-error').textContent, /incomplète/);
 });
 
 test('exclusion details survive a relevant choice and disappear with no exclusions', async t => {
@@ -276,6 +300,7 @@ test('all 15 questions are traversable and answers remain available on return', 
     assert.equal(app.$('#question-title').textContent, q.title);
     if (q.type === 'number') app.type('[data-answer="emergencyFund"]', '2500.50');
     else if (q.type !== 'text') app.choose(q.options[0][0]);
+    else app.$('[data-detail="noNotes"]').click(); // final notes: explicitly nothing to add
     app.next();
   }
   assert.equal(app.saved().page, 'portfolio'); assert.ok(app.$('.dashboard'));
@@ -310,9 +335,11 @@ test('jumping to the last question cannot bypass required answers', async t => {
   const app = await open(t);
   app.$('[data-question-index="14"]').click();
   assert.equal(app.$('#question-title').textContent, QUESTIONS[14].title);
+  app.$('[data-detail="noNotes"]').click(); // answer Q15 itself so the jump-back check is what's tested
   app.next();
   assert.equal(app.$('#question-title').textContent, QUESTIONS[0].title);
   assert.equal(app.saved().step, 0);
+  assert.match(app.$('#question-error').textContent, /incomplète/);
   assert.equal(app.$('[data-page="portfolio"]').disabled, true);
   assert.notEqual(app.saved().complete, true);
   assert.equal(app.w.document.querySelectorAll('.progress-track [aria-current="step"]').length, 1);
@@ -373,9 +400,14 @@ test('typed payload accepts legitimate values and rejects unknown, stale and con
   assert.equal(validateAnswers({...answers, assets:['all','stocks']}), false);
   assert.equal(validateAnswers({...answers, maritalOther:'hidden'}), false);
   assert.equal(validateAnswers({...answers, notes:'texte', noNotes:true}), false);
-  assert.equal(validateAnswers({...answers, notes:'<script>not executable</script>'}), true);
+  const { noNotes, ...withoutConfirmation } = answers;
+  assert.equal(validateAnswers({...withoutConfirmation, notes:'<script>not executable</script>'}), true);
+  assert.equal(validateAnswers(withoutConfirmation), false);
   assert.equal(cleanAnswers({...answers, mortgageAmount:0}).mortgageAmount, 0);
-  assert.equal(isAnswered(QUESTIONS[14], {}), true);
+  assert.equal(isAnswered(QUESTIONS[14], {}), false);
+  assert.equal(isAnswered(QUESTIONS[14], {noNotes:true}), true);
+  assert.equal(isAnswered(QUESTIONS[14], {noNotes:false}), false);
+  assert.equal(isAnswered(QUESTIONS[14], {notes:'Texte'}), true);
 });
 
 test('source scenario is fictional and illustrations cover each subject without market data', () => {

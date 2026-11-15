@@ -508,8 +508,7 @@ export const QUESTIONS = [
     "title": "Avez-vous d’autres précisions à apporter pour nous aider à comprendre votre situation ?",
     "type": "text",
     "options": [],
-    "help": "Vous pouvez préciser un projet à venir, une dépense importante, un changement familial ou professionnel, une contrainte ou une préoccupation concernant vos placements. N’inscrivez aucun numéro de compte ni renseignement bancaire confidentiel. Réponse facultative.",
-    "optional": true,
+    "help": "Vous pouvez préciser un projet à venir, une dépense importante, un changement familial ou professionnel, une contrainte ou une préoccupation concernant vos placements. N’inscrivez aucun numéro de compte ni renseignement bancaire confidentiel. Écrivez vos précisions ou cochez « Je n’ai rien à ajouter ».",
     "details": [
       {
         "key": "noNotes",
@@ -517,7 +516,8 @@ export const QUESTIONS = [
         "type": "boolean",
         "required": false
       }
-    ]
+    ],
+    "confirmField": "noNotes"
   }
 ];
 
@@ -554,7 +554,9 @@ export function fieldRequired(field, answers) {
 }
 
 export function isAnswered(question, answers) {
-  const main = question.optional || validValue(question, answers[question.id]);
+  // confirmField: an explicit checkbox (e.g. "Je n’ai rien à ajouter") can stand in for the main answer.
+  const main = question.optional || validValue(question, answers[question.id])
+    || (question.confirmField !== undefined && answers[question.confirmField] === true);
   return Boolean(main && question.details.every(field => !fieldRequired(field, answers) || !fieldVisible(field, answers) || validValue(field, answers[field.key])));
 }
 

@@ -16,7 +16,7 @@ test('HTTP adapter accepts the typed Word contract and rejects stale or malforme
   if (!server.listening) await once(server,'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const answers = Object.fromEntries(QUESTIONS.filter(q=>!q.optional).map(q=>[q.id,q.type==='number'?0:q.type==='multi'?[q.options[0][0]]:q.options[0][0]]));
+  const answers = {...Object.fromEntries(QUESTIONS.filter(q=>!q.optional&&q.type!=='text').map(q=>[q.id,q.type==='number'?0:q.type==='multi'?[q.options[0][0]]:q.options[0][0]])), noNotes:true};
   const send = (version, values) => fetch(`${base}/api/portfolio`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({questionnaire:{version,answers:values}})});
   const classification=await (await fetch(base+'/api/asset-categories')).json();
   assert.equal(classification.categories.SPY,'etf_equity');

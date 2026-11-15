@@ -94,6 +94,12 @@ output[14]['details'][0]['label'] = 'Précisez ce que vous voulez exclure (oblig
 output[14]['details'][0]['when']['values'] = ['limits']
 # "Limites" without saying what to exclude cannot be applied by the engine.
 output[14]['details'][0]['required'] = True
+# Final notes: write something or explicitly tick "rien à ajouter", so a blank
+# answer is a confirmation rather than a possibly skipped question.
+notes = next(question for question in output if question['id'] == 'notes')
+notes.pop('optional', None)
+notes['help'] = notes['help'].replace('Réponse facultative.', 'Écrivez vos précisions ou cochez « Je n’ai rien à ajouter ».')
+notes['confirmField'] = 'noNotes'
 output[0]['options'] = [option for option in output[0]['options'] if option[0] != 'separated']
 output[6]['details'] = [field for field in output[6]['details'] if field['key'] != 'targetAmount']
 

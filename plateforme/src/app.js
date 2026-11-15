@@ -676,7 +676,12 @@ document.addEventListener('submit', event => {
     if (state.step < QUESTIONS.length - 1) { state.step++; persist(); render(); focusQuestion(); }
     else {
       const missing = QUESTIONS.findIndex(q => !isAnswered(q, state.answers));
-      if (missing >= 0) { state.step = missing; persist(); render(); focusQuestion(); return; }
+      if (missing >= 0) {
+        state.step = missing; persist(); render(); focusQuestion();
+        // Say why we jumped back instead of silently changing question.
+        $('#question-error').textContent = 'Cette question est incomplète. Complétez-la pour découvrir votre portefeuille.';
+        return;
+      }
       state.complete = true; state.page = 'portfolio'; persist(); render(); window.scrollTo(0, 0); $('#main').focus({ preventScroll: true });
       if (portfolioConnected && !state.result) generatePortfolio();
     }
