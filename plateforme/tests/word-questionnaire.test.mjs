@@ -406,25 +406,25 @@ test('the portfolio gives the explanation a main region and keeps demo reasons e
   assert.equal(app.$('.holdings-card').previousElementSibling.className, 'portfolio-refine');
   assert.equal(app.$('[href="#portfolio-explanation"]').textContent.includes('Comprendre'), true);
   const tabs = [...studio.querySelectorAll('[role="tab"]')];
-  assert.equal(tabs.length, 3);
+  assert.equal(tabs.length, 2);
   tabs[1].click();
-  assert.equal(app.$('#decision-panel-sources').hidden, false);
+  assert.equal(app.$('#decision-panel-limits').hidden, false);
   assert.equal(app.$('#decision-panel-overview').hidden, true);
   assert.equal(tabs[1].getAttribute('aria-selected'), 'true');
   const browserShortcut = new app.w.KeyboardEvent('keydown', { key: 'End', ctrlKey: true, bubbles: true, cancelable: true });
   tabs[1].dispatchEvent(browserShortcut);
   assert.equal(browserShortcut.defaultPrevented, false);
-  assert.equal(app.$('#decision-panel-sources').hidden, false);
-  tabs[1].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+  assert.equal(app.$('#decision-panel-limits').hidden, false);
+  tabs[0].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
   assert.equal(app.w.document.activeElement.id, 'decision-tab-limits');
   assert.equal(app.$('#decision-panel-limits').hidden, false);
-  tabs[2].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+  tabs[1].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
   assert.equal(app.w.document.activeElement.id, 'decision-tab-overview');
   assert.equal(app.$('#decision-panel-overview').hidden, false);
   assert.match(app.$('#decision-panel-limits').textContent, /Aucune performance ni adéquation/);
 });
 
-test('the agent explanation, sources and limitations are displayed from the actual portfolio response', async t => {
+test('the actual explanation and limitations are displayed while internal evidence stays hidden', async t => {
   const result = resetResult();
   result.runId = 'explanation-contract-fixture';
   result.explanation = 'Premier paragraphe de la fixture.\n\nUn second paragraphe <img src=x onerror=alert(1)>.';
@@ -447,11 +447,11 @@ test('the agent explanation, sources and limitations are displayed from the actu
   assert.equal(rationale.querySelector('img'), null);
   assert.match(app.$('.decision-footer').textContent, /explanation-contract-fixture/);
   assert.equal(app.$('.evidence-card'), null, 'no duplicate explanation far below the result');
-  app.$('#decision-tab-sources').click();
-  assert.equal(app.$('#decision-panel-sources').hidden, false);
-  assert.equal(app.$('#decision-panel-sources a').href, 'https://example.com/fixture');
-  assert.equal(app.$('#decision-panel-sources a').rel, 'noopener noreferrer');
-  assert.match(app.$('#decision-panel-sources').textContent, /Source synthétique uniquement/);
+  assert.equal(app.$('#decision-tab-sources'), null);
+  assert.equal(app.$('#decision-panel-sources'), null);
+  assert.equal(app.$('.evidence-sources'), null);
+  assert.doesNotMatch(app.$('#portfolio-explanation').textContent, /Source synthétique uniquement|https:\/\/example.com\/fixture/);
+  assert.deepEqual(app.saved().result.evidence, result.evidence);
   app.$('#decision-tab-limits').click();
   assert.equal(app.$('#decision-panel-limits li').textContent, result.limitations[0]);
   assert.equal(app.$('#decision-panel-limits script'), null);

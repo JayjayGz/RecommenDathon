@@ -206,7 +206,7 @@ function updateQuestionSelection(question) {
 }
 
 let explanationView = 'overview';
-const explanationTabs = [['overview', 'L’explication'], ['sources', 'Les sources'], ['limits', 'Les limites']];
+const explanationTabs = [['overview', 'L’explication'], ['limits', 'Les limites']];
 
 function shortAnswer(id, field = id) {
   const question = QUESTIONS.find(item => item.id === id);
@@ -261,12 +261,9 @@ function decisionStudio() {
     <div class="decision-masthead"><span class="eyebrow">02 / LE REGARD DE VOTRE AGENT</span><span class="decision-seal">${spark()}<span>${result ? 'Explication du résultat' : 'Aperçu de l’espace'}</span></span></div>
     <h2 id="explanation-title">Pourquoi<br> <em>ces choix ?</em></h2>
     <p class="decision-intro">${result ? 'Les raisons communiquées par votre agent, avec les éléments pour les examiner.' : 'Comprendre la logique du portefeuille compte autant que sa composition.'}</p>
-    <div class="decision-tabs" role="tablist" aria-label="Comprendre le portefeuille">${explanationTabs.map(([id, label]) => `<button id="decision-tab-${id}" role="tab" data-explanation-tab="${id}" aria-controls="decision-panel-${id}" aria-selected="${explanationView === id}" tabindex="${explanationView === id ? '0' : '-1'}">${label}${result && id !== 'overview' ? `<span>${id === 'sources' ? result.evidence.length : result.limitations.length}</span>` : ''}</button>`).join('')}</div>
+    <div class="decision-tabs" role="tablist" aria-label="Comprendre le portefeuille">${explanationTabs.map(([id, label]) => `<button id="decision-tab-${id}" role="tab" data-explanation-tab="${id}" aria-controls="decision-panel-${id}" aria-selected="${explanationView === id}" tabindex="${explanationView === id ? '0' : '-1'}">${label}${result && id === 'limits' ? `<span>${result.limitations.length}</span>` : ''}</button>`).join('')}</div>
     <div class="decision-panel" id="decision-panel-overview" role="tabpanel" aria-labelledby="decision-tab-overview" tabindex="0" ${explanationView === 'overview' ? '' : 'hidden'}>
-      ${result ? `<div class="agent-rationale">${explanationParagraphs(result.explanation)}</div>` : `<div class="explanation-empty"><span class="empty-label">${loadingPortfolio ? 'EXPLICATION EN PRÉPARATION' : 'DÉMONSTRATION · EXPLICATION NON DISPONIBLE'}</span><p>${loadingPortfolio ? 'L’explication apparaîtra avec le portefeuille, ses sources et ses limites.' : 'Cet exemple n’est pas personnalisé. Dès qu’une recommandation sera disponible, votre agent expliquera ici ses choix.'}</p><ol class="explanation-topics"><li><span>01</span><div><strong>Pourquoi ces actifs ?</strong><small>Leur rôle et les raisons de leur sélection.</small></div></li><li><span>02</span><div><strong>Pourquoi cette répartition ?</strong><small>La logique des pondérations et les compromis retenus.</small></div></li><li><span>03</span><div><strong>Qu’est-ce qui mérite votre attention ?</strong><small>Les risques, les hypothèses et les limites à comprendre.</small></div></li></ol></div>`}
-    </div>
-    <div class="decision-panel" id="decision-panel-sources" role="tabpanel" aria-labelledby="decision-tab-sources" tabindex="0" ${explanationView === 'sources' ? '' : 'hidden'}>
-      ${result ? `<h3>Sur quoi repose l’explication ?</h3><div class="evidence-sources">${result.evidence.map(sourceMarkup).join('')}</div><p class="decision-note">Ces références sont celles fournies avec ce résultat.</p>` : '<h3>Les éléments pour comprendre.</h3><p>Aucune source de recommandation n’est disponible pour cette allocation illustrative. Les références transmises avec le résultat seront présentées ici.</p>'}
+      ${result ? `<div class="agent-rationale">${explanationParagraphs(result.explanation)}</div>` : `<div class="explanation-empty"><span class="empty-label">${loadingPortfolio ? 'EXPLICATION EN PRÉPARATION' : 'DÉMONSTRATION · EXPLICATION NON DISPONIBLE'}</span><p>${loadingPortfolio ? 'L’explication apparaîtra avec le portefeuille, ses limites.' : 'Cet exemple n’est pas personnalisé. Dès qu’une recommandation sera disponible, votre agent expliquera ici ses choix.'}</p><ol class="explanation-topics"><li><span>01</span><div><strong>Pourquoi ces actifs ?</strong><small>Leur rôle et les raisons de leur sélection.</small></div></li><li><span>02</span><div><strong>Pourquoi cette répartition ?</strong><small>La logique des pondérations et les compromis retenus.</small></div></li><li><span>03</span><div><strong>Qu’est-ce qui mérite votre attention ?</strong><small>Les risques, les hypothèses et les limites à comprendre.</small></div></li></ol></div>`}
     </div>
     <div class="decision-panel" id="decision-panel-limits" role="tabpanel" aria-labelledby="decision-tab-limits" tabindex="0" ${explanationView === 'limits' ? '' : 'hidden'}>
       ${result ? `<h3>Les points à garder en tête.</h3>${result.limitations.length ? `<ul class="decision-limitations">${result.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '<p>L’agent n’a communiqué aucune limite. Cela ne signifie pas qu’il n’en existe aucune.</p>'}` : '<h3>Un aperçu, sans décision personnalisée.</h3><p>Les poids affichés ne découlent pas de vos réponses. Aucune performance ni adéquation à votre situation n’a été évaluée pour cet exemple.</p>'}
@@ -319,15 +316,6 @@ function portfolioBanner() {
   if (loadingPortfolio) return `<div class="demo-banner"><span class="loading-ring" role="status" aria-label="Chargement"></span><p><strong>Votre moteur prépare votre portefeuille.</strong> L’exemple reste visible pendant la préparation de votre simulation.</p></div>`;
   if (state.result) return `<div class="demo-banner result-banner">${icon('check')}<p><strong>${escape(state.result.portfolio.name)}</strong> · Simulation transmise par votre moteur. Un résumé et les limites accompagnent le résultat.</p><button class="text-button" data-action="sources">Comprendre ${icon('arrow')}</button></div>`;
   return `<div class="demo-banner">${icon('info')}<p>Allocation illustrative, non personnalisée.${portfolioError ? `<span class="portfolio-error">${escape(portfolioError)}</span>` : ''}</p>${portfolioConnected ? `<button class="text-button" data-action="generate-portfolio">${portfolioError ? 'Réessayer' : 'Créer ma simulation'} ${icon('arrow')}</button>` : '<span class="badge">DÉMONSTRATION</span>'}</div>`;
-}
-
-function sourceMarkup(item) {
-  let source = escape(item.source);
-  try {
-    const url = new URL(item.source);
-    if (['https:', 'http:'].includes(url.protocol)) source = `<a href="${escape(url.href)}" target="_blank" rel="noopener noreferrer">${escape(item.source)}</a>`;
-  } catch { /* Une source peut être un fichier du jeu de données. */ }
-  return `<div class="evidence-source"><span>${escape(item.id)}</span><div><strong>${source}</strong><p>${escape(item.description)}</p></div></div>`;
 }
 
 function evidenceBody(result) {
