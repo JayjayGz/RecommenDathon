@@ -131,8 +131,7 @@ named test cases).
 - **Max drawdown**: the worst peak-to-trough decline in the value series, with its date.
 - **Annual growth**: compound annual growth rate from the first to the last value.
 - **Only common trading days** are used — any date where even one holding lacks a price
-  is dropped (this is why crypto's weekend-trading doesn't distort the numbers: the
-  common-date intersection with weekday-only ETFs/stocks naturally excludes weekends).
+  is dropped.
 
 ## 5. Demo examples, with real numbers
 
@@ -143,12 +142,13 @@ named test cases).
 | Status | PASS | CONFLICT | PASS |
 | Volatility | 4.9% | 12.2% (limit 7%) | 5.7% |
 | Max drawdown | -8.9% | -19.6% (limit -15%) | -10.3% |
-| Single stock | — | 20% (limit 5%) | 5.0% |
+| Single stock | 3.0% | 20% (limit 5%) | 5.0% |
 | End value ($10,000 start) | $13,368 | $13,631 | $13,204 |
 
 Note: "requested 20%, applied 5%" — the single-stock cap. `max_allowed` for this case
-reports 20, not 5: once capped to 5%, the *capped* portfolio already passes every limit,
-so the full raw request is fine to submit — the cap itself is what makes it fit.
+reports **5**, not 20: it searches for the largest *raw* request that itself, uncapped,
+would still pass every limit — so it directly answers "how much TSLA could Robert
+actually add," not "what number is safe to type in and let the cap handle it."
 
 **Amira (profile 13) asks to add 15% BTC-USD.** Result: `CONFLICT`.
 
@@ -203,9 +203,8 @@ obtained.
 
 ## 7. Limitations and next steps
 
-- **Weekly data smooths over real volatility.** The same scenarios run on daily data
-  read slightly higher on both volatility and max drawdown across the board — weekly
-  observations miss intra-week swings that daily data captures directly.
+- **Weekly Friday prices can understate drawdowns**: a mid-week drop that recovers by
+  Friday doesn't appear in the data at all.
 - **The backtest window includes 2022**, a real down year — worst-drawdown dates for
   every profile tested fall in 2022, which is informative but also means these numbers
   reflect one specific historical period, not a guarantee of future behavior.
