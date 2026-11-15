@@ -81,7 +81,7 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 # Repo and teamwork (read before changing anything)
 
 - Repo: https://github.com/JayjayGz/RecommenDathon. My work is on branch `portfolios`. Never switch branches or commit to a teammate's branch (`agents`, `test`) without asking.
-- Only stage files I name or that you created for me. Never `git add .` or `git add docs` (teammates have uncommitted files in docs/).
+- Only stage files I name or that you created for me. Never `git add .` or `git add docs` (teammates have uncommitted files in docs/). In docs/, I can commit my own files by name (DATA.md, portfolio_rules.md, or any file I tell you to add) — never commit teammates' docs.
 - Data CSVs live in `alphaforge_starter/` and are not committed (Yahoo Finance terms). See docs/DATA.md.
 - Teammates' design docs: docs/architecture.md, docs/agent-responsibilities.md, docs/aws-services.md, docs/investor-profile-schema.json, docs/pipeline.mmd. Treat them as the team's source of truth; flag any conflict with this file instead of overwriting them.
 
