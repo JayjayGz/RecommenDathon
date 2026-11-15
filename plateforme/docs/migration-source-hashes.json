@@ -1,0 +1,90 @@
+[
+    {
+        "sha256":  "8CFEBDFD30EB6217F8A51E92E76E89EBC989878094119C15B1A9F5B430BD4D0B",
+        "path":  "index.html"
+    },
+    {
+        "sha256":  "EDE6ED309D6E9D96DE201AA5A999B31EA9C8AECDF290F313A73CE424590694B3",
+        "path":  "package.json"
+    },
+    {
+        "sha256":  "B67E5E6E3DAFC66532B733809B302590B435E7BD72A6BF13DCEA2AF6EFB73042",
+        "path":  "Questionnaire_client_Recommand.json"
+    },
+    {
+        "sha256":  "77411F47AF4EB94A5D3704E4C9575DCDFA7FFE1FD405A4202D567121A55B7764",
+        "path":  "README.md"
+    },
+    {
+        "sha256":  "75F4957EDA8E18035A8B7B5749ADDBFAE26CB934CEBFBA132B2C78B7A484B46E",
+        "path":  "server.mjs"
+    },
+    {
+        "sha256":  "ABE4532649F27B0A51ED206D018913F3D4FC497483D0B330FF1E69176C059051",
+        "path":  "assets\\architecture.jpg"
+    },
+    {
+        "sha256":  "CE45288DF4B649B5C9A9C5CD72B9037F53341D0D7EECB33A7C2AC6A3E7E3516D",
+        "path":  "assets\\curves.jpg"
+    },
+    {
+        "sha256":  "5D14700FC0C3FDE94C2BE35CECA6B691621FBD056E58409F07DC10D55508CB2E",
+        "path":  "assets\\favicon.svg"
+    },
+    {
+        "sha256":  "DB65353601C61E4C21A61A5922E5851CCF9B542506C53CC52B8FE31EDAD9EE16",
+        "path":  "assets\\water.jpg"
+    },
+    {
+        "sha256":  "9AF36190332437F5ECD09974DE43C1F7C77A310A996CDD8CEB25628B458840E1",
+        "path":  "assets\\fonts\\DM-Sans-OFL.txt"
+    },
+    {
+        "sha256":  "9FEA608A947E67020C33CAD9A6FE3D60C54119DFB8CFF87768A8117A15ED7543",
+        "path":  "assets\\fonts\\dm-sans.woff2"
+    },
+    {
+        "sha256":  "5A51946DFFFA82972BC98745359C46761515641FDA557C25116459A9F83DA4A7",
+        "path":  "assets\\fonts\\instrument-serif-italic.woff2"
+    },
+    {
+        "sha256":  "918ACA23EAB7BF6B4BEC8B3155432BDFC17985D2FBB2516C2629785BD1FEFF42",
+        "path":  "assets\\fonts\\Instrument-Serif-OFL.txt"
+    },
+    {
+        "sha256":  "5EB09B5AC0E28B67C2F041C8BA6D244604CA0C0980D65912AB2D47FED84DDC31",
+        "path":  "assets\\fonts\\instrument-serif.woff2"
+    },
+    {
+        "sha256":  "67204BD89B772AD90018274389FDC9665F66E6091099B958D6A4B06F337DAB1D",
+        "path":  "docs\\AGENT_INTEGRATION.md"
+    },
+    {
+        "sha256":  "065B3D06C99D6A778606CC8CBBBA3C2222137547808C1512E5594E641E5D8CBD",
+        "path":  "docs\\DECISIONS.md"
+    },
+    {
+        "sha256":  "121EA5BD7D93B2D7145AE5EF61B4510E4514AC4A4EDEC87575CA40107C8B849C",
+        "path":  "docs\\INSPIRATIONS.md"
+    },
+    {
+        "sha256":  "1B9A2E5D1E0ADD591ED023424462E4C248979F096231805D7913EB734EFBED0E",
+        "path":  "src\\app.js"
+    },
+    {
+        "sha256":  "C9809176D6598D24BF03DE5D255C6447BB6E131902F74BEF5114F96B1D3E0B75",
+        "path":  "src\\data.js"
+    },
+    {
+        "sha256":  "39A52E00610822AEC68D3E72BD9A070E51D39227C3CB79D9F5F8F0AEDC7E4452",
+        "path":  "src\\export.js"
+    },
+    {
+        "sha256":  "E9A9D3A1247D341F3839E1278DFEB5A56DB95652E811079CAFF56F1009803FB5",
+        "path":  "src\\integration.js"
+    },
+    {
+        "sha256":  "6F361E201E2F4384E754287B535A2E9639AB1C844862F8357344F84E9A4AA3EC",
+        "path":  "src\\styles.css"
+    }
+]

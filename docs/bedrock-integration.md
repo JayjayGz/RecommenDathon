@@ -6,7 +6,7 @@
 
 `backend/scripts/bedrock_smoke_test.py` makes one logical live generation request only when explicitly run. `backend/tests/test_bedrock.py` uses mocks and a botocore stub, with no network or real credentials.
 
-This change does not implement a production explanation prompt, Evidence Bundle validation, compliance gate, S3 audit persistence, Lambda handler or Strands tool loop. Never present its raw output as a validated recommendation.
+The adapter itself does not validate evidence or persist runs. The [proposal workflow](orchestrator.md) now connects it to the Lambda handler, typed evidence, controlled explanation rendering, release checks and S3/local audits. It accepts only an ordered list of vetted claim IDs from the model; raw free-form text is not released. Full questionnaire integration and a Strands tool loop remain outside this implementation.
 
 ## Which agents use a model?
 

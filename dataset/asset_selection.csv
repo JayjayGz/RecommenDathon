@@ -1,0 +1,35 @@
+ticker,name,role,used_by,reason
+ZAG.TO,BMO Aggregate Bond Index ETF,Bonds,All bands,Core Canadian investment-grade bond holding
+XSB.TO,iShares Core Canadian Short Term Bond Index ETF,Bonds,Low and medium bands,Shorter duration; fell less than aggregate bonds when rates rose in 2022
+ZST.TO,BMO Ultra Short-Term Bond ETF,Cash-like,Low band,Capital preservation for near-term needs (Robert)
+XRB.TO,iShares Canadian Real Return Bond Index ETF,Bonds,Low band (income and stability),Inflation-linked; tests whether inflation protection helps a retiree
+BND,Vanguard Total Bond Market ETF,Bonds,Medium band,U.S. bond diversification
+XIC.TO,iShares Core S&P/TSX Capped Composite Index ETF,Equity core,Broad and home country styles,Whole Canadian market (about 220 companies) rather than the 60 largest
+VFV.TO,Vanguard S&P 500 Index ETF,Equity core,Broad and growth styles,U.S. market bought in CAD on the TSX (still exposed to USD/CAD through its holdings)
+XEF.TO,iShares Core MSCI EAFE IMI Index ETF,Equity core,Broad style,International developed markets: real global diversification
+XEC.TO,iShares Core MSCI Emerging Markets IMI Index ETF,Equity core,Broad style (high band),Emerging markets for long-horizon profiles
+QQQ,Invesco QQQ Trust (Nasdaq-100),Growth,Growth style,U.S. tech and growth through a diversified fund
+XIT.TO,iShares S&P/TSX Capped Information Technology Index ETF,Growth,Growth and home country styles,Canadian tech exposure without single-stock risk
+VDY.TO,Vanguard FTSE Canadian High Dividend Yield Index ETF,Income,Income style,Diversified Canadian dividend payers
+SCHD,Schwab U.S. Dividend Equity ETF,Income,Income style,Diversified U.S. dividend payers
+XESG.TO,iShares ESG Aware MSCI Canada Index ETF,ESG,Responsible (ESG) style,Canadian ESG equity (inception 2019-03-18); check holdings for energy names before applying fossil-fuel exclusions
+ESGV,Vanguard ESG U.S. Stock ETF,ESG,Responsible (ESG) style,ESG-screened U.S. equity (Mateo)
+GLD,SPDR Gold Shares,Alternative,Medium and high bands,Diversifier that behaves differently from stocks and bonds
+BTC-USD,Bitcoin,Crypto,Growth style when crypto is allowed,Amira's stated interest; capped by band
+ETH-USD,Ether,Crypto,Growth style when crypto is allowed,Amira's stated interest; capped by band
+RY.TO,Royal Bank of Canada,Single stock,Income and home country styles,Largest Canadian bank in Nov 2021; long dividend record
+TD.TO,Toronto-Dominion Bank,Single stock,Income and home country styles,Second-largest Canadian bank in Nov 2021; long dividend record
+FTS.TO,Fortis,Single stock,Income and home country styles,Largest Canadian regulated utility; long dividend growth record
+ENB.TO,Enbridge,Single stock,Income style,Largest Canadian pipeline; high dividend; excluded when fossil-fuel exclusion applies
+CNR.TO,Canadian National Railway,Single stock,Home country style,Largest Canadian railway in Nov 2021
+ATD.TO,Alimentation Couche-Tard,Single stock,Home country style,Largest Canadian consumer staples company in Nov 2021
+SHOP.TO,Shopify,Single stock,Growth (high band),Largest TSX company by market value in Nov 2021; very volatile since
+CSU.TO,Constellation Software,Single stock,Growth (high band),Large Canadian software company in Nov 2021
+MSFT,Microsoft,Single stock,Growth (high band),Among the largest U.S. companies in Nov 2021
+NVDA,NVIDIA,Single stock,Growth (high band),Among the largest U.S. companies in Nov 2021; AI theme (Amira)
+JNJ,Johnson & Johnson,Single stock,Income style,Long-standing U.S. dividend payer
+PG,Procter & Gamble,Single stock,Income style,Long-standing U.S. dividend payer
+TSLA,Tesla,Demo only,Robert's push-back test,High-profile volatile stock; not held in any profile
+VCNS.TO,Vanguard Conservative ETF Portfolio,Benchmark,Compare with low band,Industry all-in-one conservative portfolio
+VBAL.TO,Vanguard Balanced ETF Portfolio,Benchmark,Compare with medium band,Industry all-in-one balanced portfolio
+VGRO.TO,Vanguard Growth ETF Portfolio,Benchmark,Compare with high band,Industry all-in-one growth portfolio

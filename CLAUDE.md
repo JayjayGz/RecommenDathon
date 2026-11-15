@@ -1,6 +1,6 @@
 # Current layout and precedence
 
-Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/` (the dataset build script is `backend/scripts/build_dataset.py`; starter dataset docs are at `docs/starter-dataset.md`).
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_weekly.csv` as the committed prices file for analysis (a daily starter copy stays local only, at `dataset/starter_daily/`). The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). The profile-ID proposal workflow now connects Lambda, evidence/release checks and S3/local auditing (docs/orchestrator.md); questionnaire mapping is implemented (`backend/src/alphaforge/domain/profile_mapping.py`); sector/ESG screening and frontend HTTP mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/` (the dataset build script is `backend/scripts/build_dataset.py`; starter dataset docs are at `docs/starter-dataset.md`).
 
 # Project conventions (AlphaForge AI, PolyFinances Datathon 2026)
 
@@ -16,9 +16,9 @@ Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections bel
 - Never put AWS credentials, API keys or .env files in code or Git.
 
 ## Data
-- Dataset lives in dataset/ (not committed; Yahoo Finance terms). Commit the scripts that rebuild it.
+- Dataset lives in dataset/. Committed to the repo by team decision (KC-ZEUS). Licence note: Yahoo data, check redistribution terms before making the repo public.
 - A local backup of the dataset CSVs lives outside the repo, at `C:\Users\kenny\alphaforge_data_backup\` (Kenny's machine only, not shared, not a substitute for rebuilding).
-- Current dataset/prices_daily.csv (102 tickers, ~weekly, to 2026-11-20) lacks 13 profile tickers. Pending team decision: use the original starter data (daily, 31 tickers) for base profiles and the demo.
+- Prices for analysis: `dataset/prices_weekly.csv` (weekly, Friday-dated adj_close). A daily starter copy (31 tickers, 2021-11-12 to 2026-11-12) stays local only, at `dataset/starter_daily/` — not committed.
 - Use adj_close for returns. Prices are already split-adjusted; never reapply splits.
 - Prices are in each asset's listing currency: .TO tickers are CAD, everything else USD.
 - Convert USD to CAD with the Bank of Canada rate from fx_usdcad_daily.csv, using pandas merge_asof(direction="backward") (last rate on or before each date).
@@ -29,7 +29,7 @@ Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections bel
 ## Universe
 - The 15 base profiles only use the curated 34-ticker list (`dataset/asset_selection.csv`).
 - A larger list (100+ tickers) exists only to support user-requested single-stock additions (e.g. "add TSLA"), never the base profiles.
-- A ticker not present in `dataset/prices_daily.csv` is reported to the user as a limitation ("data not available"); it is never guessed or substituted.
+- A ticker not present in `dataset/prices_weekly.csv` is reported to the user as a limitation ("data not available"); it is never guessed or substituted.
 
 ## Product rules
 - Educational simulation only. Fictional profiles. No real transactions, no real personal or banking data.
@@ -88,6 +88,7 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 - Flow: a new change starts as a draft -> `evaluate(portfolio_profile, all_changes)` -> an agent explains the result -> the user keeps it (appended to the cumulative list) or undoes it (dropped).
 - Stored at `user_portfolios/{session_id}.json` (gitignored), written through one function so Jeffrey can swap the storage backend for S3 without changing callers.
 - Customization is free. Every change runs through `evaluate()` first; the agent shows the consequences and the max that fits. If the user keeps a change that breaks their limits, the portfolio is labelled "Outside your profile: simulation only" (`outside_profile = true`). Caps are guidance, not hard blocks.
+- Wording: say "outside your stated limits," not "not recommended" — it's a mismatch with what the user told the system about themselves, not unsolicited advice being withheld.
 
 ## Key files
 - profiles.json: the contract. Band limits, 15 profiles with weights and validation results. Read-only catalog; never modified per user (see "User portfolios").
@@ -105,7 +106,7 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 
 - Repo: https://github.com/JayjayGz/RecommenDathon. My work is on branch `portfolios`. Never switch branches or commit to a teammate's branch (`agents`, `test`) without asking.
 - Only stage files I name or that you created for me. Never `git add .` or `git add docs` (teammates have uncommitted files in docs/). In docs/, I can commit my own files by name (DATA.md, portfolio_rules.md, or any file I tell you to add) — never commit teammates' docs.
-- Data CSVs live in `dataset/` and are not committed (Yahoo Finance terms). See docs/DATA.md.
+- Data CSVs live in `dataset/` and are committed to the repo (team decision, KC-ZEUS) — check Yahoo's redistribution terms before making the repo public. See docs/DATA.md.
 - Teammates' design docs: docs/architecture.md, docs/agent-responsibilities.md, docs/aws-services.md, docs/investor-profile-schema.json, docs/pipeline.mmd. Treat them as the team's source of truth; flag any conflict with this file instead of overwriting them.
 
 # My files
@@ -115,7 +116,7 @@ Persona mapping (validation test): Robert -> profile 4, Mateo -> profile 10, Ami
 - profiles.json: output contract read by the questionnaire, agents and app.
 - docs/portfolio_rules.md: the allocation rules in words. Keep it in sync with backend/src/alphaforge/domain/reference_portfolios.py.
 - dataset/asset_selection.csv and backend/scripts/universe_v2.py: our own 34-ticker universe (replaces the starter tickers once the data is rebuilt with build_dataset.py).
-- backend/src/alphaforge/domain/profile_mapping.py (not yet written, current task): maps the questionnaire's 8 answers to one of the 15 profiles (band + style) plus flags. Tests go in backend/tests/. See "Pending decisions" for the known gaps (no home-country or ESG signal in the questionnaire yet).
+- backend/src/alphaforge/domain/profile_mapping.py: maps the questionnaire's 8 answers to one of the 15 profiles (band + style) plus flags. Tests in backend/tests/test_profile_mapping.py. See "Pending decisions" for the known gaps (no home-country or ESG signal in the questionnaire yet).
 
 # Pending decisions (proposed, not yet applied)
 

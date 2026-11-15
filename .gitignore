@@ -1,5 +1,4 @@
 .venv/
-*.csv
 .env
 __pycache__/
 .pytest_cache/
@@ -9,3 +8,5 @@ __pycache__/
 .aws-sam/
 samconfig.toml
 health-response.json
+.local-runs/
+node_modules/

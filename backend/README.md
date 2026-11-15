@@ -26,8 +26,10 @@ Project workflow checks remain at `../scripts/check_agent_workflow.py`.
 See [project setup](../README.md) and [architecture](../docs/architecture.md).
 
 For the Lambda handler, container build and separate AlphaForge deployment, see
-[Lambda setup](../docs/lambda-setup.md). The bootstrap supports health checks;
-portfolio requests remain unavailable until the application pipeline is wired.
+[Lambda setup](../docs/lambda-setup.md). Recommendation requests now run the
+[proposal workflow](../docs/orchestrator.md), with snapshot loading, evidence,
+checked explanations and audit-before-release. Configure storage and the reviewed
+runtime policy before enabling the deployed workflow.
 
 ## Migration verification
 

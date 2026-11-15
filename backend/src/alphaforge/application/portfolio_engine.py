@@ -59,7 +59,8 @@ class PortfolioEngine:
         """Backtest weights (fractions summing to 1) and check them against band limits.
 
         Default period: last 5 years of data in data_dir. Currency: CAD throughout
-        (see domain.market_data.cad_prices). Only days when every holding traded.
+        (see domain.market_data.cad_prices). Only common observation dates are used;
+        actual weekly dates annualize at 52 observations/year, daily dates at 252.
         """
         try:
             _check_weights(weights)
@@ -87,8 +88,13 @@ class PortfolioEngine:
         return assess(weights, band, limits, metrics, df, rebalance, crypto_allowed)
 
 
-    def evaluate(self, profile_id, changes, data_dir=None, profiles_path=None):
+    def evaluate(self, profile_id, changes, data_dir=None, profiles_path=None, remaining_ms=None):
         """The function agents call: base vs. as-requested (no caps) vs. adjusted (capped)."""
+        def require_time():
+            if remaining_ms is not None and remaining_ms() < 25000:
+                raise TimeoutError("Evaluation deadline; reserve time for audit")
+
+        require_time()
         try:
             profile = self.get_profile(profile_id, profiles_path)
             prices, _ = self._load_data(data_dir)
@@ -103,6 +109,7 @@ class PortfolioEngine:
         band = profile["band"]
 
         def run(enforce_caps):
+            require_time()
             try:
                 weights, notes = self._apply(profile, changes, enforce_caps, data_dir, profiles_path)
                 return {"weights": weights, "validation": self.validate(weights, band, data_dir=data_dir,
@@ -131,6 +138,7 @@ class PortfolioEngine:
                     requested = int(change["add_pct"])
                     found = None
                     for x in range(requested, -1, -1):
+                        require_time()
                         trial = changes[:i] + [{**change, "add_pct": x}] + changes[i + 1:]
                         try:
                             weights, _ = self._apply(profile, trial, enforce_caps=False,

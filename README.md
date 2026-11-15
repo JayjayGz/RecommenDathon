@@ -5,7 +5,7 @@ An educational portfolio simulation for the AlphaForge datathon. The French web 
 ## Repository layout
 
 ```text
-frontend/                       Web presentation: index.html, src/, assets/, HTTP proxy
+plateforme/                       Web presentation: index.html, src/, assets/, HTTP proxy
 backend/src/alphaforge/
   presentation/backtest_viewer.py  Streamlit reference-portfolio viewer
   application/                  PortfolioEngine, reference build/comparison, storage and LLM ports
@@ -44,11 +44,11 @@ On Linux/macOS, activate with `source .venv/bin/activate`. An existing interpret
 Web UI (Node.js 24+, no npm dependencies):
 
 ```powershell
-cd frontend
+cd plateforme
 npm start
 ```
 
-Open http://localhost:4173. See [frontend setup](frontend/README.md) and its [HTTP contracts](frontend/docs/AGENT_INTEGRATION.md) for optional external services.
+Open http://localhost:4173. See [frontend setup](plateforme/README.md) and its [HTTP contracts](plateforme/docs/AGENT_INTEGRATION.md) for optional external services.
 
 ## Use the calculation API
 
@@ -67,13 +67,13 @@ Tests run from the Git root or `backend/`; each `pytest.ini` resolves the backen
 ## Current status and limitations
 
 - Calculations, proposal validation, offline Bedrock tests and a local UI are implemented.
-- `dataset/prices_daily.csv` is the active prices file. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
+- `dataset/prices_weekly.csv` is the active prices file. Weekly observations annualize at 52/year; actual daily history remains supported at 252/year. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
 - The per-ticker risk module remains an unimplemented teammate-owned contract at `backend/src/alphaforge/application/risk.py`.
-- Questionnaire-to-`InvestorProfile` mapping, production API handlers, full orchestration, evidence/compliance release checks and S3 auditing remain to be implemented. The frontend HTTP contract is not the Python calculation API; an explicit adapter is required. Unconnected web portfolios are illustrative.
+- The [proposal workflow](docs/orchestrator.md) connects the Lambda handler, existing engine, evidence, constrained explanations, release checks and S3/local auditing. Questionnaire-to-`InvestorProfile` mapping, sector/ESG screening, per-ticker risk and the frontend HTTP adapter remain pending. Unconnected web portfolios are illustrative.
 - Dataset downloads, profile regeneration and AWS calls are explicit operations; tests do not deploy or contact AWS.
 
 Development instructions start at [AGENTS.md](AGENTS.md). The agreed deterministic pipeline is described in [architecture.md](docs/architecture.md); Strands roles in team notes are proposals, not an implemented runtime.
 
-The [Lambda setup guide](docs/lambda-setup.md) covers the health-check bootstrap,
-container packaging and deployment prerequisites. Portfolio orchestration remains
-to be connected before that function can return recommendations.
+The [Lambda setup guide](docs/lambda-setup.md) covers container packaging and deployment.
+Configure the existing input/audit buckets and reviewed runtime policy to enable
+the proposal workflow; health checks work without that configuration.

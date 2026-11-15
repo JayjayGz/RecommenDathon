@@ -150,6 +150,330 @@
           "scope": "Current prices_daily filename and both date/ticker column orders; no data rewrite, profile regeneration or change to metric frequency conventions."
         }
       ]
+    },
+    {
+      "id": "L-007",
+      "roles": [
+        "infrastructure",
+        "portfolio"
+      ],
+      "trigger": "Adding cooperative execution deadlines to nested portfolio-evaluation loops",
+      "boundary": "Deadline handling must not change allocation rules or turn a partial calculation into a passing result",
+      "defect": "The first workflow test run failed during collection with IndentationError at the inserted maximum-search deadline check.",
+      "cause": "The new require_time call was initially aligned with the for statement instead of its body.",
+      "evidence": [
+        "backend/src/alphaforge/application/portfolio_engine.py: maximum-search loop; initial pytest collection reported expected an indented block after for.",
+        "backend/tests/test_orchestrator.py: deadline interruption during maximum search and nearby unchanged passing controls."
+      ],
+      "prevention": "Parse modified Python modules before regression execution; test deadline interruption inside nested searches and a valid unchanged assessment without changing numerical rules.",
+      "regression": "Replay maximum-search deadline interruption, early deadline/audit behavior and passing flat-price assessment; parse all backend Python files.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest-tmp-orchestrator-final",
+          "result": "112 passed, 8 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline workflow, transport, synthetic policy/accounting and stubbed SDK tests. All backend Python files also parsed successfully; no deployment or live AWS call."
+        }
+      ]
+    },
+    {
+      "id": "L-008",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Editing SAM function Policies with conditional managed policy attachments",
+      "boundary": "A local transform check does not establish live IAM authorization, policy correctness or successful deployment",
+      "defect": "The proposed Lambda update passed sam validate --lint but CloudFormation rejected the Policies property during the SAM transform.",
+      "cause": "The entire Policies property was wrapped in Fn::If returning a list. SAM policy parsing rejected that shape; the conditional must be an item inside the Policies list.",
+      "evidence": [
+        "User deployment report: AlphaForgeFunction Policy at index 0 in the Policies property is not valid.",
+        "backend/tests/test_sam_template.py reproduces the old transform failure and translates the corrected shape for empty and supplied RuntimePolicyArn values.",
+        "backend/template.yaml now uses Policies: followed by a single list-item Fn::If returning the ARN or AWS::NoValue."
+      ],
+      "prevention": "Run the actual SAM translator offline for conditional policy shapes, including absent and supplied parameter cases; do not treat schema lint as proof of transform compatibility.",
+      "regression": "Assert the old property-level conditional is rejected; assert the list-item conditional translates and retains basic logging plus only the conditional runtime-policy attachment.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "& \"C:\\Program Files\\Amazon\\AWSSAMCLI\\runtime\\python.exe\" backend/tests/test_sam_template.py -v",
+          "result": "2 tests passed; corrected template translated for both empty and supplied runtime-policy values; old shape reproduced the error.",
+          "scope": "Actual SAM translator with static managed-policy lookup, synthetic image URI and no AWS calls; no rebuild or deployment performed."
+        }
+      ]
+    },
+    {
+      "id": "L-009",
+      "roles": [
+        "data",
+        "infrastructure"
+      ],
+      "trigger": "Validating supported currencies in a multi-asset input snapshot",
+      "boundary": "Does not add FX support, repair missing market history, or authorize changing reference allocations or frequency assumptions",
+      "defect": "The snapshot rejected unrelated JPY rows before selecting portfolio holdings; the direct conversion function also treated non-USD currencies as CAD.",
+      "cause": "The snapshot applied the CAD/USD restriction to the entire CSV, while cad_prices used a non-USD fallback without a currency guard.",
+      "evidence": [
+        "Local dataset contains JPY rows for USDJPY=X and ^N225; after repair LocalSnapshotSource.load with as_of 2026-11-15 succeeded and profile 4 returned MISSING_HOLDING_HISTORY.",
+        "backend/tests/test_orchestrator.py covers unrelated JPY rows, required unsupported reference/addition assets, missing holdings and weekly frequency.",
+        "backend/tests/test_market_data_currency.py covers unsupported/inconsistent currencies and CAD/USD conversion controls.",
+        "Initial new test incorrectly assumed SPY was a profile 4 holding; corrected the fixture to read an actual reference holding. The isolated orchestrator suite also exposed an existing bootstrap test import-order failure; full-suite verification passed.",
+        "Weekly support supersedes the prior weekly-rejection expectation; L-010 records the migration. Original verification describes behavior before that migration."
+      ],
+      "prevention": "Preserve snapshot schema and integrity checks and full-file hashes; apply supported-currency validation to the reference holdings plus requested changes before evaluation. Reject unsupported and inconsistent currency in direct conversion callers.",
+      "regression": "Replay unrelated JPY success, required JPY rejection before model calls, CAD/USD conversion controls and missing holdings. Weekly history now uses 52 observations/year under L-010; sparse or mixed cadence must still fail.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-currency-full",
+          "result": "120 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite and synthetic currency regressions. Local real snapshot parsing also checked; missing history and weekly frequency remain unresolved. No deployment or live AWS calls."
+        }
+      ]
+    },
+    {
+      "id": "L-010",
+      "roles": [
+        "data",
+        "infrastructure",
+        "backtest",
+        "risk",
+        "evidence"
+      ],
+      "trigger": "Changing price input filenames or supporting weekly observations in portfolio calculations",
+      "boundary": "Does not supply missing holdings, alter allocation policy, certify an exchange calendar, or implement teammate-owned per-ticker risk measures",
+      "defect": "The supplied weekly observations were loaded under a daily filename while metrics assumed 252 observations/year and the workflow rejected weekly cadence. The user requested a weekly adapter and output.",
+      "cause": "Input adapters hardcoded prices_daily.csv and metric annualization was fixed at 252 regardless of observation dates.",
+      "evidence": [
+        "Adapters now read prices_weekly.csv locally and from S3; the local CSV was renamed with unchanged SHA256 842796acc71af0e2327b60ecb5e902eac0533f0061c420e3dae84fc4430e6f62.",
+        "backend/tests/test_weekly_backtest.py checks hand-computable weekly growth/sample volatility, zero variance, daily compatibility, month-boundary accounting and common-calendar cadence changes.",
+        "backend/tests/test_orchestrator.py checks weekly manifest/evidence and end-to-end release with a fake LLM; sparse and mixed history still fail.",
+        "Local AAPL USD-to-CAD data probe used 262 common weekly observations and annualization 52. Real profile 4 still returned MISSING_HOLDING_HISTORY; no reference allocations were substituted."
+      ],
+      "prevention": "Infer supported cadence from actual dates for each required holding and the common calendar. Use 52 for weekly or 252 for daily; reject missing-week, mixed or sparse history. Record the convention in metrics, manifest and evidence and disclose weekly sampling and first-observed-close rebalancing. Update local/S3 keys together and invalidate saved metrics after a convention change.",
+      "regression": "Replay weekly arithmetic and workflow success, daily flat control, weekly month boundary, mixed/sparse rejection, missing holdings and unsupported currency controls.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-weekly-final",
+          "result": "128 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend checks including weekly numerical, adapter, cadence, monthly accounting and workflow/evidence regressions. No live AWS calls, deployment or profile regeneration."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_agent_workflow.py",
+          "result": "PASS: 9 agent files; 10 lesson records.",
+          "scope": "Structure only; does not prove model behavior or runtime enforcement."
+        }
+      ]
+    },
+    {
+      "id": "L-011",
+      "roles": [
+        "all"
+      ],
+      "trigger": "Changing the browser questionnaire response handlers or full-page entry animations",
+      "boundary": "Presentation only; does not change questionnaire values, risk interpretation, calculations or pipeline retry rules",
+      "defect": "The user reported a white flash each time an option was chosen in the questionnaire.",
+      "cause": "The change handler rebuilt #app and restarted the .page-enter animation from opacity zero on each selection.",
+      "evidence": [
+        "User correction on 2026-11-15: choosing an option makes the site turn white during refresh.",
+        "Baseline git show HEAD:plateforme/src/app.js and styles.css: change calls render(), #app.innerHTML is replaced and page-in begins at opacity:0.",
+        "A jsdom replay of baseline HEAD confirmed that choosing medium replaced #main; reproduction and limits recorded in plateforme/docs/QUESTIONNAIRE_FIX.md.",
+        "Originally L-003 on the questionnaire branch; ID changed to L-011 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Update option state, progress and optional fields in place; preserve active inputs, valid detail fields and the image. Keep full-page navigation visible from its first frame.",
+      "regression": "Run plateforme DOM tests: choose a radio then another valid radio, verify stable #main/image/input focus; toggle multiple choices and optional fields; test navigation and complete-profile invalidation.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; npm.cmd test",
+          "result": "7 tests passed, 0 failed after correction; baseline replay separately reproduced #main replacement.",
+          "scope": "Actual app handlers in jsdom and CSS opacity guard. Not browser rendering or a visual capture; Computer Use was blocked by URL identification."
+        }
+      ]
+    },
+    {
+      "id": "L-012",
+      "roles": [
+        "all"
+      ],
+      "trigger": "Selecting or replacing photographs for investor questionnaire questions",
+      "boundary": "Questionnaire presentation only; photographs are illustrative, never market evidence or a source for calculated returns",
+      "defect": "The user reported that the right-hand photographs had no relation to the questions or the finance theme.",
+      "cause": "visualPanel used section numbers to repeat generic architecture and landscape photos instead of mapping subjects to individual questions.",
+      "evidence": [
+        "User correction on 2026-11-15 asked for competitor research and photos tied to the question and finance.",
+        "Baseline visualPanel(section) used architecture.jpg, curves.jpg and water.jpg for four sections.",
+        "Eight replacement JPEGs were opened and inspected; subjects, competitor references, authors and source links are in plateforme/docs/INSPIRATIONS.md.",
+        "Originally L-004 on the questionnaire branch; ID changed to L-012 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Map each question ID to a relevant local photo, descriptive alt text and caption. Research competitors without copying their proprietary assets; retain photo source and license. Keep the photo independent of the selected answer.",
+      "regression": "Traverse the eight questions and return: verify eight distinct local photo files, nonempty alt text and stable photo identity while selecting different valid answers on the same question.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; npm.cmd test",
+          "result": "7 tests passed, including distinct local photo files for all eight questions and unchanged photo node on radio selection.",
+          "scope": "DOM mapping and local file availability; content relevance checked by opening the eight image files. No browser layout verification."
+        }
+      ]
+    },
+    {
+      "id": "L-013",
+      "roles": [
+        "all"
+      ],
+      "trigger": "Replacing the source document or schema of a browser investor questionnaire",
+      "boundary": "Questionnaire presentation and raw response transport only; never invent a financial profile mapping or reuse old calculated results",
+      "defect": "The site retained an eight-question contract while the user selected a Word containing sixteen questions and typed follow-ups.",
+      "cause": "Question count, step limits, profile summaries and transport validation were tied to the earlier questionnaire and positional indexes.",
+      "evidence": [
+        "User explicitly selected Questionnaire_client_Recommand_20261115_103525.docx as the only source on 2026-11-15.",
+        "Source SHA-256 and actual extracted questions: plateforme/tests/fixtures/questionnaire-word.json; source review: plateforme/docs/QUESTIONNAIRE_WORD.md.",
+        "Old eight-question tests failed against the new order; replacement tests replay the same stable-DOM cases plus numeric fields, all-assets choice and HTTP rejection cases.",
+        "Originally L-005 on the questionnaire branch; ID changed to L-013 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Read the actual supplied Word, preserve its titles/options/follow-ups, derive navigation from question count, use semantic IDs in summaries, version raw transport and local storage, and invalidate dependent results.",
+      "regression": "Compare all source questions and options with the source snapshot; complete all sixteen steps including numeric zero and optional notes; reject the old version and invalid hidden fields through HTTP.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; npm.cmd test",
+          "result": "15 passed, 0 failed, including full Word questionnaire traversal and valid/invalid HTTP payloads.",
+          "scope": "DOM, typed response and API checks only; Computer Use reported a user Escape stop, so no browser visual verification."
+        }
+      ]
+    },
+    {
+      "id": "L-014",
+      "roles": [
+        "all"
+      ],
+      "trigger": "Changing numeric entry controls or input examples in the investor questionnaire",
+      "boundary": "Browser presentation only; never prefill illustrative numbers as client answers or change numeric validation",
+      "defect": "The user requested removal of native number-input spinner arrows and subtle example text in empty fields.",
+      "cause": "Browser number inputs expose native increment/decrement controls, and the questionnaire fields did not define placeholders.",
+      "evidence": [
+        "User screenshot and correction on 2026-11-15 show spinner arrows beside an entered mortgage amount of 24.",
+        "Implemented in plateforme/src/questionnaire.css and placeholder attributes in plateforme/src/app.js.",
+        "Originally L-006 on the questionnaire branch; ID changed to L-014 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Hide native spinner controls through scoped browser CSS while keeping numeric types and validation; provide placeholders separately from saved values.",
+      "regression": "Check empty numeric/text fields show examples, examples do not count as answers, existing amount 24 is preserved, and actual typed values remain numeric; replay zero and negative amount validation.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; npm.cmd test",
+          "result": "16 tests passed, 0 failed, including blank example fields, preservation of saved amounts and numeric validation.",
+          "scope": "DOM behavior and CSS parsing; browser spinner visibility not visually inspected."
+        }
+      ]
+    },
+    {
+      "id": "L-015",
+      "roles": [
+        "data",
+        "infrastructure",
+        "evidence"
+      ],
+      "trigger": "Building or changing weekly historical price snapshots, especially Friday closing prices",
+      "boundary": "Does not replace explicitly requested arithmetic averages or claim that a daily crypto close represents a chosen intraday time",
+      "defect": "The user changed the required weekly value from a mean to the last Friday price, then specified Friday 16:00 Toronto and actual provider data only.",
+      "cause": "The earlier CSV implemented the previous request for arithmetic weekly means; those values cannot be inverted to obtain a closing price.",
+      "evidence": [
+        "Previous mean CSV SHA-256: a977af976671386e14c8fca5ad63a20ea1290425918cc8622c90f53b92606034; preserved as top100_hebdo_2016_complet.moyennes_a977af97.csv.",
+        "User correction on 2026-11-15: last Friday price, 16:00 at close, no invented figures; crypto also Friday. User separately selected provider daily closes for the other markets and the display label dernier cours hebdomadaire.",
+        "Yahoo hourly BTC request returned an actual 730-day limit; response retained in livrables/historique_hebdomadaire/clotures_vendredi/yahoo_btc_hourly_probe.json.",
+        "124 Yahoo daily responses and 480 official Bitstamp hourly response blocks are retained with URLs and SHA-256 hashes. Final verification.json records 69371 rows and 413698 source numeric field comparisons.",
+        "Source-hash test setup initially failed because TemporaryDirectory permissions prevented file access, including under the workspace. The final fixture uses mocked file/hash boundaries; the real-data verifier reads and hashes the actual files.",
+        "Originally L-007 on the questionnaire branch; ID changed to L-015 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Record the requested week, local cutoff and DST policy; rebuild from daily session closes or actual timestamped candles. Preserve provider quotes and missing history without averages, interpolation or invented adjusted prices. Verify every populated exported field against its hashed raw response, back up the old CSV and check all published copies.",
+      "regression": "Replay Friday close versus the earlier mean, Saturday exclusion, prior available session, an empty week, summer/winter crypto cutoff, provider zero-volume quotes and modified source hash; also accept a matching source hash and valid Friday prices.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "python scripts/test_rebuild_weekly_friday.py",
+          "result": "8 tests passed, 0 failed.",
+          "scope": "Deterministic calendar, source-preservation and hash-boundary fixtures; fixture values are synthetic test data only."
+        },
+        {
+          "command": "python scripts/check_friday_history.py livrables/historique_hebdomadaire/clotures_vendredi",
+          "result": "69371 rows, 124 tickers, 413698 populated numeric fields matched raw provider responses exactly; no missing close, duplicate or future Friday label.",
+          "scope": "Deterministic source/CSV checks, not independent market-price certification."
+        },
+        {
+          "command": "python scripts/publish_friday_history.py",
+          "result": "Three CSV copies published with SHA-256 6b6611f04dac87e78eef47598d718a8227dcf99fdf1fe7c4f3b2d99b72e97e88; all previous averages backed up and verified.",
+          "scope": "Local workspace and two explicitly named Downloads CSVs; no simulation, AWS action, commit or push."
+        }
+      ]
+    },
+    {
+      "id": "L-016",
+      "roles": [
+        "data",
+        "evidence"
+      ],
+      "trigger": "Checking Yahoo non-equity historical OHLC rows that contain close/open outside the quoted daily high/low",
+      "boundary": "Never disable normal OHLC validation for shares/ETFs, fabricate replacement bounds, or certify the supplier's internally inconsistent values as valid candles",
+      "defect": "The rebuild's OHLC bound check failed on actual non-equity Yahoo source observations; 90 selected rows contain inconsistent reported bounds.",
+      "cause": "Cause undetermined in the provider data; the inconsistencies are already present in the raw Yahoo responses.",
+      "evidence": [
+        "Actual failing check: scripts/rebuild_weekly_friday.py -> friday_last -> validate_prices raised High is below open/close on the selected non-equity histories.",
+        "Exact source rows, fields and raw file identities: source_ohlc_bounds_findings in livrables/historique_hebdomadaire/clotures_vendredi/top100_hebdo_2016_manifest.json; source_ohlc_bounds_warning in top100_hebdo_2016_sources_lignes.csv.",
+        "The source/CSV verifier confirmed all 413698 populated numeric fields exactly, including the unchanged provider values.",
+        "Originally L-008 on the questionnaire branch; ID changed to L-016 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+      ],
+      "prevention": "Keep strict bounds validation for normal price ingestion. For an explicitly sourced last-close export, isolate and record supplier OHLC inconsistencies, preserve the exact quoted figures and their hashes, and retain separate checks for finite/positive prices, volume, identity and currency. Do not clamp source values to make a candle check pass.",
+      "regression": "Reject an invalid OHLC fixture under normal validation, retain its original fields only under the explicitly reported source-preservation path, and verify valid Friday rows and all real exported source values.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "python scripts/test_rebuild_weekly_friday.py",
+          "result": "8 tests passed, including strict rejection and explicit preservation of a hypothetical inconsistent supplier row plus valid price controls.",
+          "scope": "Deterministic fixture behavior; does not explain the cause of the supplier anomalies."
+        },
+        {
+          "command": "python scripts/check_friday_history.py livrables/historique_hebdomadaire/clotures_vendredi",
+          "result": "All populated numeric fields match raw responses; 90 source OHLC bound findings recorded.",
+          "scope": "Data traceability checks; not an independent review or certification of supplier OHLC consistency."
+        }
+      ]
+    },
+    {
+      "id": "L-017",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Moving or consolidating the website directories",
+      "boundary": "Does not move backend calculations or financial CSV inputs, change questionnaire content, or authorize deployment",
+      "defect": "The user requested all website-only files in plateforme; active frontend pages/server and residual plateforme styles/tests were split across directories.",
+      "cause": "A previous repository reorganization moved the tracked web files while local website styles, tests and development dependencies remained in plateforme.",
+      "evidence": [
+        "Preflight found 22 frontend files and 18 plateforme files with no overlapping relative filenames.",
+        "plateforme/docs/migration-source-hashes.json records the hashes of all 22 files moved unchanged.",
+        "Existing merge markers in documentation, .gitignore and memory/lessons.json were found; both lesson branches and both documentation sections were preserved.",
+        "The HTTP smoke initially assumed PORT=0, rejected by the existing server, then expected the source JSON to be public; its 404 is the existing allowlist behavior. Final checks use a temporary valid port, verify public assets and preserve private JSON/package routes without changing server code."
+      ],
+      "prevention": "Keep pages, static assets, JSON questionnaire, local web proxy, UI tests and UI import tooling under plateforme; update path documentation and run DOM/HTTP regressions plus the workflow structural checker. Keep financial calculations and CSV inputs in backend and dataset.",
+      "regression": "Verify frontend no longer exists, the moved source hashes remain equal for runtime files, all sixteen UI tests pass, local web assets and questionnaire JSON are served, and backend/dataset have no changes.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "16 passed, 0 failed.",
+          "scope": "DOM, exact questionnaire content, numeric validation, stable focus, API validation and local static styles; no visual browser review."
+        },
+        {
+          "command": "Temporary local Node HTTP smoke with 12 public routes, 2 private-route controls and source JSON byte comparison",
+          "result": "12 routes returned 200; source JSON/package returned expected 404; original JSON and all 16 questions preserved.",
+          "scope": "Local HTTP and filesystem checks; no deployment or external services."
+        },
+        {
+          "command": "python scripts/check_agent_workflow.py",
+          "result": "PASS: 9 agent files; 17 lesson records.",
+          "scope": "Structure only; both lesson branches preserved after conflict resolution."
+        }
+      ]
     }
   ]
 }
