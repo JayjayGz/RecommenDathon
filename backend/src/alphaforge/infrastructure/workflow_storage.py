@@ -12,6 +12,7 @@ import pandas as pd
 from alphaforge.application.audit import ARTIFACTS
 from alphaforge.application.evidence import canonical
 from alphaforge.application.snapshots import DataUnavailable, InputSnapshot
+from .exposure_catalog import parse_exposures
 
 MAX_INPUT_BYTES = 64 * 1024 * 1024
 
@@ -142,6 +143,7 @@ class LocalSnapshotSource:
                       "fx": Path(data_dir) / "fx_usdcad_daily.csv", "profiles": Path(profiles_path)}
         self.universe_path = Path(data_dir) / "assets_universe.csv"
         self.macro_path = Path(data_dir) / "macro_rates.csv"
+        self.exposures_path = Path(data_dir) / "exposures_profile_tickers.csv"
 
     def load(self, as_of, include_universe=False):
         objects = {}
@@ -166,6 +168,16 @@ class LocalSnapshotSource:
         except OSError as error:
             raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE") from error
         return _parse_macro(data, {"path": str(self.macro_path.resolve())}, as_of)
+
+    def load_exposures(self, as_of):
+        try:
+            with self.exposures_path.open("rb") as stream:
+                data = stream.read(MAX_INPUT_BYTES + 1)
+            if len(data) > MAX_INPUT_BYTES:
+                raise DataUnavailable("INPUT_TOO_LARGE")
+        except OSError as error:
+            raise DataUnavailable("EXPOSURE_CATALOG_UNAVAILABLE") from error
+        return parse_exposures(data, {"path": str(self.exposures_path.resolve())}, as_of)
 
 
 class S3SnapshotSource:
@@ -208,6 +220,22 @@ class S3SnapshotSource:
         except Exception as error:
             raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE") from error
         return _parse_macro(data, {"bucket": self.bucket, "key": key,
+            "version_id": response.get("VersionId"), "etag": response.get("ETag")}, as_of)
+
+
+    def load_exposures(self, as_of):
+        key = f"{self.prefix}/exposures_profile_tickers.csv"
+        try:
+            response = self.client.get_object(Bucket=self.bucket, Key=key)
+            with response["Body"] as stream:
+                data = stream.read(MAX_INPUT_BYTES + 1)
+            if len(data) > MAX_INPUT_BYTES:
+                raise DataUnavailable("INPUT_TOO_LARGE")
+        except DataUnavailable:
+            raise
+        except Exception as error:
+            raise DataUnavailable("EXPOSURE_CATALOG_UNAVAILABLE") from error
+        return parse_exposures(data, {"bucket": self.bucket, "key": key,
             "version_id": response.get("VersionId"), "etag": response.get("ETag")}, as_of)
 
 

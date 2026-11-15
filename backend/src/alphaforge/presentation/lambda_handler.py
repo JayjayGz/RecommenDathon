@@ -110,7 +110,7 @@ def handler(event, context):
             payload = outcome.payload
             if action == "personalize" and outcome.status in {"PASS", "CONFLICT", "MISSING_INFO", "INVALID_REQUEST"}:
                 code = payload.get("error", {}).get("code", outcome.status)
-                response = {"message": payload.get("message", f"No validated portfolio was released. Assessment: {code}."),
+                response = {"message": payload.get("message", f"Aucun portefeuille validé n’a été proposé. État de l’analyse : {code}."),
                             "runId": payload.get("run_id"), "status": outcome.status,
                             "audit_saved": payload.get("audit_saved", False)}
                 if "recommendation" in payload:

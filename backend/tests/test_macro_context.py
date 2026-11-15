@@ -98,7 +98,8 @@ def test_s3_macro_read_closes_stream_and_records_actual_key():
     assert len(frame) == 1 and len(reference["sha256"]) == 64
 
 
-def test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog(investor_source):
+@pytest.mark.parametrize("as_of", ["2025-03-01", "2026-11-15"])
+def test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog(investor_source, as_of):
     # Returns are still fictional flat-price controls; this only replays response size.
     investor_source.macro_path.write_bytes((ROOT / "dataset/macro_rates.csv").read_bytes())
     config = json.loads(investor_source.paths["profiles"].read_text())
@@ -106,8 +107,9 @@ def test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog(inve
     for profile in config["profiles"]:
         form = questionnaire(profile["band"])
         form["answers"]["assets"].append("crypto")
+        form["answers"]["knowledge"] = "advanced"
         outcome, records = run(investor_source, investor_request(questionnaire=form,
-            assessment={"preferred_style": profile["style"]}))
+            as_of=as_of, assessment={"risk_band": profile["band"], "preferred_style": profile["style"]}))
         assert outcome.status == "PASS", (profile["id"], outcome.payload)
         public = outcome.payload["recommendation"]
         assert len(public["explanation"]) <= 10000 and len(public["evidence"]) <= 100

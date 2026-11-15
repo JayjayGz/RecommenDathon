@@ -36,7 +36,11 @@ override a rejected change. See [the implemented request flow](questionnaire-wor
 | Explanation Agent | Yes | Write the rationale and trade-off narrative using only the Evidence Bundle | Text where every claim cites evidence IDs |
 | Compliance Gate | Partly | Final check before anything is shown (see below) | Pass or fail, with reasons |
 
-Only the Explanation Agent needs the LLM in this pipeline. Everything else is deterministic Python, which keeps runs fast, repeatable and testable.
+The explanation stage uses the LLM to order verified claims. Before the numerical
+pipeline, the shared [language interpreter](french-language.md) can also use the
+same configured LLM port for unrecognized explicit French/English intent. It
+cannot choose assets, amounts or constraints. All numerical stages remain
+deterministic Python. Investor-facing prose is French.
 
 ## Evidence-grounded explanations
 

@@ -1,6 +1,7 @@
 """Avis éducatif déterministe sur une modification, distinct de son application."""
 from alphaforge.domain.portfolio_review import CONVENTIONS, review_portfolio
 from alphaforge.domain.profile_matching import CLASS_PREFERENCES, SECTOR_PREFERENCES
+from alphaforge.domain.exposures import SECTORS
 
 from .investor_summary import questionnaire_observations
 
@@ -11,14 +12,19 @@ CLASS_LABELS = {"equity": "actions détenues directement", "etf_equity": "fonds 
 RISK_LABELS = {"low": "faible", "medium": "modérée", "high": "élevée"}
 
 
-def asset_observations(answers, ticker, metadata):
+def asset_observations(answers, ticker, metadata, exposure=None):
     """Examiner les intérêts déclarés sans supposer un poids ou une performance."""
     classes = set().union(*(CLASS_PREFERENCES[a] for a in answers["assets"]))
     sectors = set().union(*(SECTOR_PREFERENCES[s] for s in answers["sectors"]))
     class_match = metadata["asset_class"] in classes
     sector_match = metadata["sector"] in sectors if metadata["asset_class"] == "equity" else None
+    if exposure and exposure.get("sectors") and exposure["sectors_basis"] == "GICS":
+        preferred = set().union(*(SECTORS[s] for s in answers["sectors"]))
+        sector_match = any(v > 0 and s in preferred for s, v in exposure["sectors"]["fractions"].items())
     strengths, cautions, limitations = [], [], []
     label = CLASS_LABELS[metadata["asset_class"]]
+    if exposure and exposure.get("description_fr"):
+        strengths.append(f"Activités de {ticker} selon le catalogue : {exposure['description_fr']}")
     if class_match:
         strengths.append(f"{ticker} appartient aux {label}, une catégorie qui correspond à vos intérêts déclarés.")
     else:
@@ -36,8 +42,15 @@ def asset_observations(answers, ticker, metadata):
     return class_match, sector_match, strengths, cautions, limitations
 
 
-def unweighted_asset_review(answers, ticker, metadata, requirements=None):
+def unweighted_asset_review(answers, ticker, metadata, requirements=None, operation=None):
     """Donner un premier avis puis demander le montant à simuler, sans l’inventer."""
+    if operation == "reduce":
+        return "\n\n".join([
+            f"Analyse préalable de {metadata['name']} ({ticker}) : aucune modification n’est appliquée.",
+            "Sans montant, l’effet de la réduction sur la concentration, les fluctuations et les baisses du portefeuille ne peut pas être évalué.",
+            f"Quelle réduction souhaitez-vous simuler pour {ticker}, en points de pourcentage entiers ? Ce montant servira à l’analyse et ne sera pas appliqué automatiquement.",
+            "Simulation éducative, sans conseil en placement. Les résultats passés ne prédisent pas les résultats futurs."
+        ])
     _, _, strengths, cautions, limitations = asset_observations(answers, ticker, metadata)
     if ticker in (requirements or {}).get("excluded_tickers", []):
         cautions.insert(0, f"Vous avez explicitement exclu {ticker}. Cet ajout ne peut pas être retenu tant que cette exclusion s’applique.")
@@ -62,7 +75,8 @@ def build_change_review(evaluation, selected):
         ticker = change.get("ticker", change.get("exclude"))
         metadata = evaluation["asset_metadata"][ticker]
         adding = change.get("add_pct", 0) > 0
-        class_match, sector_match, pros, cons, limits = asset_observations(answers, ticker, metadata)
+        class_match, sector_match, pros, cons, limits = asset_observations(
+            answers, ticker, metadata, evaluation.get("asset_exposures", {}).get(ticker))
         assets.append({"ticker": ticker, "asset_class": metadata["asset_class"],
                        "class_preference_match": class_match, "sector_preference_match": sector_match,
                        "before_pct": round(before.get(ticker, 0) * 100, 8),

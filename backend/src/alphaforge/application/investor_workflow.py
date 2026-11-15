@@ -3,22 +3,24 @@ from copy import deepcopy
 
 from .contracts import RecommendationRequest
 from .snapshots import DataUnavailable
+from alphaforge.domain import profile_mapping
 from alphaforge.domain.profile_matching import (InvestorInputError, investible_universe,
                                                match_profile, resolve_message)
 
 
-def validate_requested_assets(request, assets):
+def validate_requested_assets(request, assets, interpret=None):
     """Resolve user edits against the universe before matching or engine calls."""
     changes = [c.to_dict() for c in request.changes]
     if request.message is not None:
         try:
-            changes = [resolve_message(request.message, assets, request.conversation)]
+            changes = [resolve_message(request.message, assets, request.conversation, interpret=interpret)]
         except InvestorInputError as error:
             if error.code == "ALLOCATION_AMOUNT_REQUIRED":
                 from .change_review import unweighted_asset_review
                 ticker = error.details["ticker"]
                 raise InvestorInputError(error.code,
-                    unweighted_asset_review(request.normalized_answers()[0], ticker, assets[ticker], request.requirements),
+                    unweighted_asset_review(request.normalized_answers()[0], ticker, assets[ticker], request.requirements,
+                                           operation=error.details.get("operation")),
                     error.details) from error
             raise
     tickers = {c.get("ticker", c.get("exclude")) for c in changes}
@@ -41,7 +43,24 @@ def prepare_investor(request, snapshot, changes):
         raise InvestorInputError("QUESTIONNAIRE_INCOMPLETE",
             "Le questionnaire est incomplet. Veuillez remplir les réponses obligatoires avant de demander un portefeuille.",
             {"missing_answers": missing})
-    match = match_profile(answers, request.assessment, request.requirements, snapshot.profiles, snapshot.assets)
+    assessment = dict(request.assessment)
+    mapping = None
+    if answers.get("knowledge") is not None:
+        mapped = profile_mapping.to_assessment(answers)
+        mapping = {"method": "capacity_tolerance_style_v1", "capacity_score": profile_mapping.capacity_score(answers),
+                   "tolerance_score": profile_mapping.tolerance_score(answers),
+                   "risk_level": profile_mapping.risk_level(answers), "mapped_assessment": mapped,
+                   "explicit_overrides": dict(assessment)}
+        assessment = {**mapped, **assessment}
+    match = match_profile(answers, assessment, request.requirements, snapshot.profiles, snapshot.assets)
+    if mapping:
+        match["questionnaire_mapping"] = mapping
+        match["method"] = mapping["method"]
+        if "risk_band" not in request.assessment:
+            match["risk_mapping_source"] = mapping["method"]
+        match["reasons"] = ["Le profil provient du minimum des scores de tolérance et de capacité définis par le module de correspondance du questionnaire.",
+                            "Le style suit les préférences déclarées ; les éventuelles évaluations explicites sont conservées séparément."]
+        match["limitations"][1] = "Les scores de référence utilisent les connaissances, la réaction aux pertes, la tolérance déclarée, l’horizon et la stabilité des revenus. Ils ne valident pas la capacité financière complète et ne prévoient aucun rendement."
     profile = deepcopy(next(p for p in snapshot.profiles["profiles"] if p["id"] == match["profile_id"]))
     effective = RecommendationRequest.from_dict({"profile_id": profile["id"], "changes": changes,
                                                   "as_of": request.as_of.isoformat()})
@@ -80,15 +99,16 @@ def prepare_investor(request, snapshot, changes):
 
 def frontend_recommendation(run_id, public, match, assets):
     """Only called after evidence and release checks have accepted a portfolio."""
+    from .french import STYLES, evidence_description
     weights = public["portfolio"]["weights"]
     positions = [{"symbol": ticker, "name": assets[ticker]["name"],
                   "category": assets[ticker]["sector"], "group": assets[ticker]["asset_class"],
                   "weight": round(weight * 100, 8)} for ticker, weight in sorted(weights.items()) if weight > 0]
     entries = public["evidence"]["entries"]
     result = {"runId": run_id,
-              "portfolio": {"id": str(match["profile_id"]), "name": match["style"], "positions": positions},
+              "portfolio": {"id": str(match["profile_id"]), "name": STYLES.get(match["style"], "Portefeuille simulé"), "positions": positions},
               "explanation": public["explanation"],
-              "evidence": [{"id": e["id"], "source": e["source"], "description": e["sentence"]} for e in entries],
+              "evidence": [{"id": e["id"], "source": e["source"], "description": evidence_description(e)} for e in entries],
               "limitations": public["limitations"], "compliance": public["compliance"]}
     if "change_review" in public:
         result["changeReview"] = deepcopy(public["change_review"])
@@ -100,7 +120,7 @@ def frontend_recommendation(run_id, public, match, assets):
             candidate_positions = [{"symbol": t, "name": assets[t]["name"], "category": assets[t]["sector"],
                                     "group": assets[t]["asset_class"], "weight": round(w * 100, 8)}
                                    for t, w in sorted(candidate["weights"].items()) if w > 0]
-            suggestions.append({**candidate, "portfolio": {"id": candidate["id"], "name": "Optional concentration alternative",
+            suggestions.append({**candidate, "portfolio": {"id": candidate["id"], "name": "Autre répartition pour examiner la concentration",
                                                            "positions": candidate_positions},
                                 "evidence_ids": [ids[f"suggestion.{candidate['id']}"]]})
         result["analysis"] = {"method": analysis["method"], "manifest_hash": analysis["manifest_hash"],
@@ -108,6 +128,8 @@ def frontend_recommendation(run_id, public, match, assets):
                               "evidence_ids": [e["id"] for e in entries if e["field"].startswith("review.")],
                               "search": deepcopy(analysis["search"]),
                               "suggestions": suggestions}
+        if "exposures" in analysis:
+            result["analysis"]["exposures"] = deepcopy(analysis["exposures"])
     # Keep the transport within the existing frontend contract; never truncate facts.
     if len(entries) > 100 or len(result["explanation"]) > 10000:
         raise DataUnavailable("FRONTEND_RESPONSE_TOO_LARGE")

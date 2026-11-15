@@ -1,5 +1,11 @@
 # Questionnaire matching and personalized proposals
 
+Mise à jour : le formulaire actuel Word v4 utilise le module fourni
+`profile_mapping.py`, avec les connaissances normalisées. Les analyses utilisent
+également le catalogue d’exposition daté. Les contrats historiques restent
+distincts ; voir [Expositions et questionnaire](expositions-et-questionnaire.md)
+pour les règles actuellement appliquées et leurs limites.
+
 The backend accepts the browser's `questionnaire-word-16-v2` payload, the supplied
 16-question French form, and the legacy eight-answer `rendements-seuls-v1` payload.
 It matches against `profiles.json`, evaluates

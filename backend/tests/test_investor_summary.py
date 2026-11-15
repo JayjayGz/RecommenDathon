@@ -27,14 +27,16 @@ def test_consistent_and_unknown_answers_do_not_invent_contradictions():
     assert questionnaire_observations({"income": "fragile"}) == []  # missing reserve is not zero
 
 
-def test_french_summary_flags_questionnaire_without_changing_risk_band(investor_source):
+def test_french_summary_flags_tensions_and_uses_the_new_questionnaire_mapping(investor_source):
     form = french_form()
     questions = {q["id"]: q for q in form["questions"]}
     questions["tolerance_risque"]["reponse"] = "tolerance_risque_5"
     outcome, records = run(investor_source, investor_request(questionnaire=form))
     text = outcome.payload["explanation"]
     assert outcome.status == "PASS"
-    assert outcome.payload["profile_match"]["risk_band"] == "high"
+    assert outcome.payload["profile_match"]["risk_band"] == "low"
+    assert outcome.payload["profile_match"]["risk_mapping_source"] == "capacity_tolerance_style_v1"
+    assert outcome.payload["profile_match"]["questionnaire_mapping"]["tolerance_score"] == 1
     assert "contraste" in text and "retrait proche" in text
     assert "Simulation éducative" in text
     assert len(text.split()) < 350

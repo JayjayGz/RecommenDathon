@@ -1,5 +1,10 @@
 # Deterministic portfolio review and optional alternatives
 
+L’analyse du catalogue d’exposition et le nouveau mapping du questionnaire sont
+décrits dans [Expositions et questionnaire](expositions-et-questionnaire.md).
+Les répartitions datées des fonds complètent la couverture des actions directes
+décrite ci-dessous ; elles restent distinctes des positions sous-jacentes détaillées.
+
 Questionnaire and follow-up evaluations now run `REVIEW_PORTFOLIO` and
 `CHECK_SUGGESTIONS` after the engine evaluation and before evidence/explanation.
 The review uses the selected passing branch, or the requested allocation when
