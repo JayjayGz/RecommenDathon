@@ -150,6 +150,56 @@
           "scope": "Current prices_daily filename and both date/ticker column orders; no data rewrite, profile regeneration or change to metric frequency conventions."
         }
       ]
+    },
+    {
+      "id": "L-007",
+      "roles": [
+        "infrastructure",
+        "portfolio"
+      ],
+      "trigger": "Adding cooperative execution deadlines to nested portfolio-evaluation loops",
+      "boundary": "Deadline handling must not change allocation rules or turn a partial calculation into a passing result",
+      "defect": "The first workflow test run failed during collection with IndentationError at the inserted maximum-search deadline check.",
+      "cause": "The new require_time call was initially aligned with the for statement instead of its body.",
+      "evidence": [
+        "backend/src/alphaforge/application/portfolio_engine.py: maximum-search loop; initial pytest collection reported expected an indented block after for.",
+        "backend/tests/test_orchestrator.py: deadline interruption during maximum search and nearby unchanged passing controls."
+      ],
+      "prevention": "Parse modified Python modules before regression execution; test deadline interruption inside nested searches and a valid unchanged assessment without changing numerical rules.",
+      "regression": "Replay maximum-search deadline interruption, early deadline/audit behavior and passing flat-price assessment; parse all backend Python files.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "..\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest-tmp-orchestrator-final",
+          "result": "112 passed, 8 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline workflow, transport, synthetic policy/accounting and stubbed SDK tests. All backend Python files also parsed successfully; no deployment or live AWS call."
+        }
+      ]
+    },
+    {
+      "id": "L-008",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Editing SAM function Policies with conditional managed policy attachments",
+      "boundary": "A local transform check does not establish live IAM authorization, policy correctness or successful deployment",
+      "defect": "The proposed Lambda update passed sam validate --lint but CloudFormation rejected the Policies property during the SAM transform.",
+      "cause": "The entire Policies property was wrapped in Fn::If returning a list. SAM policy parsing rejected that shape; the conditional must be an item inside the Policies list.",
+      "evidence": [
+        "User deployment report: AlphaForgeFunction Policy at index 0 in the Policies property is not valid.",
+        "backend/tests/test_sam_template.py reproduces the old transform failure and translates the corrected shape for empty and supplied RuntimePolicyArn values.",
+        "backend/template.yaml now uses Policies: followed by a single list-item Fn::If returning the ARN or AWS::NoValue."
+      ],
+      "prevention": "Run the actual SAM translator offline for conditional policy shapes, including absent and supplied parameter cases; do not treat schema lint as proof of transform compatibility.",
+      "regression": "Assert the old property-level conditional is rejected; assert the list-item conditional translates and retains basic logging plus only the conditional runtime-policy attachment.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "& \"C:\\Program Files\\Amazon\\AWSSAMCLI\\runtime\\python.exe\" backend/tests/test_sam_template.py -v",
+          "result": "2 tests passed; corrected template translated for both empty and supplied runtime-policy values; old shape reproduced the error.",
+          "scope": "Actual SAM translator with static managed-policy lookup, synthetic image URI and no AWS calls; no rebuild or deployment performed."
+        }
+      ]
     }
   ]
 }

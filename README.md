@@ -69,11 +69,11 @@ Tests run from the Git root or `backend/`; each `pytest.ini` resolves the backen
 - Calculations, proposal validation, offline Bedrock tests and a local UI are implemented.
 - `dataset/prices_daily.csv` is the active prices file. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
 - The per-ticker risk module remains an unimplemented teammate-owned contract at `backend/src/alphaforge/application/risk.py`.
-- Questionnaire-to-`InvestorProfile` mapping, production API handlers, full orchestration, evidence/compliance release checks and S3 auditing remain to be implemented. The frontend HTTP contract is not the Python calculation API; an explicit adapter is required. Unconnected web portfolios are illustrative.
+- The [proposal workflow](docs/orchestrator.md) connects the Lambda handler, existing engine, evidence, constrained explanations, release checks and S3/local auditing. Questionnaire-to-`InvestorProfile` mapping, sector/ESG screening, per-ticker risk and the frontend HTTP adapter remain pending. Unconnected web portfolios are illustrative.
 - Dataset downloads, profile regeneration and AWS calls are explicit operations; tests do not deploy or contact AWS.
 
 Development instructions start at [AGENTS.md](AGENTS.md). The agreed deterministic pipeline is described in [architecture.md](docs/architecture.md); Strands roles in team notes are proposals, not an implemented runtime.
 
-The [Lambda setup guide](docs/lambda-setup.md) covers the health-check bootstrap,
-container packaging and deployment prerequisites. Portfolio orchestration remains
-to be connected before that function can return recommendations.
+The [Lambda setup guide](docs/lambda-setup.md) covers container packaging and deployment.
+Configure the existing input/audit buckets and reviewed runtime policy to enable
+the proposal workflow; health checks work without that configuration.

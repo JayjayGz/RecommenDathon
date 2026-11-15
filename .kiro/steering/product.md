@@ -1,6 +1,6 @@
 # Current layout and precedence
 
-Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/`.
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). The profile-ID proposal workflow now connects Lambda, evidence/release checks and S3/local auditing (docs/orchestrator.md); questionnaire mapping, sector/ESG screening and frontend HTTP mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/`.
 
 # What we are building
 

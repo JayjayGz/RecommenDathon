@@ -8,13 +8,15 @@ No Step Functions state machine is needed.
 
 `backend/src/alphaforge/presentation/lambda_handler.py` supports authenticated,
 direct Lambda invocations. `{"action":"health"}` returns HTTP-style status 200
-and `pipelineReady: false`. `{"action":"recommend"}` returns 503 with
-`PIPELINE_NOT_READY`. A successful invocation proves handler liveness only.
+and `workflowConfigured`, which checks environment configuration only.
+`{"action":"recommend","request":{...}}` calls the [proposal workflow](orchestrator.md)
+after request validation. Without storage configuration it returns status 503
+with `WORKFLOW_CONFIGURATION_UNAVAILABLE`.
 
-The orchestrator, evidence/compliance release checks, S3 adapters and frontend
-contract mapper are not implemented. No portfolio is released by this bootstrap.
-No public URL is created. The handler understands HTTP API v2 event shapes for
-future integration; this alone does not connect the frontend.
+The workflow supplies per-run snapshots, the existing portfolio engine, evidence,
+constrained explanations, release checks and required audit persistence. The
+frontend questionnaire mapper is not implemented. No public URL is created.
+HTTP API v2 event parsing does not by itself connect the frontend.
 
 ## Packaging
 
@@ -28,10 +30,10 @@ future integration; this alone does not connect the frontend.
 
 The Docker context is restricted to backend source and runtime dependencies.
 It excludes private CSVs, profiles, development memory, credentials, tests and UI
-assets. The current local CSV adapter is not a Lambda storage adapter: it assumes
-the repository checkout and cannot load S3. Connect an S3-backed repository before
-wiring the portfolio engine into the deployed handler. No input data is uploaded
-by the build.
+assets. The deployed workflow uses the S3 snapshot source instead of assuming
+a repository checkout. No input data is uploaded by the build. Configure existing
+input/audit buckets and a reviewed runtime policy as described in the
+[workflow guide](orchestrator.md#aws-configuration).
 
 ## Prerequisites
 
@@ -70,11 +72,26 @@ cd backend
 sam validate --lint --template-file template.yaml --region us-east-1
 sam build --template-file template.yaml
 sam local invoke AlphaForgeFunction --event events/health.json
-sam local invoke AlphaForgeFunction --event events/recommend.json
 ```
 
-Expected bodies: health reports `ok: true, pipelineReady: false`; recommend reports
-`PIPELINE_NOT_READY` with status 503. These commands make no Bedrock calls.
+Health reports `ok: true` and the environment's `workflowConfigured` value; it
+makes no Bedrock calls. For a host-side local assessment with local inputs and no
+AWS access, run `python backend/scripts/run_workflow.py` from the Git root.
+The current incompatible data should produce MISSING_INFO, not an invented result.
+
+Conditional policy changes also require the actual SAM translator regression:
+`python backend/tests/test_sam_template.py -v` from the Git root after installing
+the development requirements. On this Windows machine, SAM's bundled interpreter
+can run it without another installation:
+
+```powershell
+& 'C:\Program Files\Amazon\AWSSAMCLI\runtime\python.exe' backend/tests/test_sam_template.py -v
+```
+
+Schema lint previously accepted a `Policies` shape that the SAM transform rejected.
+Keep conditional managed-policy attachments as list items inside `Policies`.
+After changing the source template, rerun `sam build` before `sam deploy`; otherwise
+SAM can reuse the old template in `.aws-sam/build/`.
 
 ## Deploy
 
@@ -90,12 +107,13 @@ creates billable AWS resources; no public invocation endpoint is included.
 Subsequent deployments can use `sam deploy` from the same directory after saving
 the guided configuration locally. Generated SAM files are ignored by Git.
 
-SAM creates an execution role with basic CloudWatch logging permissions. The
-bootstrap has no S3 or Bedrock permissions because it does not use those services.
-When wiring the pipeline, add narrowly scoped input-object reads, audit writes
-under `runs/`, and `bedrock:InvokeModel` on the chosen model/inference profile and
-its underlying model resources. Keep the deployed role separate from the identity
-used to deploy the stack.
+SAM creates an execution role with basic CloudWatch logging permissions and
+attaches `RuntimePolicyArn` if provided. Set `DataBucketName`, `AuditBucketName`,
+`DataPrefix` and the reviewed policy ARN to enable the S3 workflow. Optional
+`BedrockModelId` enables model-based ordering of verified statements; leaving it
+blank uses the checked deterministic renderer. See the policy-generation command
+and resource-scoping requirements in [the workflow guide](orchestrator.md#aws-configuration).
+Keep the deployed role separate from the identity used to deploy the stack.
 
 ## Verify the deployed function
 
@@ -111,29 +129,19 @@ Check the JSON body's `statusCode`, not only the CLI's invocation status: Lambda
 can successfully invoke a handler that returns application status 503.
 
 Do not set the frontend's `PORTFOLIO_API_URL` or `AGENT_API_URL` to a Lambda ARN.
-They require an HTTP endpoint and matching contracts. Add that transport after
-the orchestrator and its release checks work, with authentication appropriate to
-the frontend/proxy.
+They require an HTTP endpoint and matching contracts. Add that transport and the
+questionnaire/profile mapping with authentication appropriate to the frontend/proxy.
 
 ## Implementation handoff
 
 Infrastructure is the primary role. Inputs: existing backend package, frontend
-transport contract and architecture; loaded lessons L-001, L-002 and L-006.
-Outputs: handler, image definition, SAM template, sample events, offline transport
-tests and this guide. The next owner wires the application orchestrator and
-S3/audit interfaces; calculations and reference profiles are unchanged.
+transport contract and architecture; loaded lessons L-001 through L-006 for the
+workflow integration. Outputs include handler, workflow, local/S3 adapters,
+deployment parameters, offline tests and documentation. Next owners provide
+compatible inputs, review the generated runtime policy and connect the frontend
+contract. Numerical rules and stored reference profiles are unchanged.
 
-Files are prepared for review. Cloud deployment requires available AWS credentials,
-AWS/SAM CLI and a working Docker engine. This document is not evidence of a live
-deployment, tested account permissions or a complete recommendation pipeline.
-
-Offline verification on 2026-11-15: the full suite returned 66 passed, 8 skipped,
-2 xfailed and 17 subtests passed. Skips concern unavailable legacy dataset
-holdings; expected failures concern the existing risk stub. Template YAML,
-resource inventory, Dockerfile context path and sample-event JSON checks passed,
-as did `git diff --check`. `profiles.json` has no diff. These checks do not replace
-`sam validate --lint`, an actual Linux image build or a deployed smoke test.
-
-Deployment status: blocked by environment prerequisites. The session's SDK found
-no credentials or AWS profiles; AWS/SAM CLI were absent from PATH; the Docker
-engine was unavailable. No cloud resources were created or modified.
+The user reported deployment of the earlier health-only image. The new workflow
+requires rebuilding and updating that stack; no deployment or live AWS operation
+was performed by this implementation. Offline tests do not establish live model
+access, bucket permissions or a complete questionnaire pipeline.
