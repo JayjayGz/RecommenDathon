@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { JSDOM } from 'jsdom';
 import { QUESTIONS, SECTIONS, QUESTIONNAIRE_VERSION, cleanAnswers, isAnswered, validateAnswers, makeQuestionnairePayload } from '../src/data.js';
 import { marketScenario, questionIllustration } from '../src/illustrations.js';
+import { simulationFixture } from './fixtures/change-review.mjs';
 
 const fixture = JSON.parse(await readFile(new URL('./fixtures/questionnaire-word.json', import.meta.url), 'utf8'));
 const key = 'recommand.platform.word16.v2';
@@ -26,7 +27,7 @@ async function open(t, saved = {}, legacy = false, options = {}) {
   w.HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   w.AbortSignal = AbortSignal;
   w.AbortController = AbortController;
-  w.fetch = options.fetch || (async () => ({ ok: true, json: async () => ({ agentConnected: false, portfolioConnected: false }) }));
+  w.fetch = options.fetch || (async () => ({ ok: true, json: async () => options.config || { agentConnected: false, portfolioConnected: false } }));
   w.__modules = {};
   let source = await readFile(appUrl, 'utf8');
   for (const [statement,names,path] of [...source.matchAll(/^import\s+\{([^}]+)\}\s+from\s+'([^']+)';/gm)]) {
@@ -622,4 +623,40 @@ test('portfolio introduction is concise and keeps only a short financial notice 
   assert.match(app.$('.investment-notice').textContent,/ne constituent pas un conseil financier personnalisé/);
   assert.match(app.$('.demo-banner').textContent,/Allocation illustrative, non personnalisée/);
   assert.ok(app.$('#portfolio-explanation'));
+});
+
+test('le portefeuille change seulement après confirmation d’une analyse compatible', async t => {
+  const { initial, proposal } = simulationFixture();
+  const app = await open(t, { complete: true, page: 'assistant', answers: completeAnswers(), result: initial, proposal });
+  assert.equal(app.saved().result.portfolio.positions[0].weight, 20);
+  assert.match(app.$('.proposal-card').textContent, /courant reste inchangé/);
+  app.$('[data-action="accept-proposal"]').click();
+  assert.equal(app.saved().result.portfolio.positions[0].weight, 25);
+  assert.equal(app.saved().proposal, null);
+});
+
+test('les réserves ne présentent pas de bouton de confirmation et protègent aussi le gestionnaire', async t => {
+  const { initial, proposal } = simulationFixture();
+  proposal.changeReview.verdict = 'clarification_required';
+  proposal.changeReview.cautions = ['Votre horizon doit être précisé.'];
+  const app = await open(t, { complete: true, page: 'assistant', answers: completeAnswers(), result: initial, proposal });
+  assert.equal(app.$('[data-action="accept-proposal"]'), null);
+  const button = app.w.document.createElement('button');
+  button.dataset.action = 'accept-proposal'; app.w.document.body.append(button); button.click();
+  assert.equal(app.saved().result.portfolio.positions[0].weight, 20);
+});
+
+test('une nouvelle demande retire l’ancienne proposition et conserve le portefeuille pendant et après l’analyse', async t => {
+  const { initial, proposal } = simulationFixture();
+  const app = await open(t, { complete: true, page: 'assistant', answers: completeAnswers(), result: initial, proposal, draft: 'Ajouter AAA 5%' }, false, { config: { agentConnected: true, portfolioConnected: false } });
+  let finish;
+  app.w.fetch = () => new Promise(resolve => { finish = resolve; });
+  app.$('#chat-form').dispatchEvent(new app.w.Event('submit', { bubbles: true, cancelable: true }));
+  assert.equal(app.saved().proposal, null);
+  assert.equal(app.saved().result.portfolio.positions[0].weight, 20);
+  assert.equal(app.$('[data-action="accept-proposal"]'), null);
+  finish({ ok: true, json: async () => ({ message: 'Analyse terminée : votre portefeuille reste inchangé.', proposal }) });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(app.saved().result.portfolio.positions[0].weight, 20);
+  assert.equal(app.saved().proposal.portfolio.positions[0].weight, 25);
 });

@@ -65,7 +65,8 @@ def test_changed_macro_context_is_audited_but_does_not_invent_weight_changes(inv
     assert first.payload["portfolio"]["weights"] == second.payload["portfolio"]["weights"]
     assert one["data_manifest"]["inputs"]["macro"]["sha256"] != two["data_manifest"]["inputs"]["macro"]["sha256"]
     assert first.payload["evidence"]["manifest_hash"] != second.payload["evidence"]["manifest_hash"]
-    assert "100 percent" in second.payload["explanation"]
+    assert any("100 percent" in e["sentence"] for e in two["evidence"]["entries"])
+    assert "TEST_POLICY" not in second.payload["explanation"]
     assert set(second.payload["macro_context"]["applies_to_tickers"]) == {"XBB.TO", "ZST.TO"}
     assert "NVDA" not in second.payload["macro_context"]["applies_to_tickers"]
 

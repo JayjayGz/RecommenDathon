@@ -77,11 +77,12 @@ def test_initial_match_releases_frontend_portfolio_with_sourced_composition(inve
     assert len(records["data_manifest"]["inputs"]["universe"]["sha256"]) == 64
     assert len(records["data_manifest"]["inputs"]["macro"]["sha256"]) == 64
     assert outcome.payload["macro_context"]["series"][0]["publication_timing"] == "unverified"
-    assert "publication timing is unverified" in public["explanation"]
+    assert "[" not in public["explanation"]
+    assert len(public["explanation"].split()) < 300
     assert records["profile"]["match"]["risk_mapping_source"] == "approved_five_to_three_v1"
     assert "questionnaire matching and ESG/sector screening are not implemented" not in public["explanation"]
-    assert "financial risk capacity" in public["explanation"]
-    assert "classified as" in public["explanation"] and len(llm.calls) == 1
+    assert public["limitations"] != records["evidence"]["limitations"]
+    assert public["explanation"].startswith("La r") and len(llm.calls) == 1
 
 
 @pytest.mark.parametrize("risk,band", [("very_low", "low"), ("low", "low"), ("medium", "medium"), ("high", "high"), ("very_high", "high")])
@@ -149,7 +150,7 @@ def test_nvidia_addition_is_funded_and_checked_against_matched_profile(investor_
     assert weights["NVDA"] == .05 and sum(weights.values()) == pytest.approx(1)
     # Two 12.5% funded holdings round to 12%; the documented 1% residual goes to XBB.
     assert weights["XBB.TO"] == .46 and weights["ZST.TO"] == .25
-    assert "rounding assigned its residual" in outcome.payload["explanation"]
+    assert any("rounding assigned its residual" in e["sentence"] for e in records["evidence"]["entries"])
     assert all(check["passes"] for check in outcome.payload["portfolio"]["validation"]["checks"].values())
     assert any(p["name"] == "NVIDIA" for p in outcome.payload["recommendation"]["portfolio"]["positions"])
     assert records["decisions"]["requested_changes"] == [{"ticker": "NVDA", "add_pct": 5}]
@@ -160,7 +161,8 @@ def test_conflicting_addition_returns_checked_alternative_and_actual_tradeoffs(i
     assert outcome.status == "CONFLICT"
     assert outcome.payload["assessment"]["selected_branch"] == "adjusted"
     assert outcome.payload["portfolio"]["weights"]["NVDA"] == .05
-    assert "requested 20%, applied 5%" in outcome.payload["explanation"]
+    assert any("requested 20%, applied 5%" in e["sentence"] for e in records["evidence"]["entries"])
+    assert "alternative" in outcome.payload["explanation"]
     assert records["decisions"]["max_allowed"]["NVDA"] == 5
 
 
@@ -175,7 +177,7 @@ def test_followup_uses_current_portfolio_instead_of_resetting_reference(investor
 def test_explicit_excluded_ticker_remains_forbidden_during_personalization(investor_source):
     outcome, _ = run(investor_source, investor_request(message="Add NVDA 5%", requirements={"excluded_tickers": ["NVDA"]}))
     assert outcome.status == "CONFLICT" and "portfolio" not in outcome.payload
-    assert "excluded_tickers" in outcome.payload["explanation"]
+    assert "exclure" in outcome.payload["explanation"]
 
 
 def test_crypto_interest_does_not_override_the_reference_permission(investor_source):
@@ -184,7 +186,7 @@ def test_crypto_interest_does_not_override_the_reference_permission(investor_sou
     outcome, _ = run(investor_source, investor_request(questionnaire=form, message="Add BTC-USD 2%"))
     assert outcome.status == "CONFLICT"
     assert "BTC-USD" not in outcome.payload["portfolio"]["weights"]
-    assert "crypto not allowed" in outcome.payload["explanation"]
+    assert "cryptomonnaies non" in outcome.payload["explanation"]
 
 
 def test_personalized_crypto_limit_is_aggregate_and_checked_on_alternative(investor_source):

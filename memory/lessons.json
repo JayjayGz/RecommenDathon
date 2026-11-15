@@ -663,7 +663,8 @@
         "Feature commit 6a6783e contains the missing adapters, request contracts, matching, macro, Lambda, evidence and frontend files; restored its dependencies while retaining the stashed asset gate.",
         "Merged lesson records by trigger, restoring original L-011 identity and preserving L-020 through L-022; the crypto CSV hash remains 27f8982c5589b481280253cedaa105c30b61b3e73864972cb0a84e7493e9a2ea.",
         "Rebase of debug commit 69b418a onto e7ec78f produced six conflicts and duplicated questionnaire preparation outside the marked import conflict. The duplicate reset effective/starting_weights and called prepare_investor with the obsolete two-argument signature.",
-        "Current merge: combined immediate chat with upstream 130-second timeout, portfolio CSS checks with private-route rejection, and preserved both backend and website lessons by assigning website records L-029 through L-031. All 35 website tests passed. Backend v2/UI v4 incompatibility documented without changing financial mapping."
+        "Current merge: combined immediate chat with upstream 130-second timeout, portfolio CSS checks with private-route rejection, and preserved both backend and website lessons by assigning website records L-029 through L-031. All 35 website tests passed. Backend v2/UI v4 incompatibility documented without changing financial mapping.",
+        "Fusion du 15 novembre 2026 : conflits dans plateforme/src/app.js et plateforme/tests/word-questionnaire.test.mjs après application de modifications remisées. Copies initiales conservées dans .local-runs/merge-interface/. Combinaison du chat immédiat avec réessai et de la confirmation conditionnée par l’avis préalable. Le premier contrôle a repéré un dernier marqueur dans la modale des positions ; le suivant a révélé sourceMarkup supprimée automatiquement alors que decisionStudio l’utilisait encore. Fonction restaurée depuis la version de l’index, puis 40 tests réussis."
       ],
       "prevention": "Compare the stash base, target branch and required imports before resolving conflicts. Restore the coherent feature dependency set, preserve both distinct lesson histories under unique IDs, validate imports and tests, and stage every required file when marking the resolution complete. Inspect automatically merged code outside conflict markers for duplicate preparation, resets and outdated call signatures; accepting conflict blocks alone is insufficient.",
       "regression": "Run backend regressions, frontend HTTP and syntax checks, structural lesson checks, then replay the supported French event with local CSVs and an in-memory audit. Confirm no conflict markers or unmerged entries and preserve the crypto normalization. Verify that a real supported French questionnaire reaches exactly one VALIDATE_REQUESTED_ASSETS and one MATCH_PROFILE state before a recommendation.",
@@ -688,6 +689,11 @@
           "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-rebase-merge-repair",
           "result": "202 passed, 2 skipped, 2 xfailed; 17 subtests passed in 51.78s.",
           "scope": "Complete offline backend regression replay after the overlapping rebase conflicts and duplicated preparation were repaired. Supported French JSON replay with real CSVs also passed with exactly one membership and matching stage; audit was in memory and no LLM or AWS calls were made."
+        },
+        {
+          "command": "node --check src/app.js; node --test --test-reporter=spec tests/change-review.test.mjs tests/word-questionnaire.test.mjs tests/server-questionnaire.test.mjs",
+          "result": "Syntaxe valide ; 40 tests réussis, aucun échec.",
+          "scope": "Depuis plateforme, sous Node 22 : tests DOM, reprise des messages, nouvelles présentations, contrat HTTP et confirmation explicite. Aucun test graphique ni appel AWS."
         }
       ]
     },
@@ -870,79 +876,109 @@
     {
       "id": "L-029",
       "roles": [
-        "infrastructure"
+        "explanation",
+        "evidence",
+        "compliance"
       ],
-      "trigger": "Adding or changing the global website profile reset or its persisted state",
-      "boundary": "Website state only; does not delete financial datasets or unrelated localStorage keys",
-      "defect": "The user requested a reset button on every page; the existing reset was only reachable through the privacy dialog.",
-      "cause": "The reset action existed but was not exposed by the shared header, and legacy application storage keys were not removed.",
+      "trigger": "Presenting questionnaire portfolio explanations to investors",
+      "boundary": "Does not change numerical checks, financial risk scoring, audit provenance, or the legacy explicit-profile technical API",
+      "defect": "The user reported an English manuscript with inline evidence IDs, technical backend limitations, and no neutral critique of questionnaire combinations.",
+      "cause": "The investor view rendered every internal evidence sentence and limitation directly; the frontend also displayed the source catalog.",
       "evidence": [
-        "User correction on 2026-11-15: a reset on all pages must restart the profile from zero.",
-        "plateforme/src/app.js: shared header reset, invalidateConversation, application-prefixed storage cleanup and first-question navigation.",
-        "plateforme/tests/word-questionnaire.test.mjs: three-page reset, legacy storage, reload, valid neighboring state and in-flight response cases."
+        "User correction on 2026-11-15: require concise French portfolio explanations, neutral questionnaire consistency observations, no displayed sources, and capability limits only.",
+        "application/evidence.py render joins every cited evidence sentence; plateforme/src/app.js evidenceBody previously rendered the source catalog.",
+        "First full replay: 304 passed, one old macro test expected a technical observation inside the public summary. The test now checks retained audit evidence and its omission from the summary."
       ],
-      "prevention": "Expose the reset through the common header. Clear all profile-derived UI state, abort pending requests and ignore late responses, remove only this application's current/legacy keys, and persist a blank first-step state.",
-      "regression": "Reset from questionnaire, portfolio and assistant; reload; confirm empty answers/draft/messages/results and first question. Preserve unrelated localStorage and compatible normal reloads; resolve pending chat/portfolio responses after reset and confirm old state is not restored.",
+      "prevention": "Generate the investor summary deterministically from checked evaluation values and normalized answers, flag explicit tensions without changing scores or weights, retain technical evidence for audit, and keep displayed limits focused on analysis capabilities.",
+      "regression": "Replay contradictory and consistent questionnaires, French summary length and citation absence, unchanged risk band, conflict alternatives, and audited real-data proxy requests.",
       "status": "verified",
       "verification": [
         {
-          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
-          "result": "25 passed, 0 failed, including global reset, reload and aborted in-flight chat/portfolio cases.",
-          "scope": "Actual UI handlers in jsdom with deterministic synthetic fixtures. The user's real browser profile was preserved during visual inspection; reset was not clicked there."
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_investor_summary.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/french-summary-cases-2",
+          "result": "7 passed.",
+          "scope": "Offline deterministic summary and questionnaire combination checks; no live model or graphical browser."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "20 passed, 0 failed; 14 audited runs; source CSV unchanged.",
+          "scope": "Actual local proxy, handler, CSV engine, frontend response contract and audit reconstruction; no AWS deployment or live Bedrock."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/french-summary-full-2",
+          "result": "305 passed, 2 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Full offline backend suite, including French presentation, retained macro audit evidence and unchanged release controls."
         }
       ]
     },
     {
       "id": "L-030",
-      "roles": [
-        "explanation",
-        "evidence",
-        "compliance",
-        "infrastructure"
-      ],
-      "trigger": "Changing the portfolio result screen, explanation visibility or contextual clarification",
-      "boundary": "Website presentation and existing raw result transport only; never fabricate asset rationales, infer business risk mappings or treat shape validation as source certification",
-      "defect": "The user identified the explanation of investment choices as the project's most important feature; the result screen placed a tall profile sidebar beside holdings and rendered the real explanation only below holdings and the conversation callout.",
-      "cause": "portfolio() rendered resultEvidence after the complete portfolio grid and refinement callout, and no explanation region appeared for the unconnected demonstration.",
+      "roles": ["explanation", "evidence", "compliance"],
+      "trigger": "Expliquer une modification de portefeuille après le questionnaire",
+      "boundary": "Ne modifie ni les poids, ni les calculs, ni les limites ; une comparaison historique ne prédit pas le risque futur",
+      "defect": "Le résumé décrivait surtout le portefeuille final et répétait les observations du questionnaire sans analyser le changement demandé.",
+      "cause": "investor_summary ne rendait ni requested_changes ni la comparaison entre base et la branche retenue, pourtant disponibles dans l’évaluation.",
       "evidence": [
-        "User request and screenshot on 2026-11-15: a clear zone for the agent to explain and clarify its choices is the most important feature.",
-        "plateforme/src/app.js: decisionStudio uses accepted result.explanation, evidence, limitations and runId beside allocation; previous resultEvidence placement is replaced.",
-        "plateforme/docs/PORTFOLIO_EXPLANATION.md records the previous profile-card assertion failure and the native Chrome finding that Ctrl+End was intercepted by the new tab handler. The assertion targets the new profile summary; modified browser shortcuts are no longer intercepted."
+        "Correction utilisateur du 15 novembre 2026 : réponse après modification jugée toujours identique et sans analyse du changement.",
+        "backend/tests/test_investor_summary.py : ajout NVDA, suppression, alternative, risque contrasté, périodes différentes et poids inchangés.",
+        "Un lancement partiel incluant test_orchestrator a produit 104 réussites et un échec préexistant : le remplacement de boto3.Session avant le premier import de bedrock invalide son annotation. La suite complète passe ; ce défaut d’isolation reste hors du périmètre de la correction."
       ],
-      "prevention": "Make the explanation a primary region near the allocation. Render only accepted current-result prose, evidence and limitations, and mark demo absence explicitly. Clarification should prepare a contextual draft without automatic submission or overwriting an existing draft. Keep keyboard tab behavior accessible without capturing modified browser shortcuts.",
-      "regression": "Replay accepted response and reload, rejected saved compliance output, demo no-explanation state, safe text/link rendering, tab keyboard navigation including Ctrl+End, contextual clarification submission and preservation of an existing draft. Keep profile edits/reset invalidating the result.",
+      "prevention": "Rappeler la demande, rendre tous les poids réellement modifiés et les contreparties, distinguer l’alternative retenue et comparer les trois indicateurs uniquement à période, devise et méthode identiques. Conserver les métriques de départ dans les preuves.",
+      "regression": "Rejouer une modification acceptée et une alternative, puis les cas sans changement effectif, rejeté et à périodes différentes ; conserver le résumé initial sans comparaison artificielle.",
       "status": "verified",
       "verification": [
         {
-          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
-          "result": "30 passed, 0 failed, including actual response rendering under HTTP mocks, rejected saved output, keyboard shortcuts and contextual clarification.",
-          "scope": "Deterministic DOM/API/style tests with synthetic fixtures. Native Chrome separately displayed the demo allocation, explanation region and tab content at the existing desktop window size; no real agent, numerical pipeline or mobile screenshot was tested."
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_investor_summary.py backend/tests/test_investor_workflow.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/changement-resume-cibles",
+          "result": "63 tests réussis.",
+          "scope": "Résumé français et intégration du questionnaire avec prix fictifs ; aucun appel réseau."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/changement-resume-complet",
+          "result": "309 tests réussis, 2 ignorés, 2 échecs attendus ; 17 sous-tests réussis.",
+          "scope": "Suite complète locale ; pas de validation graphique ni de déploiement AWS."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "20 contrôles réussis, aucun échec ; 14 exécutions auditées et données sources inchangées.",
+          "scope": "Proxy local, calculs CSV, contrat de réponse et preuves relues depuis l’audit ; aucun appel Bedrock réel."
         }
       ]
     },
     {
       "id": "L-031",
-      "roles": [
-        "infrastructure"
-      ],
-      "trigger": "Changing chat submission, delivery feedback or retries in the website conversation",
-      "boundary": "Browser delivery state and existing HTTP chat transport only; does not authorize automatic resend, claim exactly-once backend processing or alter financial calculations",
-      "defect": "The user reported that their submitted message appeared only when the agent replied.",
-      "cause": "sendMessage appended the user message and assistant response together after awaiting a successful HTTP response.",
+      "roles": ["portfolio", "screening", "explanation", "evidence", "compliance"],
+      "trigger": "Analyser un ajout ou une modification après un questionnaire investisseur",
+      "boundary": "Avis éducatif fondé sur les données disponibles ; ne crée aucun seuil de risque, aucune capacité financière estimée ni ordre de bourse",
+      "defect": "Toute simulation numériquement admissible présentait une version à retenir sans avis préalable suffisamment relié aux préférences et aux tensions du questionnaire.",
+      "cause": "La sélection d’une branche respectant les contraintes servait seule de critère à la proposition ; l’interface ne disposait pas d’un avis distinct de la validation numérique.",
       "evidence": [
-        "User correction on 2026-11-15 requested immediate display in step 3.",
-        "Before the repair, the delayed-response test in plateforme/tests/word-questionnaire.test.mjs failed at the immediate bubble count: actual 1, expected 2.",
-        "The initial test command without --test-isolation=none hit spawn EPERM; rerunning with the existing in-process mode reproduced the actual delayed-display defect.",
-        "plateforme/src/app.js now persists and renders the user bubble before awaiting HTTP; completion adds only the assistant reply. Pending/failed delivery metadata never enters the transport conversation."
+        "Correction utilisateur du 15 novembre 2026 : les ajouts ne doivent pas être automatiques, mais analysés en tenant compte des critères choisis au questionnaire.",
+        "plateforme/src/app.js possédait déjà un clic de confirmation ; le défaut était l’absence de distinction entre admissibilité numérique et avis sur la modification.",
+        "backend/tests/test_change_review.py : compatibilité, préférences divergentes, retrait proche, exclusion, alternative ajustée, risque accru, concentration accrue, ajout sans montant et refus d’un avis falsifié.",
+        "Premiers tests d’interface : Node 22 ne reconnaissait pas l’option de lancement prévue pour Node 24 ; les dépendances manquantes ont été installées après autorisation réseau. Trois nouveaux tests de conversation ont ensuite révélé une méthode scrollTo absente du banc jsdom ; son substitut a été ajouté au banc uniquement."
       ],
-      "prevention": "Display and persist the submitted user message immediately, clear the composer for a new submission, and show pending status. On failure keep the bubble recoverable, retry it in place and preserve a different draft. Strip local delivery metadata and exclude unresolved messages from the HTTP history; never send the current message twice as both message and conversation. On reload convert interrupted pending status to manual retry, without automatic resubmission.",
-      "regression": "Use a deferred response to assert the user bubble before resolution, a single request on double-submit and no duplicate user bubble after success. Replay HTTP/network/timeout/invalid-response failures, retry with another draft, interrupted reload without resend, and existing reset/late-response guards.",
+      "prevention": "Produire un avis compatible, à clarifier ou non retenu avant toute confirmation. Relier l’avis au questionnaire, aux contraintes, aux compromis historiques et à la concentration vérifiée. Conserver un état non appliqué, le portefeuille de départ et les preuves ; contrôler de nouveau l’avis à la sortie. L’interface confirme uniquement un avis compatible dont les poids de départ correspondent encore au portefeuille courant.",
+      "regression": "Rejouer un ajout compatible et un ajout numériquement admissible mais à clarifier, puis un ajout exclu, sans montant et un avis falsifié. Vérifier dans le DOM que seule une confirmation explicite change la vue et qu’une nouvelle demande retire l’ancienne proposition.",
       "status": "verified",
       "verification": [
         {
-          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
-          "result": "35 passed, 0 failed, including deferred chat response, retry in place, reload recovery, failure cases and concise portfolio copy.",
-          "scope": "Actual UI handlers under deterministic HTTP mocks and local API/static checks; no real agent call or live browser chat submission."
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/avis-ajout-verification",
+          "result": "320 tests réussis, 2 ignorés, 2 échecs attendus ; 17 sous-tests réussis.",
+          "scope": "Suite backend locale incluant les avis, les contraintes, les preuves et les refus de sortie. Pas de déploiement ni d’appel AWS réel."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_investor_summary.py backend/tests/test_change_review.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/avis-texte-final",
+          "result": "22 tests réussis après la dernière précision de formulation française.",
+          "scope": "Résumés et avis avant confirmation, dont l’exclusion sans montant et la concentration accrue."
+        },
+        {
+          "command": "node --test tests/change-review.test.mjs tests/word-questionnaire.test.mjs tests/server-questionnaire.test.mjs",
+          "result": "21 tests réussis, aucun échec sous Node 22.17.1.",
+          "scope": "Validation du contrat, normalisation, DOM jsdom, confirmation explicite, portefeuille conservé pendant et après la réponse ; contrôle HTTP local. Le projet demande Node 24 pour npm test ; aucune validation graphique."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "28 contrôles réussis, aucun échec ; 14 exécutions auditées, avis conservés par le proxy, données sources inchangées.",
+          "scope": "Données CSV du projet, proxy HTTP, moteur, contrat d’interface et reconstruction des preuves enregistrées ; aucun appel Bedrock réel."
         }
       ]
     }

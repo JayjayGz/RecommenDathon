@@ -1,5 +1,20 @@
 # Contrat de connexion de l’agent
 
+Une demande de modification produit d’abord un avis éducatif. Le portefeuille
+courant reste affiché tant que l’utilisateur ne confirme pas une proposition
+compatible. Le champ facultatif `changeReview` contient la méthode
+`questionnaire_change_review_v1`, `verdict`, `applied: false`,
+`confirmation_required: true`, `baseline_weights_pct`, `assets`, `strengths`,
+`cautions`, `limitations` et `conclusion`. Les verdicts reconnus sont
+`compatible`, `clarification_required` et `not_retained`.
+
+Le proxy et le normaliseur valident et conservent cet avis. Le bouton de
+confirmation exige un avis compatible, aucune réserve non résolue et des poids
+de départ identiques au portefeuille courant. Il ne suffit pas qu’une simulation
+respecte les limites numériques. Les anciennes propositions sans avis restent
+consultables mais nécessitent une nouvelle analyse pour être retenues. Chaque
+nouvelle demande retire la proposition précédente sans changer le portefeuille.
+
 Le résultat peut également contenir `analysis` : revue déterministe, couverture
 sectorielle des actions directes, concentration, risque historique, règles de
 profil, recherche bornée et alternatives vérifiées avec leurs références de

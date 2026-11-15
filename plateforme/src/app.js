@@ -1,6 +1,6 @@
 import { QUESTIONS, SECTIONS, DEMO_PORTFOLIO, isAnswered, cleanAnswers, answerLabel, makeQuestionnairePayload, fieldVisible } from './data.js';
 import { portfolioCsv, createRequestGuard, boundedChatPayload } from './export.js';
-import { normalizeRecommendation, allocationGroups } from './integration.js';
+import { normalizeRecommendation, allocationGroups, canRetainProposal } from './integration.js';
 
 import { questionIllustration, marketScenario } from './illustrations.js';
 
@@ -317,7 +317,7 @@ function donutGradient(positions) {
 
 function portfolioBanner() {
   if (loadingPortfolio) return `<div class="demo-banner"><span class="loading-ring" role="status" aria-label="Chargement"></span><p><strong>Votre moteur prépare votre portefeuille.</strong> L’exemple reste visible pendant la préparation de votre simulation.</p></div>`;
-  if (state.result) return `<div class="demo-banner result-banner">${icon('check')}<p><strong>${escape(state.result.portfolio.name)}</strong> · Simulation transmise par votre moteur. Les sources et les limites accompagnent le résultat.</p><button class="text-button" data-action="sources">Comprendre ${icon('arrow')}</button></div>`;
+  if (state.result) return `<div class="demo-banner result-banner">${icon('check')}<p><strong>${escape(state.result.portfolio.name)}</strong> · Simulation transmise par votre moteur. Un résumé et les limites accompagnent le résultat.</p><button class="text-button" data-action="sources">Comprendre ${icon('arrow')}</button></div>`;
   return `<div class="demo-banner">${icon('info')}<p>Allocation illustrative, non personnalisée.${portfolioError ? `<span class="portfolio-error">${escape(portfolioError)}</span>` : ''}</p>${portfolioConnected ? `<button class="text-button" data-action="generate-portfolio">${portfolioError ? 'Réessayer' : 'Créer ma simulation'} ${icon('arrow')}</button>` : '<span class="badge">DÉMONSTRATION</span>'}</div>`;
 }
 
@@ -331,12 +331,17 @@ function sourceMarkup(item) {
 }
 
 function evidenceBody(result) {
-  return `<p class="result-explanation">${escape(result.explanation)}</p><details><summary>Consulter les sources · ${result.evidence.length}</summary><div class="evidence-sources">${result.evidence.map(sourceMarkup).join('')}</div></details><details><summary>Hypothèses et limites · ${result.limitations.length}</summary>${result.limitations.length ? `<ul>${result.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '<p>Le moteur n’a communiqué aucune limite. Cela ne signifie pas qu’il n’en existe aucune.</p>'}</details><p class="run-reference">Simulation · Référence ${escape(result.runId)}</p>`;
+  return `<p class="result-explanation">${escape(result.explanation)}</p><details><summary>Limites de l’analyse</summary>${result.limitations.length ? `<ul>${result.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '<p>Aucune limite communiquée pour cette analyse.</p>'}</details>`;
 }
 
 function proposalCard() {
   const proposal = state.proposal;
-  return `<article class="proposal-card"><span class="eyebrow">UNE NOUVELLE PERSPECTIVE</span><h3>${escape(proposal.portfolio.name)}</h3><div class="proposal-positions">${proposal.portfolio.positions.map(position => { const previous = currentPortfolio().positions.find(item => item.symbol === position.symbol)?.weight || 0; return `<div><span>${escape(position.symbol)}</span><span>${formatWeight(previous)} % ${icon('arrow')} <strong>${formatWeight(position.weight)} %</strong></span></div>`; }).join('')}${currentPortfolio().positions.filter(position => !proposal.portfolio.positions.some(item => item.symbol === position.symbol)).map(position => `<div><span>${escape(position.symbol)}</span><span>${formatWeight(position.weight)} % ${icon('arrow')} <strong>0 %</strong></span></div>`).join('')}</div><p>Une proposition de simulation à examiner avant de l’appliquer à votre vue.</p><div class="proposal-actions"><button class="text-button" data-action="proposal-sources">Sources et limites</button><button class="button primary" data-action="accept-proposal">Retenir cette version ${icon('check')}</button></div></article>`;
+  const canConfirm = !sending && canRetainProposal(proposal, currentPortfolio());
+  const advice = proposal.changeReview?.conclusion || 'Cette ancienne proposition nécessite une nouvelle analyse selon votre questionnaire.';
+  return `<article class="proposal-card"><span class="eyebrow">ANALYSE AVANT MODIFICATION</span><h3>${escape(proposal.portfolio.name)}</h3>
+    <p>${escape(advice)}</p><div class="proposal-positions">${proposal.portfolio.positions.map(position => { const previous = currentPortfolio().positions.find(item => item.symbol === position.symbol)?.weight || 0; return `<div><span>${escape(position.symbol)}</span><span>${formatWeight(previous)} % ${icon('arrow')} <strong>${formatWeight(position.weight)} %</strong></span></div>`; }).join('')}${currentPortfolio().positions.filter(position => !proposal.portfolio.positions.some(item => item.symbol === position.symbol)).map(position => `<div><span>${escape(position.symbol)}</span><span>${formatWeight(position.weight)} % ${icon('arrow')} <strong>0 %</strong></span></div>`).join('')}</div>
+    <p>Votre portefeuille courant reste inchangé. Les poids ci-dessus sont uniquement simulés.</p>
+    <div class="proposal-actions"><button class="text-button" data-action="proposal-sources">Lire l’analyse et les réserves</button>${canConfirm ? `<button class="button primary" data-action="accept-proposal">Confirmer cette modification ${icon('check')}</button>` : '<span>Précisez votre demande ou vos réponses avant de retenir une modification.</span>'}</div></article>`;
 }
 
 function chatMessage(message, index) {
@@ -374,6 +379,7 @@ function handleAction(action) {
   if (action === 'sources' && state.result) { showModal('Comprendre cette simulation.', evidenceBody(state.result)); return; }
   if (action === 'proposal-sources' && state.proposal) { showModal('Comprendre la proposition.', evidenceBody(state.proposal)); return; }
   if (action === 'accept-proposal' && state.proposal) {
+    if (sending || !canRetainProposal(state.proposal, currentPortfolio())) return;
     requestGuard.invalidate(); portfolioGuard.invalidate(); loadingPortfolio = false; sending = false; sendError = ''; portfolioError = '';
     state.result = state.proposal; state.proposal = null; persist(); navigate('portfolio'); toast('Cette version est maintenant affichée dans votre portefeuille.'); return;
   }
@@ -402,7 +408,7 @@ function handleAction(action) {
     toast('Votre profil a été réinitialisé. Reprenons depuis le début.'); return;
   }
   if (action === 'agent-info') {
-    showModal('Un espace prêt à se connecter.', `<p class="modal-intro">${agentConnected ? 'Un service agent est configuré sur votre serveur local.' : 'Le futur agent sera développé et connecté par votre équipe.'}</p><p>Cette interface prépare les échanges et conserve votre brouillon. Votre agent pourra proposer une nouvelle répartition, accompagnée de ses sources et de ses limites. Vous choisirez de retenir cette version.</p><p>Le contrat de branchement est documenté dans <code>docs/AGENT_INTEGRATION.md</code>. Votre moteur reste responsable de l’interprétation du questionnaire, des calculs, des preuves et de la validation des recommandations.</p><button class="button outline" data-action="refresh-agent">Vérifier la configuration ${icon('arrow')}</button>`);
+    showModal('Un espace prêt à se connecter.', `<p class="modal-intro">${agentConnected ? 'Un service agent est configuré sur votre serveur local.' : 'Le futur agent sera développé et connecté par votre équipe.'}</p><p>Cette interface prépare les échanges et conserve votre brouillon. Votre agent pourra proposer une nouvelle répartition, accompagnée de son explication et de ses limites. Vous choisirez de retenir cette version.</p><p>Le contrat de branchement est documenté dans <code>docs/AGENT_INTEGRATION.md</code>. Votre moteur reste responsable de l’interprétation du questionnaire, des calculs, des preuves et de la validation des recommandations.</p><button class="button outline" data-action="refresh-agent">Vérifier la configuration ${icon('arrow')}</button>`);
     return;
   }
   if (action === 'refresh-agent') { $('#modal').close(); checkAgent(true); return; }
@@ -487,7 +493,7 @@ async function sendMessage(retryIndex = null) {
     state.messages = state.messages.slice(-40);
     state.draft = '';
   }
-  sending = true; sendError = '';
+  sending = true; sendError = ''; state.proposal = null;
   const request = requestGuard.begin();
   persist(); render();
   try {
@@ -538,7 +544,7 @@ document.addEventListener('click', event => {
   if (holdingButton) {
     const position = currentPortfolio().positions.find(item => item.symbol === holdingButton.dataset.holding);
     if (!position) return;
-    showModal(escape(position.name), `<span class="holding-symbol">${escape(position.symbol)} · ${escape(position.category)}</span><div class="holding-detail-weight"><strong>${formatWeight(position.weight)}<span>%</span></strong><span>${currentPortfolio().isDemo ? 'de l’exemple illustratif' : 'de votre simulation'}</span></div>${currentPortfolio().isDemo ? '<p>Cette position fait partie d’un exemple fixe destiné à présenter la plateforme. Son poids ne découle pas de vos réponses au questionnaire.</p><p>Votre moteur fournira les actifs retenus, leurs pondérations, les raisons de ses choix et les limites des données utilisées.</p>' : `<p>Cette répartition a été transmise par votre moteur. Consultez ses sources et ses limites pour comprendre la simulation.</p><button class="button outline" data-action="sources">Comprendre le résultat ${icon('arrow')}</button>`}<button class="button primary holding-question" data-discuss="${escape(`Expliquez-moi le rôle de ${position.symbol} (${position.name}) dans ce portefeuille et les raisons de sa pondération de ${formatWeight(position.weight)} %.`)}">Demander pourquoi cet actif ${icon('arrow')}</button><p class="modal-note">Simulation uniquement. Aucune transaction, cotation en temps réel ou promesse de rendement.</p>`);
+    showModal(escape(position.name), `<span class="holding-symbol">${escape(position.symbol)} · ${escape(position.category)}</span><div class="holding-detail-weight"><strong>${formatWeight(position.weight)}<span>%</span></strong><span>${currentPortfolio().isDemo ? 'de l’exemple illustratif' : 'de votre simulation'}</span></div>${currentPortfolio().isDemo ? '<p>Cette position fait partie d’un exemple fixe destiné à présenter la plateforme. Son poids ne découle pas de vos réponses au questionnaire.</p><p>Votre moteur fournira les actifs retenus, leurs pondérations, les raisons de ses choix et les limites des données utilisées.</p>' : `<p>Cette répartition a été transmise par votre moteur. Consultez son explication et ses limites pour comprendre la simulation.</p><button class="button outline" data-action="sources">Comprendre le résultat ${icon('arrow')}</button>`}<button class="button primary holding-question" data-discuss="${escape(`Expliquez-moi le rôle de ${position.symbol} (${position.name}) dans ce portefeuille et les raisons de sa pondération de ${formatWeight(position.weight)} %.`)}">Demander pourquoi cet actif ${icon('arrow')}</button><p class="modal-note">Simulation uniquement. Aucune transaction, cotation en temps réel ou promesse de rendement.</p>`);
   }
 });
 
