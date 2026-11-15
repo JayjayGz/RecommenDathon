@@ -90,3 +90,14 @@ def map_profile(answers, profiles_config, esg_preference=False, home_country_pre
         if profile["band"] == band and profile["style"] == style:
             return profile["id"]
     raise ValueError(f"No profile for band={band!r} style={style!r}")
+
+
+def to_assessment(answers, esg_preference=False, home_country_preference=False):
+    """{"risk_band", "preferred_style"} -- the shape profile_matching.match_profile()'s
+    `assessment` argument accepts (see investor_requests.py's validation of the same
+    two keys). Passing this in place of an empty assessment makes match_profile() use
+    this module's capacity/tolerance band and explicit style, instead of its own
+    single-signal risk_map and automatic asset/sector-overlap scoring.
+    """
+    return {"risk_band": risk_band(answers),
+            "preferred_style": investment_style(answers, esg_preference, home_country_preference)}

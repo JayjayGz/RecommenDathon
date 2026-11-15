@@ -86,3 +86,14 @@ def test_every_band_style_combination_in_profiles_json_is_reachable(band, style)
     # actually exist in profiles.json, not just the three persona cases.
     matches = [p for p in PROFILES["profiles"] if p["band"] == band and p["style"] == style]
     assert len(matches) == 1
+
+
+def test_to_assessment_matches_risk_band_and_investment_style():
+    assessment = pm.to_assessment(ROBERT)
+    assert assessment == {"risk_band": pm.risk_band(ROBERT), "preferred_style": pm.investment_style(ROBERT)}
+
+
+def test_to_assessment_keys_match_profile_matching_s_validated_shape():
+    # profile_matching.match_profile()'s assessment argument (and
+    # investor_requests.py's validation of it) only accepts these two keys.
+    assert set(pm.to_assessment(AMIRA)) == {"risk_band", "preferred_style"}
