@@ -19,3 +19,9 @@ Statut : complete pour l'intégration et les contrôles déterministes. Prochain
 ## Saisie des montants et exemples
 
 R?le Router pr?sentation. Correction du 15 novembre 2026 : les fl?ches natives des champs num?riques sont masqu?es pour WebKit et Firefox, tout en conservant le type num?rique et sa validation. Des exemples gris clair sont affich?s par des placeholders dans les montants, les champs Autre et les pr?cisions. Ils ne deviennent jamais des r?ponses et ne remplacent pas les valeurs d?j? saisies. Les tests passent d?sormais ? 16, notamment le champ vide, le montant sauvegard? de 24 et une saisie r?elle de 100. Le?on L-014 ; statut complete pour la correction et les contr?les DOM, sans v?rification visuelle navigateur. Prochain propri?taire : pr?sentation pour le contr?le ? l??cran.
+
+## User override: remove discussion choice
+
+The user explicitly removed the Discussion option from the exclusions question. Runtime answers now use `questionnaire-word-16-v3`; only `none` and `limits` are accepted for exclusions, and the optional detail field is shown only for limits. The local JSON template is synchronized. The original Word snapshot stays intact; tests apply this one explicit override when comparing it with the UI. The importer applies the override after saving the original snapshot. The browser keeps its existing storage key so compatible answers are retained; the removed choice and its hidden details are discarded without selecting a replacement, invalidating completion when necessary. The post-portfolio agent discussion remains available.
+
+Owner: presentation/contract integration; reference lesson L-013. Checks: 20 DOM/API tests passed, including removed saved answers rejected and legitimate limits accepted. Status: complete; next owner: user to refresh the local questionnaire. No financial interpretation or allocation changed.

@@ -29,7 +29,7 @@ L’endpoint agent reçoit le même objet que le serveur local :
     { "role": "user", "content": "Je souhaite comprendre cette répartition." }
   ],
   "questionnaire": {
-    "version": "questionnaire-word-16-v2",
+    "version": "questionnaire-word-16-v3",
     "answers": {
       "marital": "single",
       "dependents": "none",

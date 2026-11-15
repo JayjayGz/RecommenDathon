@@ -24,11 +24,6 @@
 .detail-field > small { display: block; font-size: 10.3px; color: #686055; margin-top: 6px; }
 .detail-field input:disabled, .detail-field textarea:disabled { background: #eeebe4; }
 .question-help, .profile-review strong { white-space: pre-line; }
-.scenario-page { grid-template-columns: minmax(0,1fr); }
-.scenario-page .question-column > h1 { font-size: clamp(59.74px, 5.15vw, 82.4px); }
-.scenario-page .hero-description { display: none; }
-.scenario-page .questionnaire-content { margin-top: 30px; }
-.scenario-page .question-title.long { font-size: 24.72px; max-width: 1000px; }
 .market-scenario { overflow: hidden; border-radius: 16px; background: #373a3e; color: #eee; margin: 20px 0 26px; }
 .market-bulletin { background: #ff9f9f; color: #252525; padding: 20px 24px; font-size: 21.63px; font-weight: 700; }
 .market-body { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr); gap: 30px; padding: 24px; align-items: center; }
@@ -38,8 +33,6 @@
 .market-story > p:not(.market-amount) { font-size: 18.54px; line-height: 1.65; }
 .market-story > small { display: block; margin-top: 14px; font-size: 12.36px; line-height: 1.6; color: #b8c0cb; }
 .market-chart { width: 100%; height: auto; display: block; border: 5px solid #f6f7f9; }
-.scenario-page .options.list { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.scenario-page .question-actions { max-width: 100%; }
 @media(max-width:1100px) {
   .question-illustration { padding: 26px; min-height: 590px; }
   .question-illustration h2 { font-size: 35.02px; }
@@ -51,7 +44,6 @@
   .question-illustration h2 { font-size: 27.81px; letter-spacing: -.8px; }
   .question-illustration p { font-size: 11.33px; margin-top: 10px; }
   .question-illustration > small { grid-column: 1/-1; margin: 0; font-size: 8.24px; }
-  .scenario-page .question-title.long { font-size: 20.6px; }
   .market-bulletin { font-size: 15.45px; padding: 16px; }
   .market-body { grid-template-columns: minmax(0,1fr); padding: 18px; gap: 20px; }
   .market-story h2 { font-size: 19.57px; }
@@ -59,7 +51,6 @@
   .market-amount span { padding: 0 4px; }
   .market-story > p:not(.market-amount) { font-size: 14.42px; }
   .market-story > small { font-size: 10.3px; }
-  .scenario-page .options.list { grid-template-columns: minmax(0,1fr); }
 }
 @media(max-width:380px) {
   .question-illustration { grid-template-columns: 80px minmax(0,1fr); padding: 18px; }
@@ -71,7 +62,7 @@
 .question-column { min-width: 0; }
 @media(min-width:721px) {
   .onboarding { padding-top: 36px; row-gap: 30px; }
-  .onboarding:not(.scenario-page) { grid-template-columns: minmax(0,2.4fr) minmax(210px,1fr); column-gap: clamp(24px,3vw,48px); }
+  .onboarding { grid-template-columns: minmax(0,3fr) minmax(210px,1fr); column-gap: clamp(24px,3vw,48px); }
   .onboarding .question-column > h1 { font-size: clamp(43.26px,4.532vw,65.92px); letter-spacing: -2px; margin: 16px 0; }
   .onboarding .hero-description { font-size: 14.42px; line-height: 1.6; }
   .onboarding .questionnaire-content { margin-top: 24px; }
@@ -87,4 +78,17 @@
   .onboarding .hero-description { font-size: 13.39px; }
   .onboarding .questionnaire-content { margin-top: 22px; }
   .progress-track { gap: 4px; }
+}
+
+/* Keep the bulletin in the main question column and leave the usual space on the right. */
+.scenario-page .market-bulletin { font-size: 18.54px; padding: 16px 22px; }
+.scenario-page .market-body { grid-template-columns: minmax(0,1.35fr) minmax(0,1fr); gap: 24px; padding: 24px; }
+.scenario-page .market-story h2 { font-size: 21.63px; }
+.scenario-page .market-amount { font-size: clamp(27.81px,2.5vw,36.05px); }
+.scenario-page .market-story > p:not(.market-amount) { font-size: 15.45px; line-height: 1.6; }
+.scenario-page .market-story > small { font-size: 11.33px; }
+.scenario-page .market-chart { max-width: 300px; margin: 0 auto; }
+@media(max-width:720px) {
+  .scenario-page .market-body { grid-template-columns: minmax(0,1fr); padding: 18px; gap: 18px; }
+  .scenario-page .market-bulletin { font-size: 15.45px; padding: 16px; }
 }

@@ -564,24 +564,19 @@
         {
           "id": "exclusions_2",
           "libelle": "Limites — Oui, je veux exclure certains placements ou certaines activités."
-        },
-        {
-          "id": "exclusions_3",
-          "libelle": "Discussion — J’aimerais comprendre les possibilités avant de préciser mes limites."
         }
       ],
       "champs_complementaires": [
         {
           "id": "exclusions_details",
-          "libelle": "Si limites ou discussion, vos précisions facultatives",
+          "libelle": "Si limites, vos précisions facultatives",
           "type": "texte_libre",
           "reponse": null,
           "facultatif": true,
           "afficher_si": {
             "question_id": "exclusions",
             "option_ids": [
-              "exclusions_2",
-              "exclusions_3"
+              "exclusions_2"
             ],
             "operateur": "au_moins_une"
           }

@@ -1,5 +1,5 @@
-// Source exclusive : Questionnaire_client_Recommand_20261115_103525.docx
-export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v2';
+// Source : Word fourni ; option « Discussion » retirée à la demande utilisateur.
+export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v3';
 export const SECTIONS = ["Situation familiale", "Revenus", "Dettes et épargne disponible", "Objectifs et besoins de liquidités", "Tolérance au risque", "Connaissances et préférences de placement", "Exclusions et précisions complémentaires"];
 export const QUESTIONS = [
   {
@@ -548,23 +548,18 @@ export const QUESTIONS = [
       [
         "limits",
         "Limites — Oui, je veux exclure certains placements ou certaines activités."
-      ],
-      [
-        "discussion",
-        "Discussion — J’aimerais comprendre les possibilités avant de préciser mes limites."
       ]
     ],
     "details": [
       {
         "key": "exclusionDetails",
-        "label": "Si limites ou discussion, vos précisions facultatives",
+        "label": "Si limites, vos précisions facultatives",
         "type": "text",
         "required": false,
         "when": {
           "field": "exclusions",
           "values": [
-            "limits",
-            "discussion"
+            "limits"
           ]
         }
       }

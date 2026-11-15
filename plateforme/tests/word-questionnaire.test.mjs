@@ -21,6 +21,7 @@ async function open(t, saved = {}, legacy = false) {
   w.localStorage.setItem(legacy ? 'recommand.platform.v1' : key, JSON.stringify(saved));
   w.scrollTo = () => {};
   w.HTMLElement.prototype.scrollIntoView = () => {};
+  w.HTMLElement.prototype.scrollTo = () => {};
   w.AbortSignal = AbortSignal;
   w.AbortController = AbortController;
   w.fetch = async () => ({ ok: true, json: async () => ({ agentConnected: false, portfolioConnected: false }) });
@@ -43,12 +44,17 @@ async function open(t, saved = {}, legacy = false) {
   };
 }
 
-test('all 16 titles, choices and follow-ups match the selected Word snapshot', () => {
+test('all 16 questions match the Word snapshot except the user-removed discussion choice', () => {
   assert.equal(fixture.source, 'Questionnaire_client_Recommand_20261115_103525.docx');
   assert.match(fixture.sha256, /^[0-9a-f]{64}$/);
   assert.equal(QUESTIONS.length, 16);
   assert.deepEqual(SECTIONS, fixture.sections);
-  assert.deepEqual(QUESTIONS, fixture.questions);
+  const expected = structuredClone(fixture.questions);
+  const exclusions = expected.find(q => q.id === 'exclusions');
+  exclusions.options = exclusions.options.filter(([value]) => value !== 'discussion');
+  exclusions.details[0].label = 'Si limites, vos précisions facultatives';
+  exclusions.details[0].when.values = ['limits'];
+  assert.deepEqual(QUESTIONS, expected);
   assert.equal(QUESTIONS.some(q => q.id === 'return'), false);
   assert.equal(QUESTIONS.some(q => q.id === 'monthlyExpenses'), false);
 });
@@ -137,10 +143,22 @@ test('optional final notes can be empty, typed or explicitly declined', async t 
 test('exclusion details survive a relevant choice and disappear with no exclusions', async t => {
   const app = await open(t, { step: 14 });
   app.choose('limits'); const field = app.type('[data-detail="exclusionDetails"]','Précision sur les placements');
-  app.choose('discussion'); assert.equal(app.$('[data-detail="exclusionDetails"]'),field);
+  assert.equal(app.$('input[value="discussion"]'), null);
+  assert.equal(app.$('[data-detail="exclusionDetails"]'),field);
   assert.equal(app.saved().answers.exclusionDetails, 'Précision sur les placements');
   app.choose('none'); assert.equal(app.$('[data-detail="exclusionDetails"]'),null);
   assert.equal(app.saved().answers.exclusionDetails,undefined);
+});
+
+test('removed discussion answers are cleared without inventing a replacement', async t => {
+  const app = await open(t, { step: 14, complete: true, answers: { ...completeAnswers(), exclusions: 'discussion', exclusionDetails: 'Ancien choix' } });
+  assert.equal(app.$('input:checked'), null);
+  assert.equal(app.$('[data-detail="exclusionDetails"]'), null);
+  assert.equal(app.$('[data-page="portfolio"]').disabled, true);
+  const oldAnswers = { ...completeAnswers(), exclusions: 'discussion' };
+  assert.equal(validateAnswers(oldAnswers), false);
+  assert.equal(cleanAnswers(oldAnswers).exclusions, undefined);
+  assert.equal(validateAnswers({ ...completeAnswers(), exclusions: 'limits', exclusionDetails: 'Mes limites' }), true);
 });
 
 test('all 16 questions are traversable and answers remain available on return', async t => {
@@ -190,6 +208,36 @@ test('jumping to the last question cannot bypass required answers', async t => {
   assert.equal(app.$('[data-page="portfolio"]').disabled, true);
   assert.notEqual(app.saved().complete, true);
   assert.equal(app.w.document.querySelectorAll('.progress-track [aria-current="step"]').length, 1);
+});
+
+test('reaction question keeps the large centered scenario within the question and preserves its answer', async t => {
+  const app = await open(t, { step: 10 });
+  assert.ok(app.$('.onboarding.scenario-page #question-form .market-scenario'));
+  assert.equal(app.$('.onboarding > .market-scenario'), null);
+  assert.ok(app.$('.hero-description'));
+  const title = app.$('#question-title');
+  const chart = app.$('.market-chart');
+  app.choose('worried');
+  assert.equal(app.$('.market-chart'), chart);
+  assert.equal(app.$('#question-title'), title);
+  app.$('[data-question-index="9"]').click();
+  app.$('[data-question-index="10"]').click();
+  assert.equal(app.$('input[value="worried"]').checked, true);
+  assert.ok(app.$('#question-form .market-scenario'));
+});
+
+test('portfolio refinement appears directly below results and opens the conversation', async t => {
+  const app = await open(t, { page: 'portfolio', complete: true, answers: completeAnswers() });
+  const invitation = app.$('.portfolio-refine');
+  assert.ok(invitation);
+  assert.equal(invitation.previousElementSibling.className, 'portfolio-grid');
+  assert.equal(app.$('#portfolio-refine-title').textContent, 'Affiner mon portefeuille');
+  assert.equal(app.$('.portfolio-grid .agent-card'), null);
+  assert.match(invitation.textContent, /Agent à connecter/);
+  invitation.querySelector('[data-page="assistant"]').click();
+  assert.equal(app.saved().page, 'assistant');
+  assert.ok(app.$('#chat-input'));
+  assert.deepEqual(app.saved().answers, completeAnswers());
 });
 
 test('changing a completed profile invalidates earlier result and dependent navigation', async t => {

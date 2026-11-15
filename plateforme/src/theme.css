@@ -160,7 +160,7 @@ dialog p, dialog code { color: #55514b; }
 @media (max-width: 720px) {
   .header { width: calc(100% - 28px); margin-top: 10px; border-radius: 18px; }
   .header-inner { height: 72px; padding: 0 20px; }
-  .brand { font-size: 30.9px; }
+  .brand { font-size: clamp(23px,7.2vw,30.9px); }
   .main-nav { position: static; height: auto; width: 100%; padding: 0 0 12px; gap: 4px; border: 0; background: transparent; }
   .header-inner { height: auto; min-height: 72px; padding-top: 18px; flex-wrap: wrap; row-gap: 14px; }
   .main-nav { order: 3; }
@@ -187,3 +187,22 @@ dialog p, dialog code { color: #55514b; }
   body, html { background: #fff; }
   .dashboard { padding-top: 0; }
 }
+
+/* Invite a conversation immediately after the portfolio results. */
+@media (min-width: 721px) {
+  .portfolio-grid > .allocation-card { grid-column: 1; grid-row: 1; }
+  .portfolio-grid > .holdings-card { grid-column: 1; grid-row: 2; }
+  .portfolio-grid > .profile-card { grid-column: 2; grid-row: 1 / span 2; }
+}
+.portfolio-refine { display: flex; align-items: center; justify-content: space-between; gap: 36px; margin: 28px 0; padding: 36px 40px; border: 1px solid #c7bfb0; border-radius: 20px; background: #e9e3d8; }
+.portfolio-refine-copy { max-width: 660px; }
+.portfolio-refine h2 { font: 400 clamp(32px,3.2vw,46px)/1.12 var(--serif); letter-spacing: -1px; margin: 14px 0; }
+.portfolio-refine p { font-size: 15.45px; line-height: 1.7; color: #4c4841; }
+.portfolio-refine-action { flex: 0 0 auto; max-width: 340px; }
+.portfolio-refine-action > .button { width: 100%; min-height: 58px; padding: 16px 22px; font-size: 16.48px; gap: 16px; text-align: left; }
+.portfolio-refine-action > small { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 12px; font-size: 11.33px; color: var(--muted); }
+@media (max-width: 960px) {
+  .portfolio-refine { flex-direction: column; align-items: stretch; gap: 22px; padding: 28px; }
+  .portfolio-refine-action { max-width: none; }
+}
+@media print { .portfolio-refine { display: none; } }
