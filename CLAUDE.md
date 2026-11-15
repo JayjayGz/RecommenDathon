@@ -1,6 +1,6 @@
 # Current layout and precedence
 
-Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_weekly.csv` as the committed prices file for analysis (a daily starter copy stays local only, at `dataset/starter_daily/`). The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). The profile-ID proposal workflow now connects Lambda, evidence/release checks and S3/local auditing (docs/orchestrator.md); questionnaire mapping is implemented (`backend/src/alphaforge/domain/profile_mapping.py`); sector/ESG screening and frontend HTTP mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/` (the dataset build script is `backend/scripts/build_dataset.py`; starter dataset docs are at `docs/starter-dataset.md`).
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_weekly.csv` as the committed prices file for analysis. We use weekly data only. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). The profile-ID proposal workflow now connects Lambda, evidence/release checks and S3/local auditing (docs/orchestrator.md); questionnaire mapping is implemented (`backend/src/alphaforge/domain/profile_mapping.py`); sector/ESG screening and frontend HTTP mapping remain pending. Python code lives in `backend/src/alphaforge/`; launch backend tools through `backend/scripts/` (the dataset build script is `backend/scripts/build_dataset.py`; starter dataset docs are at `docs/starter-dataset.md`).
 
 # Project conventions (AlphaForge AI, PolyFinances Datathon 2026)
 
@@ -18,7 +18,7 @@ Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections bel
 ## Data
 - Dataset lives in dataset/. Committed to the repo by team decision (KC-ZEUS). Licence note: Yahoo data, check redistribution terms before making the repo public.
 - A local backup of the dataset CSVs lives outside the repo, at `C:\Users\kenny\alphaforge_data_backup\` (Kenny's machine only, not shared, not a substitute for rebuilding).
-- Prices for analysis: `dataset/prices_weekly.csv` (weekly, Friday-dated adj_close). A daily starter copy (31 tickers, 2021-11-12 to 2026-11-12) stays local only, at `dataset/starter_daily/` — not committed.
+- Prices for analysis: `dataset/prices_weekly.csv` only (weekly, Friday-dated adj_close).
 - Use adj_close for returns. Prices are already split-adjusted; never reapply splits.
 - Prices are in each asset's listing currency: .TO tickers are CAD, everything else USD.
 - Convert USD to CAD with the Bank of Canada rate from fx_usdcad_daily.csv, using pandas merge_asof(direction="backward") (last rate on or before each date).
