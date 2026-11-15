@@ -1,9 +1,0 @@
-{
-  "status": "passed",
-  "rows": 68804,
-  "tickers": 123,
-  "removed_vix_rows": 567,
-  "sha256": "a79386c5ae0f6f791603abe43071a931d1a3971797b51b5223722f51130b05ae",
-  "all_other_csv_lines_unchanged": true,
-  "scope": "Filtering and exact byte preservation checks; prior source verification preserved in backup"
-}

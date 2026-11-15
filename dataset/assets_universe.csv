@@ -116,3 +116,18 @@ A114,BD.CDN.2YR.DQ.YLD,"Government of Canada benchmark bond yield, 2-year",bond_
 A115,BD.CDN.10YR.DQ.YLD,"Government of Canada benchmark bond yield, 10-year",bond_yield,Canada,CAD,Government bonds (Canada 10-year)
 A116,DGS2,"U.S. Treasury constant maturity yield, 2-year",bond_yield,United States,USD,Government bonds (U.S. 2-year)
 A117,DGS10,"U.S. Treasury constant maturity yield, 10-year",bond_yield,United States,USD,Government bonds (U.S. 10-year)
+A118,BND,Vanguard Total Bond Market ETF,etf_bond,NASDAQ,USD,Bonds (U.S. aggregate)
+A119,SCHD,Schwab U.S. Dividend Equity ETF,etf_equity,NYSE Arca,USD,Income (U.S. dividend)
+A120,VBAL.TO,Vanguard Balanced ETF Portfolio,etf_balanced,TSX,CAD,"Benchmark (balanced, about 60% stocks)"
+A121,VCNS.TO,Vanguard Conservative ETF Portfolio,etf_balanced,TSX,CAD,"Benchmark (conservative, about 40% stocks)"
+A122,VDY.TO,Vanguard FTSE Canadian High Dividend Yield Index ETF,etf_equity,TSX,CAD,Income (Canada dividend)
+A123,VFV.TO,Vanguard S&P 500 Index ETF,etf_equity,TSX,CAD,Broad market (U.S.)
+A124,VGRO.TO,Vanguard Growth ETF Portfolio,etf_balanced,TSX,CAD,"Benchmark (growth, about 80% stocks)"
+A125,XEC.TO,iShares Core MSCI Emerging Markets IMI Index ETF,etf_equity,TSX,CAD,Broad market (emerging markets)
+A126,XEF.TO,iShares Core MSCI EAFE IMI Index ETF,etf_equity,TSX,CAD,Broad market (international developed)
+A127,XESG.TO,iShares ESG Aware MSCI Canada Index ETF,etf_equity,TSX,CAD,ESG (Canada)
+A128,XIC.TO,iShares Core S&P/TSX Capped Composite Index ETF,etf_equity,TSX,CAD,Broad market (Canada)
+A129,XIT.TO,iShares S&P/TSX Capped Information Technology Index ETF,etf_equity,TSX,CAD,Growth (Canada tech)
+A130,XRB.TO,iShares Canadian Real Return Bond Index ETF,etf_bond,TSX,CAD,Bonds (Canada inflation-linked)
+A131,XSB.TO,iShares Core Canadian Short Term Bond Index ETF,etf_bond,TSX,CAD,Bonds (Canada short-term)
+A132,ZAG.TO,BMO Aggregate Bond Index ETF,etf_bond,TSX,CAD,Bonds (Canada aggregate)
