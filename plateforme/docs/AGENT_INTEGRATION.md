@@ -9,7 +9,7 @@ Le site est un client local. Il ne contient ni agent, ni moteur de recommandatio
 | `GET /api/health` | `{ "ok": true, "service": "recommand-local" }` |
 | `GET /api/config` | `{ "agentConnected": false, "portfolioConnected": false }`. Chaque booléen devient `true` si l’URL correspondante est configurée ; cela ne vérifie pas la disponibilité du service. |
 | `POST /api/agent/chat` | Validation de la requête, puis appel de l’URL agent si elle est configurée. |
-| `POST /api/portfolio` | Validation des huit réponses, puis appel du moteur de portefeuille. |
+| `POST /api/portfolio` | Validation des seize réponses, puis appel du moteur de portefeuille. |
 
 ## Requête
 
@@ -59,9 +59,9 @@ L’endpoint agent reçoit le même objet que le serveur local :
 
 Cet exemple complet décrit uniquement le contrat. Il n’est pas un profil évalué ou une recommandation mesurée. `questionnaire.answers` contient les identifiants et valeurs brutes produits par les contrats front-end de `src/data.js`. `portfolio` contient le portefeuille actuellement affiché. `conversation` contient l’historique récent ; `message` porte le message courant, sans être ajouté une seconde fois à cet historique par l’interface. Le client conserve jusqu’à 40 messages localement et retire les plus anciens du contexte transmis si la requête dépasse 60 Kio, sans effacer leur copie locale.
 
-Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v2`, les huit réponses valides et un portefeuille dont les poids positifs totalisent 100 %. Les seules précisions libres facultatives sont `otherSector`, `cryptoDetails` et `exclusionDetails` (1 000 caractères chacune). Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
+Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v2`, les seize réponses valides et un portefeuille dont les poids positifs totalisent 100 %. Les champs complémentaires typés suivent les conditions de visibilité de `src/data.js` ; les textes facultatifs sont limités à 1 000 caractères, les montants sont finis et positifs ou nuls, et `withdrawalTiming` est obligatoire. Les champs inconnus, masqués ou contradictoires sont rejetés. Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
 
-Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v2", "answers": { ... } } }` avec les huit mêmes réponses. Aucun profil de risque n’est déduit par le serveur.
+Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v2", "answers": { ... } } }` avec les seize mêmes réponses. Aucun profil de risque n’est déduit par le serveur.
 
 ## Réponse
 
@@ -117,3 +117,6 @@ Le site est dans `plateforme/`. Le moteur de calcul se construit avec `from alph
 ## Source du questionnaire
 
 Le Word s?lectionn?, son empreinte et les r?gles de changement de version sont d?crits dans [QUESTIONNAIRE_WORD.md](QUESTIONNAIRE_WORD.md). Les identifiants sont des valeurs brutes de formulaire ; ils ne constituent pas une correspondance vers un profil de risque m?tier.
+
+Le backend accepte maintenant ce contrat Word, le formulaire français fourni et le
+contrat historique `rendements-seuls-v1`. Voir [la normalisation et les limites](../../docs/questionnaire-workflow.md).

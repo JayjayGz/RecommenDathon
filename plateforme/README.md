@@ -53,9 +53,9 @@ plateforme/
 
 ## Limite de raccordement au profil investisseur
 
-Le schéma existant `../docs/investor-profile-schema.json` attend notamment `risk_tolerance` parmi quatre valeurs et `investment_horizon_years` comme entier. Le questionnaire contient cinq choix de risque et des intervalles de durée. **Aucune correspondance n’a été inventée.** Le site transmet les réponses brutes, versionnées `questionnaire-word-16-v2`. L’équipe questionnaire/profil devra définir et valider l’adaptateur vers `InvestorProfile` avant toute recommandation réelle.
+Le site transmet les réponses brutes `questionnaire-word-16-v2`. Le backend les valide et adapte leurs identifiants au même contrat que le formulaire français fourni. La correspondance de risque approuvée est `very_low/low -> low`, `medium -> medium`, `high/very_high -> high`. Elle sert au rapprochement avec les portefeuilles de référence ; elle ne constitue pas une évaluation validée de la capacité financière au risque et ne remplace pas le schéma normalisé `InvestorProfile`. Voir [le contrat et ses limites](../docs/questionnaire-workflow.md).
 
 Simulation et prototype de présentation. Aucun conseil en placement et aucun ordre de transaction.
 
-Le code Python est dans `../backend/src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Un backend doit adapter le questionnaire au contrat Python puis produire le contrat HTTP ci-dessus. Voir [l’architecture](../docs/architecture.md).
+Le code Python est dans `../backend/src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Le backend Python inclut l’adaptateur de questionnaire et produit le contrat HTTP ci-dessus ; les endpoints du proxy doivent pointer vers un service configuré. Voir [l’architecture](../docs/architecture.md).
 La source exacte des 16 questions et le nouveau contrat sont d?crits dans [QUESTIONNAIRE_WORD.md](docs/QUESTIONNAIRE_WORD.md).
