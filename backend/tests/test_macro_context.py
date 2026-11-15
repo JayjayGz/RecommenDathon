@@ -2,6 +2,8 @@
 from datetime import date
 from io import BytesIO
 import hashlib
+import shutil
+import subprocess
 
 import pytest
 
@@ -99,6 +101,7 @@ def test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog(inve
     # Returns are still fictional flat-price controls; this only replays response size.
     investor_source.macro_path.write_bytes((ROOT / "dataset/macro_rates.csv").read_bytes())
     config = json.loads(investor_source.paths["profiles"].read_text())
+    recommendations = []
     for profile in config["profiles"]:
         form = questionnaire(profile["band"])
         form["answers"]["assets"].append("crypto")
@@ -108,3 +111,16 @@ def test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog(inve
         public = outcome.payload["recommendation"]
         assert len(public["explanation"]) <= 10000 and len(public["evidence"]) <= 100
         assert records["data_manifest"]["inputs"]["macro"]["sha256"]
+        recommendations.append(public)
+    if shutil.which("node"):
+        script = """import assert from 'node:assert/strict';
+import {validateRecommendation,normalizeRecommendation} from './plateforme/src/integration.js';
+let s='';for await(const c of process.stdin)s+=c;
+for(const result of JSON.parse(s)){
+ assert.equal(validateRecommendation(result),true,`profile ${result.portfolio.id}`);
+ assert.deepEqual(normalizeRecommendation(result).analysis,result.analysis);
+}
+"""
+        check = subprocess.run(["node", "--input-type=module", "-e", script], input=json.dumps(recommendations),
+                               text=True, cwd=ROOT, capture_output=True)
+        assert check.returncode == 0, check.stderr

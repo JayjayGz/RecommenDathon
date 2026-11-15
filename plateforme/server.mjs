@@ -30,6 +30,7 @@ function recommendationFields(result) {
     evidence: result.evidence.map(({ id, source, description }) => ({ id, source, description })),
     limitations: result.limitations,
     compliance: { passed: true },
+    ...(result.analysis === undefined ? {} : { analysis: result.analysis }),
   };
 }
 
@@ -69,7 +70,7 @@ async function upstreamJson(endpointValue, token, body, prefix) {
   try {
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const upstream = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(30000), redirect: 'error' });
+    const upstream = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(125000), redirect: 'error' });
     const responseChunks = [];
     let responseSize = 0;
     for await (const chunk of upstream.body || []) {

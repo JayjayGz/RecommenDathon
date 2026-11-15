@@ -88,6 +88,23 @@ class PortfolioEngine:
         return assess(weights, band, limits, metrics, df, rebalance, crypto_allowed, constraints)
 
 
+    def evaluate_candidate(self, profile_id, changes, starting_weights, constraints, remaining_ms=None):
+        """Evaluate one exact optional candidate, without caps rewriting it or a nested search."""
+        if remaining_ms is not None and remaining_ms() < 25000:
+            raise TimeoutError("Candidate deadline; reserve time for audit")
+        try:
+            _check_weights(starting_weights)
+            profile = self.get_profile(profile_id)
+            profile["weights"] = dict(starting_weights)
+            weights, notes = self._apply(profile, changes, False, None, None, constraints)
+            validation = self.validate(weights, profile["band"], crypto_allowed=profile["crypto_allowed"],
+                                       constraints=constraints)
+            return {"weights": weights, "validation": validation, "notes": notes}
+        except (ValueError, KeyError, FileNotFoundError) as error:
+            status = "INVALID_REQUEST" if isinstance(error, ProposalError) else "MISSING_INFO"
+            return {"weights": None, "validation": _failed(status, getattr(error, "code", "DATA_UNAVAILABLE"), str(error)),
+                    "notes": []}
+
     def evaluate(self, profile_id, changes, data_dir=None, profiles_path=None, remaining_ms=None,
                  starting_weights=None, constraints=None):
         """The function agents call: base vs. as-requested (no caps) vs. adjusted (capped)."""

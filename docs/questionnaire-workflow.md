@@ -298,7 +298,18 @@ It returns a nonzero status if a check fails and saves `report.json` and `report
 These checks use the deterministic explanation fallback, not a live Bedrock model,
 and do not certify graphical browser behavior or deployed AWS connectivity.
 
-Evidence method `proposal_evidence_v2_sorted_checks` assigns claim IDs after a
+Evidence method `proposal_evidence_v3_portfolio_review` assigns claim IDs after a
 stable sort of policy checks, so canonical JSON serialization cannot reorder them.
 Changed method metadata requires fresh calculations and explanations; previously
 saved runs retain their original method versions.
+
+## Portfolio review and optional suggestions
+
+After evaluation, deterministic review produces composition, direct-stock sector
+coverage, holding concentration, historical risk, profile checks and reference
+allocation rationale. A bounded engine search reports only independently passing
+held-asset alternatives that reduce concentration without worsening reported
+historical volatility or drawdown. Findings and trade-offs become evidence before
+the explanation stage. The original portfolio is preserved, rejected trials stay
+in the private audit, and ETF look-through remains unavailable. See
+[methods, response fields, limits and a real-data example](portfolio-review.md).

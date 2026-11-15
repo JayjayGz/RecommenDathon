@@ -56,6 +56,14 @@ additions and reductions, using metadata-defined bond groups, proportional non-b
 funding, and the existing allocation and release checks. See
 [follow-up request routing](questionnaire-workflow.md#follow-up-requests).
 
+Questionnaire and follow-up runs now review composition, direct-stock sector
+coverage, holding concentration, historical risk and profile fit before building
+evidence. A bounded deterministic search calls the same engine for optional
+same-class transfers among held assets; only demonstrated improvements passing
+all existing constraints are reported. The explanation stage receives these
+verified findings and trade-offs. See [portfolio review](portfolio-review.md)
+for the supported objective, precision, provenance checks and limitations.
+
 ## Design features
 
 - **Evidence-grounded explanations:** the LLM sees only the Evidence Bundle, and a code validator rejects any number or citation that is not in it. This addresses invented figures.
@@ -112,7 +120,7 @@ Python module paths in this table are under `backend/src/alphaforge/`. Existing 
 
 The code provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The [proposal workflow](orchestrator.md) connects the Lambda handler to per-run local/S3 snapshots, the existing engine, structured evidence, bounded explanation ordering/repairs, deterministic release checks and local/S3 audit-before-release. It supports the explicit profile ID/change contract. The full questionnaire-to-recommendation flow above remains the target: questionnaire risk-capacity scoring, activity/ESG screening and teammate-owned per-ticker risk remain pending. Reference-template matching, dataset metadata explanations and frontend response mapping are now implemented as described in [the questionnaire workflow](questionnaire-workflow.md). The template enables runtime storage only when its bucket and reviewed policy parameters are set; no deployment is implied by the code. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
 
-The active 99-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
+See [DATA.md](DATA.md) for the active price snapshot and data conventions. The original starter generator cannot reproduce the expanded history.
 
 ### Reorganization verification and development handoff
 

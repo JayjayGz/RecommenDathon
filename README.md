@@ -28,6 +28,12 @@ The Git root is the inner `RecommenDathon/` directory containing this README and
 
 ## Run locally
 
+For the connected website and Python backend, use the existing root `.env` and
+run `node scripts/start_local.mjs` from this directory, then open
+http://localhost:4173. It loads configuration and starts both services; Ctrl+C
+stops both. `--offline` uses the deterministic explanation without model calls.
+See [local setup and verification](docs/local-development.md).
+
 Python 3.10+:
 
 ```powershell
@@ -67,9 +73,10 @@ Tests run from the Git root or `backend/`; each `pytest.ini` resolves the backen
 ## Current status and limitations
 
 - Calculations, proposal validation, offline Bedrock tests and a local UI are implemented.
-- `dataset/prices_weekly.csv` is the active prices file. Weekly observations annualize at 52/year; actual daily history remains supported at 252/year. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
+- `dataset/prices_weekly.csv` is the active prices file. Weekly observations annualize at 52/year; actual daily history remains supported at 252/year. See the [data notes](docs/DATA.md) for snapshot coverage and FX conventions. Saved results from older methods need a fresh evaluation.
 - The per-ticker risk module remains an unimplemented teammate-owned contract at `backend/src/alphaforge/application/risk.py`.
-- The [proposal workflow](docs/orchestrator.md) connects the Lambda handler, existing engine, evidence, constrained explanations, release checks and S3/local auditing. Questionnaire-to-`InvestorProfile` mapping, sector/ESG screening, per-ticker risk and the frontend HTTP adapter remain pending. Unconnected web portfolios are illustrative.
+- The [proposal workflow](docs/orchestrator.md) connects the Lambda handler, engine, evidence, constrained explanations, release checks and S3/local auditing. Questionnaire reference matching, follow-up requests and the local HTTP proxy are implemented. Broader financial-risk-capacity scoring, ESG screening, per-ticker risk and deployed endpoint configuration remain pending. Unconnected web portfolios are illustrative.
+- [Portfolio review and optional alternatives](docs/portfolio-review.md) provide deterministic composition, direct-stock sector coverage, concentration, risk and profile findings, plus bounded engine-checked suggestions and cited trade-offs.
 - Dataset downloads, profile regeneration and AWS calls are explicit operations; tests do not deploy or contact AWS.
 
 Development instructions start at [AGENTS.md](AGENTS.md). The agreed deterministic pipeline is described in [architecture.md](docs/architecture.md); Strands roles in team notes are proposals, not an implemented runtime.

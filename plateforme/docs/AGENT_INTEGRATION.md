@@ -1,5 +1,12 @@
 # Contrat de connexion de l’agent
 
+Le résultat peut également contenir `analysis` : revue déterministe, couverture
+sectorielle des actions directes, concentration, risque historique, règles de
+profil, recherche bornée et alternatives vérifiées avec leurs références de
+preuve. Le proxy et le normaliseur conservent ces champs après validation.
+Les alternatives ont `applied: false` et ne sont pas appliquées automatiquement.
+Voir [méthodes, limites et exemple calculé](../../docs/portfolio-review.md).
+
 Le site est un client local. Il ne contient ni agent, ni moteur de recommandation, ni calcul de risque. Deux adaptateurs HTTP transmettent les requêtes aux URL complètes `AGENT_API_URL` (discussion) et `PORTFOLIO_API_URL` (portefeuille initial), configurées côté serveur. Sans URL, le service correspondant retourne HTTP 503, `AGENT_NOT_CONNECTED` ou `PORTFOLIO_NOT_CONNECTED`.
 
 ## Routes locales

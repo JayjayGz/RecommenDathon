@@ -81,6 +81,22 @@ def frontend_recommendation(run_id, public, match, assets):
               "explanation": public["explanation"],
               "evidence": [{"id": e["id"], "source": e["source"], "description": e["sentence"]} for e in entries],
               "limitations": public["limitations"], "compliance": public["compliance"]}
+    analysis = public.get("portfolio_analysis")
+    if analysis:
+        ids = {e["field"]: e["id"] for e in entries}
+        suggestions = []
+        for candidate in analysis["suggestions"]:
+            candidate_positions = [{"symbol": t, "name": assets[t]["name"], "category": assets[t]["sector"],
+                                    "group": assets[t]["asset_class"], "weight": round(w * 100, 8)}
+                                   for t, w in sorted(candidate["weights"].items()) if w > 0]
+            suggestions.append({**candidate, "portfolio": {"id": candidate["id"], "name": "Optional concentration alternative",
+                                                           "positions": candidate_positions},
+                                "evidence_ids": [ids[f"suggestion.{candidate['id']}"]]})
+        result["analysis"] = {"method": analysis["method"], "manifest_hash": analysis["manifest_hash"],
+                              "review": analysis["review"],
+                              "evidence_ids": [e["id"] for e in entries if e["field"].startswith("review.")],
+                              "search": deepcopy(analysis["search"]),
+                              "suggestions": suggestions}
     # Keep the transport within the existing frontend contract; never truncate facts.
     if len(entries) > 100 or len(result["explanation"]) > 10000:
         raise DataUnavailable("FRONTEND_RESPONSE_TOO_LARGE")

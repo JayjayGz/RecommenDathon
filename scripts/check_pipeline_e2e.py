@@ -125,6 +125,26 @@ console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePa
     check("Supported French questionnaire returns a valid recommendation through proxy", status == 200 and frontend_valid(initial), http_status=status)
     (OUTPUT / "initial-response.json").write_text(json.dumps(initial, indent=2), encoding="utf-8")
     if status == 200 and frontend_valid(initial):
+        analysis = initial.get("analysis", {})
+        review = analysis.get("review", {})
+        check("Structured review survives frontend proxy", analysis.get("method") == "portfolio_review_v1"
+            and review.get("sectors", {}).get("scope") == "direct_stocks_only"
+            and review.get("profile_fit", {}).get("status") == "PASS"
+            and review.get("selection", {}).get("optimized") is False,
+            method=analysis.get("method"), manifest_hash=analysis.get("manifest_hash"))
+        suggestions = analysis.get("suggestions", [])
+        checked = bool(suggestions)
+        for alternative in suggestions:
+            comparison, validation = alternative["comparison"], alternative["validation"]
+            checked = checked and (alternative["applied"] is False and validation["passes"]
+                and all(c["passes"] is True for c in validation["checks"].values())
+                and comparison["holding_hhi"]["after"] < comparison["holding_hhi"]["before"]
+                and comparison["volatility_pct"]["after"] <= comparison["volatility_pct"]["before"]
+                and comparison["max_drawdown_pct"]["after"] >= comparison["max_drawdown_pct"]["before"]
+                and validation["period"] == review["risk"]["period"])
+        check("Real-data optional alternative improves concentration and preserves risk checks", checked,
+              comparisons=[s["comparison"] for s in suggestions],
+              evaluated_candidates=analysis.get("search", {}).get("evaluated_candidates"))
         current = initial["portfolio"]
         for name, message in [("Equity addition", "Add NVDA 1%"), ("Additional stock AAPL", "Add AAPL 1%"),
                               ("Equity ETF VTI", "Add VTI 1%"), ("Bond ETF BND", "Add BND 1%"),
