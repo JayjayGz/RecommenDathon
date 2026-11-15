@@ -22,7 +22,7 @@ def client():
 
 def objects():
     return {
-        "prices_daily.csv": b"ticker,date,adj_close,currency\nSPY,2025-01-02,100,USD\nSPY,2025-01-03,101,USD\nSPY,2025-01-06,100,USD\n",
+        "prices_weekly.csv": b"ticker,date,adj_close,currency\nSPY,2025-01-02,100,USD\nSPY,2025-01-03,101,USD\nSPY,2025-01-06,100,USD\n",
         "fx_usdcad_daily.csv": b"date,usdcad\n2025-01-02,1.25\n",
         "profiles.json": json.dumps({"profiles": [{"id": 1, "band": "low", "style": "Broad diversifier",
             "crypto_allowed": False, "weights": {"SPY": 1.0}}], "band_limits": {
@@ -52,7 +52,7 @@ def test_s3_read_failure_is_actionable_without_leaking_service_details():
     s3 = client()
     with Stubber(s3) as stub:
         stub.add_client_error("get_object", "AccessDenied", "private bucket details", expected_params={
-            "Bucket": "test-data", "Key": "inputs/prices_daily.csv"})
+            "Bucket": "test-data", "Key": "inputs/prices_weekly.csv"})
         with pytest.raises(DataUnavailable, match="^DATA_UNAVAILABLE$"):
             S3SnapshotSource(s3, "test-data", "inputs").load(date(2025, 1, 6))
 

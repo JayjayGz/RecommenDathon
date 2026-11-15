@@ -59,7 +59,8 @@ class PortfolioEngine:
         """Backtest weights (fractions summing to 1) and check them against band limits.
 
         Default period: last 5 years of data in data_dir. Currency: CAD throughout
-        (see domain.market_data.cad_prices). Only days when every holding traded.
+        (see domain.market_data.cad_prices). Only common observation dates are used;
+        actual weekly dates annualize at 52 observations/year, daily dates at 252.
         """
         try:
             _check_weights(weights)

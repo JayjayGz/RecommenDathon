@@ -14,7 +14,7 @@ def run_all(prices, fx, config, start, end, rebalance):
         m["within_band_limits"] = (m["volatility_pct"] <= lim["max_volatility_pct"]
                                    and m["max_drawdown_pct"] >= lim["max_drawdown_pct"])
         rows.append({"profile": label, **m, "first_date": df.index[0].date().isoformat(),
-                     "last_date": df.index[-1].date().isoformat(), "days": len(df)})
+                     "last_date": df.index[-1].date().isoformat(), "observations": len(df)})
         values[label] = v
     return values, pd.DataFrame(rows).set_index("profile")
 

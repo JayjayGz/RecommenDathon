@@ -12,7 +12,7 @@ from alphaforge.infrastructure.workflow_storage import S3SnapshotSource
 
 def test_s3_snapshot_reads_data_prefix_and_records_downloaded_bytes():
     objects = {
-        "data/prices_daily.csv": b"date,ticker,adj_close,currency\n2025-01-02,TEST,100,CAD\n",
+        "data/prices_weekly.csv": b"date,ticker,adj_close,currency\n2025-01-02,TEST,100,CAD\n",
         "data/fx_usdcad_daily.csv": b"date,usdcad\n2025-01-02,1.25\n",
         "data/profiles.json": (Path(__file__).resolve().parents[2] / "profiles.json").read_bytes(),
     }
@@ -29,7 +29,7 @@ def test_s3_snapshot_reads_data_prefix_and_records_downloaded_bytes():
     assert calls == [{"Bucket": "test-bucket", "Key": key} for key in objects]
     assert all(body.closed for body in bodies)
     reference = snapshot.manifest["inputs"]["prices"]
-    assert reference["key"] == "data/prices_daily.csv"
+    assert reference["key"] == "data/prices_weekly.csv"
     assert reference["version_id"] == "fixture-version"
     assert reference["sha256"] == hashlib.sha256(objects[reference["key"]]).hexdigest()
     assert snapshot.prices.iloc[0].ticker == "TEST"

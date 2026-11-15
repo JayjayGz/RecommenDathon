@@ -3,6 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Protocol
 import pandas as pd
+from alphaforge.domain.market_data import observation_convention
 
 
 class DataUnavailable(ValueError):
@@ -25,15 +26,24 @@ class InputSnapshot:
         return deepcopy(self.profiles)
 
     def check_holdings(self, profile, changes):
-        """The existing engine annualizes at 252 observations/year; reject weekly data."""
+        """Validate required holdings and record their actual observation convention."""
         tickers = set(profile["weights"]) | {c.ticker for c in changes}
-        for ticker in tickers:
+        conventions = set()
+        for ticker in sorted(tickers):
             rows = self.prices[self.prices.ticker == ticker]
+            if not rows.currency.isin(["CAD", "USD"]).all():
+                raise DataUnavailable("UNSUPPORTED_HOLDING_CURRENCY")
             if len(rows) < 3:
                 raise DataUnavailable("MISSING_HOLDING_HISTORY")
-            gaps = rows.date.sort_values().diff().dt.total_seconds().dropna() / 86400
-            if gaps.median() > 3:
+            try:
+                conventions.add(observation_convention(rows.date))
+            except ValueError as error:
+                raise DataUnavailable("UNSUPPORTED_OBSERVATION_FREQUENCY") from error
+            if len(conventions) > 1:
                 raise DataUnavailable("UNSUPPORTED_OBSERVATION_FREQUENCY")
+        frequency, annualization = conventions.pop()
+        self.manifest.update(observation_frequency=frequency, annualization_observations=annualization,
+                             annualization_method="observed_cadence_v1", required_tickers=sorted(tickers))
 
 
 class SnapshotSource(Protocol):

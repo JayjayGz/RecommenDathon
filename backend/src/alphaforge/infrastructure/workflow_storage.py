@@ -34,7 +34,7 @@ def _parse_snapshot(objects, as_of):
         fx = fx[fx.date <= pd.Timestamp(as_of)].copy().sort_values("date")
         if prices.empty or fx.empty or prices.duplicated(["ticker", "date"]).any() or fx.date.duplicated().any():
             raise ValueError("Empty or duplicate observations")
-        if prices.ticker.isna().any() or not prices.currency.isin(["CAD", "USD"]).all():
+        if prices.ticker.isna().any() or prices.currency.isna().any():
             raise ValueError("Invalid asset identifiers or currencies")
         if prices.groupby("ticker").currency.nunique().gt(1).any():
             raise ValueError("Inconsistent currency")
@@ -68,8 +68,8 @@ def _parse_snapshot(objects, as_of):
         ids = [p["id"] for p in profiles["profiles"]]
         if len(set(ids)) != len(ids):
             raise ValueError("Duplicate profile IDs")
-        manifest = {"as_of": as_of.isoformat(), "method": "adjusted_close_cad_common_dates_v1",
-                    "annualization_observations": 252, "inputs": {},
+        manifest = {"as_of": as_of.isoformat(), "method": "adjusted_close_cad_common_dates_v2",
+                    "inputs": {},
                     "price_window": {"first_date": prices.date.min().date().isoformat(),
                                      "last_date": prices.date.max().date().isoformat(),
                                      "rows": len(prices)},
@@ -84,7 +84,7 @@ def _parse_snapshot(objects, as_of):
 
 class LocalSnapshotSource:
     def __init__(self, data_dir, profiles_path):
-        self.paths = {"prices": Path(data_dir) / "prices_daily.csv",
+        self.paths = {"prices": Path(data_dir) / "prices_weekly.csv",
                       "fx": Path(data_dir) / "fx_usdcad_daily.csv", "profiles": Path(profiles_path)}
 
     def load(self, as_of):
@@ -107,7 +107,7 @@ class S3SnapshotSource:
 
     def load(self, as_of):
         objects = {}
-        for name, filename in (("prices", "prices_daily.csv"), ("fx", "fx_usdcad_daily.csv"),
+        for name, filename in (("prices", "prices_weekly.csv"), ("fx", "fx_usdcad_daily.csv"),
                                ("profiles", "profiles.json")):
             key = f"{self.prefix}/{filename}"
             try:

@@ -48,7 +48,7 @@ def source(tmp_path):
     # Fictional, daily, flat CAD prices isolate workflow/control behavior.
     prices = pd.DataFrame([{"date": d.date(), "ticker": t, "adj_close": 100., "currency": "CAD"}
                            for t in sorted(tickers) for d in dates])
-    prices.to_csv(tmp_path / "prices_daily.csv", index=False)
+    prices.to_csv(tmp_path / "prices_weekly.csv", index=False)
     pd.DataFrame({"date": dates.date, "usdcad": 1.25}).to_csv(tmp_path / "fx_usdcad_daily.csv", index=False)
     (tmp_path / "profiles.json").write_text(json.dumps(config))
     return LocalSnapshotSource(tmp_path, tmp_path / "profiles.json")
@@ -100,11 +100,11 @@ def test_missing_holding_stops_before_llm(source):
     assert audit.saved[0][1]["result"]["states"][-1] == "NEEDS_INFORMATION"
 
 
-def test_sparse_history_is_not_annualized_as_daily(source):
+def test_sparse_history_is_not_annualized_as_weekly(source):
     path = source.paths["prices"]
     prices = pd.read_csv(path)
     days = sorted(prices.date.unique())
-    prices[prices.date.isin(days[::5])].to_csv(path, index=False)
+    prices[prices.date.isin(days[::15])].to_csv(path, index=False)
     result = RecommendationOrchestrator(source, MemoryAudit()).run(request())
     assert result.status == "MISSING_INFO"
     assert result.payload["error"]["code"] == "UNSUPPORTED_OBSERVATION_FREQUENCY"
@@ -300,12 +300,61 @@ def test_s3_bootstrap_creates_bounded_clients_without_network(monkeypatch):
     assert session.client.call_args_list[-1].kwargs["config"].read_timeout == 12
 
 
-def test_invalid_currency_blocks_snapshot_before_calculations(source):
+@pytest.mark.parametrize("holding", ["reference", "TSLA"])
+def test_required_unsupported_currency_stops_before_calculations(source, holding):
     path = source.paths["prices"]
     prices = pd.read_csv(path)
-    prices.loc[0, "currency"] = "EUR"
+    if holding == "reference":
+        config = json.loads(source.paths["profiles"].read_text())
+        holding = next(iter(next(p for p in config["profiles"] if p["id"] == 4)["weights"]))
+    prices.loc[prices.ticker == holding, "currency"] = "JPY"
     prices.to_csv(path, index=False)
     llm = FakeLLM()
-    result = RecommendationOrchestrator(source, MemoryAudit(), llm).run(request())
+    changes = [{"ticker": "TSLA", "add_pct": 1}] if holding == "TSLA" else []
+    # Validate both a reference holding and an explicitly requested addition.
+    result = RecommendationOrchestrator(source, MemoryAudit(), llm).run(request(changes))
     assert result.status == "MISSING_INFO" and not llm.calls
-    assert result.payload["error"]["code"] == "INVALID_INPUT_SNAPSHOT"
+    assert result.payload["error"]["code"] == "UNSUPPORTED_HOLDING_CURRENCY"
+    assert result.payload["audit_saved"] is True
+
+
+def test_unrelated_jpy_rows_do_not_block_supported_portfolio(source):
+    import hashlib
+    path = source.paths["prices"]
+    prices = pd.read_csv(path)
+    jpy = prices[prices.ticker == "SPY"].copy()
+    jpy["currency"] = "JPY"
+    extras = [jpy.assign(ticker=ticker) for ticker in ("USDJPY=X", "^N225")]
+    pd.concat([prices, *extras], ignore_index=True).to_csv(path, index=False)
+    audit = MemoryAudit()
+    result = RecommendationOrchestrator(source, audit).run(request())
+    assert result.status == "PASS"
+    assert result.payload["audit_saved"] is True
+    assert audit.saved[0][1]["data_manifest"]["inputs"]["prices"]["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_weekly_required_history_passes_with_weekly_manifest_and_evidence(source):
+    path = source.paths["prices"]
+    prices = pd.read_csv(path, parse_dates=["date"])
+    prices = prices[prices.date.dt.day_of_week == 4]
+    prices.to_csv(path, index=False)
+    llm, audit = FakeLLM(), MemoryAudit()
+    result = RecommendationOrchestrator(source, audit, llm).run(request())
+    assert result.status == "PASS" and len(llm.calls) == 1
+    validation = result.payload["portfolio"]["validation"]
+    assert validation["observation_frequency"] == "weekly"
+    assert validation["annualization_observations"] == 52
+    manifest = audit.saved[0][1]["data_manifest"]
+    assert manifest["annualization_observations"] == 52
+    assert manifest["observation_frequency"] == "weekly"
+    assert "52 observations per year" in result.payload["explanation"]
+
+
+def test_mixed_daily_and_weekly_holdings_are_rejected(source):
+    path = source.paths["prices"]
+    prices = pd.read_csv(path, parse_dates=["date"])
+    prices = prices[(prices.ticker != "XBB.TO") | (prices.date.dt.day_of_week == 4)]
+    prices.to_csv(path, index=False)
+    result = RecommendationOrchestrator(source, MemoryAudit()).run(request())
+    assert result.status == "MISSING_INFO"
+    assert result.payload["error"]["code"] == "UNSUPPORTED_OBSERVATION_FREQUENCY"

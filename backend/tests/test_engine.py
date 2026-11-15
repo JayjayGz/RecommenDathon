@@ -12,7 +12,7 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "dataset"
 
 def reference_dataset_available():
     import pandas as pd
-    prices = DATA_DIR / "prices_daily.csv"
+    prices = DATA_DIR / "prices_weekly.csv"
     if not prices.is_file() or not (DATA_DIR / "fx_usdcad_daily.csv").is_file():
         return False
     config = pe.repository.load_profiles()

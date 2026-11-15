@@ -1,8 +1,7 @@
 """Pure historical accounting and metrics; no file or UI access."""
 import numpy as np
 import pandas as pd
-
-TRADING_DAYS = 252
+from .market_data import observation_convention
 
 def portfolio_value(df, weights, rebalance="monthly", start_value=10_000.0):
     """Long-only value path; monthly rebalances at the first observed close.
@@ -44,14 +43,18 @@ def metrics(value):
     if len(value) < 3 or not np.isfinite(value).all() or (value <= 0).any():
         raise ValueError("At least three finite, positive portfolio observations are required")
     r = value.pct_change().dropna()
-    years = len(r) / TRADING_DAYS
+    frequency, observations_per_year = observation_convention(value.index)
+    years = len(r) / observations_per_year
     drawdown = value / value.cummax() - 1
     return {
         "annual_growth_pct": round(((value.iloc[-1] / value.iloc[0]) ** (1 / years) - 1) * 100, 1),
-        "volatility_pct": round(r.std() * np.sqrt(TRADING_DAYS) * 100, 1),
+        "volatility_pct": round(r.std() * np.sqrt(observations_per_year) * 100, 1),
         "max_drawdown_pct": round(drawdown.min() * 100, 1),
         "worst_drawdown_date": drawdown.idxmin().date().isoformat(),
         "end_value": round(value.iloc[-1], 0),
+        "observation_frequency": frequency,
+        "annualization_observations": observations_per_year,
+        "annualization_method": "observed_cadence_v1",
     }
 
 
