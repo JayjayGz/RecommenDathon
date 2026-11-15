@@ -38,5 +38,7 @@ Whole percentages; any leftover goes to the largest bond holding so the total is
    - 5 points move from the largest equity ETF to XBB.TO; repeat until it passes.
 
 ## Known results (starter data, Nov 2021 - Nov 2026)
+
+These results were recorded before the month-boundary correction. The monthly backtest now values existing units at the first common observed close before rebalancing, preserving the price change since the previous month's last close. Rebuild and verify the generated profiles using the agreed CSVs before treating the metrics, pass flags or trimming decisions below as current.
 - All 15 pass after trimming. Profiles 3 (low growth) and 8 (medium growth) needed trims; the growth rule should be fixed for those bands.
 - Rebalancing choice matters: with buy-and-hold instead of monthly rebalancing, some results change (sensitivity test for the documentation).

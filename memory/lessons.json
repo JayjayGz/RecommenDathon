@@ -32,6 +32,66 @@
       "regression": "When runtime code exists, exhaust both citation and wording failures together and confirm the shared limit; also confirm an initially valid result needs no repair and structural failure invokes none.",
       "status": "documented",
       "verification": []
+    },
+    {
+      "id": "L-003",
+      "roles": ["backtest", "portfolio", "evidence"],
+      "trigger": "Changing monthly rebalancing or relying on saved portfolio metrics",
+      "boundary": "Synthetic accounting checks do not establish corrected real-market results",
+      "defect": "The monthly backtest discarded the price change between the previous month's last close and the new month's first close.",
+      "cause": "Each month purchased new units using the old portfolio value without first marking existing units at the new close.",
+      "evidence": [
+        "Review fixture: a synthetic asset doubling across the boundary returned 10000 monthly versus 20000 with buy-and-hold.",
+        "tests/test_portfolio_regressions.py: boundary gain/loss, two-asset accounting and flat-price control."
+      ],
+      "prevention": "Value existing units at the new close before rebalancing and invalidate generated validation results after calculation-method changes.",
+      "regression": "Replay boundary gains/losses, a flat-price control and hand-computable two-asset rebalancing.",
+      "status": "verified",
+      "verification": [{
+        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+        "scope": "Offline synthetic and SDK adapter tests; private CSV integration skipped; risk.py remains a stub."
+      }]
+    },
+    {
+      "id": "L-004",
+      "roles": ["portfolio", "compliance", "explanation"],
+      "trigger": "Building or explaining a final portfolio-fit verdict",
+      "boundary": "A passing historical assessment is not a future-risk guarantee or legal suitability finding",
+      "defect": "Forbidden crypto could return outside_profile=false because the verdict omitted crypto permission and crypto/gold caps.",
+      "cause": "The capped branch enforced constraints that validate() omitted from the aggregate checks.",
+      "evidence": [
+        "Review fixture with fabricated passing metrics accepted low-band BTC 1% while the capped branch removed it.",
+        "tests/test_portfolio_regressions.py: three-band forbidden-crypto cases, combined crypto cap, GLD cap and valid exact-cap control."
+      ],
+      "prevention": "Combine every required rule into the verdict and supply profile permission flags explicitly; expose failed checks to the explanation agent.",
+      "regression": "Forbidden holdings must conflict even with flat prices; a permitted exactly-at-cap allocation must pass.",
+      "status": "verified",
+      "verification": [{
+        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+        "scope": "Synthetic policy/control cases; no real-market result claims."
+      }]
+    },
+    {
+      "id": "L-005",
+      "roles": ["portfolio", "compliance", "explanation", "evidence"],
+      "trigger": "Transforming proposals or explaining feasible additions and adjusted alternatives",
+      "boundary": "An invalid or unfundable request differs from an evaluable profile conflict; conditional maxima cannot be combined",
+      "defect": "An oversized addition created negative bond weights, an unknown ticker appeared to pass unchanged, and a capped 5% TSLA candidate reported max_allowed=20.",
+      "cause": "Funding/input preconditions were missing and the maximum search validated already-capped trials instead of actual trial additions.",
+      "evidence": [
+        "Review fixtures: TSLA +100 produced XBB.TO=-0.25; an unknown ticker returned outside_profile=false; TSLA +20 returned max_allowed=20 after being capped to 5%.",
+        "tests/test_portfolio_regressions.py: invalid requests, safe unchanged/exact-cap controls, uncapped maximum search and no-feasible-maximum case."
+      ],
+      "prevention": "Reject malformed/unfundable requests with structured status; preserve raw and adjusted outcomes separately; search uncapped trials and return null if no feasible trial exists.",
+      "regression": "Reject negative-weight and unknown requests; on flat fixtures TSLA's low-band maximum is 5 additional points, not 20; verify unchanged and at-cap controls.",
+      "status": "verified",
+      "verification": [{
+        "command": "..\\.venv\\Scripts\\python.exe -m pytest tests -q",
+        "result": "43 passed, 8 skipped, 2 xfailed; 17 subtests passed",
+        "scope": "Discrete whole-point synthetic allocation/search checks; no AWS calls or profile regeneration."
+      }]
     }
   ]
 }
