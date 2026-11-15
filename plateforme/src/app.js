@@ -1,6 +1,8 @@
-import { QUESTIONS, SECTIONS, DEMO_PORTFOLIO, isAnswered, cleanAnswers, answerLabel, makeQuestionnairePayload, fieldVisible } from './data.js';
+import { geographicAllocation } from './geography.js';
+import { WORLD_COUNTRIES } from './world-map.js';
+import { QUESTIONS, SECTIONS, DEMO_PORTFOLIO, isAnswered, cleanAnswers, answerLabel, makeQuestionnairePayload, fieldVisible, fieldRequired } from './data.js';
 import { portfolioCsv, createRequestGuard, boundedChatPayload } from './export.js';
-import { normalizeRecommendation, allocationGroups } from './integration.js';
+import { normalizeRecommendation, allocationGroups, exposureCategory } from './integration.js';
 
 import { questionIllustration, marketScenario } from './illustrations.js';
 
@@ -36,9 +38,10 @@ function readState() {
     const previousAnswers = saved.answers || {};
     const unchangedAnswers = Object.keys(previousAnswers).length === Object.keys(answers).length
       && Object.keys(answers).every(key => JSON.stringify(previousAnswers[key]) === JSON.stringify(answers[key]));
+    const stepOffset=Object.hasOwn(previousAnswers,'marital') ? 1 : 0;
     const complete = saved.complete === true && unchangedAnswers && QUESTIONS.every(question => isAnswered(question, answers));
     return {
-      answers, complete, step: Number.isInteger(saved.step) ? Math.max(0, Math.min(QUESTIONS.length - 1, saved.step)) : 0,
+      answers, complete, step: Number.isInteger(saved.step) ? Math.max(0, Math.min(QUESTIONS.length - 1, saved.step-stepOffset)) : 0,
       page: complete && ['portfolio', 'assistant'].includes(saved.page) ? saved.page : 'questionnaire',
       draft: typeof saved.draft === 'string' ? saved.draft.slice(0, 4000) : '',
       messages: complete && Array.isArray(saved.messages) ? saved.messages.filter(message => message && typeof message === 'object' && ['user', 'assistant'].includes(message.role) && typeof message.content === 'string').slice(-40).map(message => ({ role: message.role, content: message.content.slice(0, 10000), ...(message.role === 'user' && ['pending', 'failed'].includes(message.delivery) ? { delivery: 'failed' } : {}) })) : [],
@@ -134,7 +137,7 @@ function questionnaire() {
       <div class="save-note">${icon('shield')}<span>${!storageAvailable ? 'Sauvegarde indisponible sur ce navigateur.' : portfolioConnected ? 'Vos réponses seront envoyées à votre moteur à la dernière étape.' : 'Vos réponses restent sur cet appareil.'}</span><span class="save-dot"></span><span id="answer-count" aria-live="polite">${answered}/${QUESTIONS.length} étapes complétées</span></div>
     </div>
   </section>${questionIllustration(question.id)}
-  <div class="journey-strip"><div>${icon('file')}<span><strong>01. On fait connaissance</strong><small>${QUESTIONS.length} questions, à votre rythme</small></span></div><span class="journey-line"></span><div>${icon('chart')}<span><strong>02. Une vision d’ensemble</strong><small>Une répartition facile à lire</small></span></div><span class="journey-line"></span><div>${icon('chat')}<span><strong>03. À vous de préciser</strong><small>Un espace pour votre futur agent</small></span></div></div>
+  <div class="journey-strip"><div>${icon('file')}<span><strong>01. Définissez votre profil</strong><small>Vos objectifs, votre horizon et votre tolérance au risque.</small></span></div><span class="journey-line"></span><div>${icon('chart')}<span><strong>02. Comprenez votre portefeuille</strong><small>Explorez la répartition et les raisons des choix proposés.</small></span></div><span class="journey-line"></span><div>${icon('chat')}<span><strong>03. Affinez avec votre agent</strong><small>Posez vos questions et précisez vos préférences.</small></span></div></div>
   </div>`;
 }
 
@@ -169,7 +172,7 @@ function detailField(question) {
     let markup;
     if (field.type === 'single') markup = `<fieldset><legend>${label}</legend>${field.options.map(([key,text]) => `<label class="supplement-option"><input type="radio" data-detail="${field.key}" name="${field.key}" value="${key}" ${value === key ? 'checked' : ''}><span>${escape(text)}</span></label>`).join('')}</fieldset>`;
     else if (field.type === 'boolean') markup = `<label class="supplement-option"><input id="${id}" type="checkbox" data-detail="${field.key}" ${value ? 'checked' : ''}><span>${label}</span></label>`;
-    else markup = `<label for="${id}">${label}</label><input id="${id}" data-detail="${field.key}" type="${field.type === 'number' ? 'number' : 'text'}" ${field.type === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="1000"'} placeholder="${escape(fieldPlaceholder(field))}" value="${escape(value ?? '')}">${field.type === 'number' ? '<small>Montant en dollars canadiens</small>' : ''}`;
+    else markup = `<label for="${id}">${label}</label><input id="${id}" data-detail="${field.key}" type="${field.type === 'number' ? 'number' : 'text'}" ${fieldRequired(field, state.answers) ? 'required aria-required="true"' : ''} ${field.type === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="1000"'} placeholder="${escape(fieldPlaceholder(field))}" value="${escape(value ?? '')}">${field.type === 'number' ? '<small>Montant en dollars canadiens</small>' : ''}`;
     return `<div class="detail-field" data-field="${field.key}">${markup}</div>`;
   }).join('');
 }
@@ -191,6 +194,11 @@ function updateQuestionSelection(question) {
   }
   expected.forEach((element, index) => {
     const existing = [...details.children].find(current => current.dataset.field === element.dataset.field);
+    if (existing) {
+      const input = existing.querySelector('input:not([type="radio"]):not([type="checkbox"]), textarea');
+      const expectedInput = element.querySelector('input:not([type="radio"]):not([type="checkbox"]), textarea');
+      if (input && expectedInput) { input.required = expectedInput.required; input.setAttribute('aria-required', String(expectedInput.required)); }
+    }
     if (!existing) details.insertBefore(element, details.children[index] || null);
   });
   if (question.id === 'notes') {
@@ -205,8 +213,6 @@ function updateQuestionSelection(question) {
   refreshConnectionUI();
 }
 
-let explanationView = 'overview';
-const explanationTabs = [['overview', 'L’explication'], ['sources', 'Les sources'], ['limits', 'Les limites']];
 
 function shortAnswer(id, field = id) {
   const question = QUESTIONS.find(item => item.id === id);
@@ -219,8 +225,7 @@ function portfolioContext() {
   return `<section class="portfolio-context" aria-label="Vos réponses en bref">
     ${profileFact('chart', 'Votre objectif', goal)}
     ${profileFact('clock', 'Horizon de placement', shortAnswer('horizon'))}
-    ${profileFact('shield', 'Tolérance déclarée', shortAnswer('risk'))}
-    ${profileFact('calendar', 'Retrait envisagé', shortAnswer('horizon', 'withdrawalTiming'))}
+    ${profileFact('shield', 'Tolérance au risque', shortAnswer('risk'))}
     <button class="text-button" data-action="profile" aria-label="Revoir mes ${QUESTIONS.length} réponses">Mes réponses ${icon('edit')}</button>
   </section>`;
 }
@@ -237,15 +242,13 @@ function portfolio() {
     ${portfolioBanner()}
     <div class="portfolio-grid">
       <section class="allocation-card" aria-labelledby="allocation-title"><div class="card-heading"><div><span class="eyebrow">01 / LA RÉPARTITION</span><h2 id="allocation-title">La vue d’ensemble.</h2></div><span class="soft-badge">${positions.length} positions</span></div>
-        <div class="allocation-visual"><div class="donut" role="img" aria-label="${escape(allocationGroups(selectedPortfolio).map(group => `${formatWeight(group.weight)} % ${group.name}`).join(', '))}" style="background:${donutGradient(positions)}"><div class="donut-hole"><span>Répartition totale</span><strong>100<span>%</span></strong><small>${selectedPortfolio.isDemo ? 'Exemple illustratif' : 'Simulation du moteur'}</small></div></div>
-          <div class="allocation-legend">${allocationGroups(selectedPortfolio).map(group => `<div><span style="--dot:${group.color}"></span><div><strong>${escape(group.name)}</strong><small>${group.count} position${group.count > 1 ? 's' : ''}</small></div><b>${formatWeight(group.weight)} %</b></div>`).join('')}</div>
-        </div><div class="allocation-footnote">${icon('chart')}<span>Les poids décrivent la répartition, sans projection de rendement.</span></div>
+        ${allocationChart(selectedPortfolio)}
       </section>
       ${decisionStudio()}
     </div>
     ${refinementCallout()}
     <section class="holdings-card" aria-labelledby="holdings-title"><div class="card-heading"><div><span class="eyebrow">03 / LES ACTIFS, UN À UN</span><h2 id="holdings-title">${selectedPortfolio.isDemo ? 'Dans cet exemple.' : 'Ce qui compose votre portefeuille.'}</h2><p>Explorez chaque position, puis demandez à l’agent de préciser son rôle.</p></div><button class="text-button" data-action="export">Exporter ${icon('download')}</button></div>
-      <div class="holdings-table-wrap"><table class="holdings-table"><thead><tr><th>Actif</th><th>Catégorie</th><th>Répartition</th><th><span class="sr-only">Comprendre la position</span></th></tr></thead><tbody>${positions.map(position => `<tr><td><button class="holding-link" data-holding="${escape(position.symbol)}"><span class="asset-icon ${position.icon}">${escape(position.initials)}</span><span><strong>${escape(position.name)}</strong><small>${escape(position.symbol)}</small></span></button></td><td class="holding-category">${escape(position.category)}</td><td><div class="weight-cell"><span class="weight-track"><i style="width:${position.weight}%;background:${position.color}"></i></span><strong>${formatWeight(position.weight)} %</strong></div></td><td><button class="row-detail" data-holding="${escape(position.symbol)}" aria-label="Comprendre le choix de ${escape(position.name)}">${icon('arrow')}</button></td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td></td><td>100 %</td><td></td></tr></tfoot></table></div>
+      <div class="holdings-table-wrap"><table class="holdings-table"><thead><tr><th>Actif</th><th>Catégorie</th><th>Répartition</th><th><span class="sr-only">Comprendre la position</span></th></tr></thead><tbody>${positions.map(position => `<tr><td><button class="holding-link" data-holding="${escape(position.symbol)}"><span class="asset-icon ${position.icon}">${escape(position.initials)}</span><span><strong>${escape(position.name)}</strong><small>${escape(position.symbol)}</small></span></button></td><td class="holding-category">${escape(exposureCategory(position.symbol, assetCategories).label)}</td><td><div class="weight-cell"><span class="weight-track"><i style="width:${position.weight}%;background:${position.color}"></i></span><strong>${formatWeight(position.weight)} %</strong></div></td><td><button class="row-detail" data-holding="${escape(position.symbol)}" aria-label="Comprendre le choix de ${escape(position.name)}">${icon('arrow')}</button></td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td></td><td>100 %</td><td></td></tr></tfoot></table></div>
     </section>
   </div>`;
 }
@@ -261,37 +264,17 @@ function decisionStudio() {
     <div class="decision-masthead"><span class="eyebrow">02 / LE REGARD DE VOTRE AGENT</span><span class="decision-seal">${spark()}<span>${result ? 'Explication du résultat' : 'Aperçu de l’espace'}</span></span></div>
     <h2 id="explanation-title">Pourquoi<br> <em>ces choix ?</em></h2>
     <p class="decision-intro">${result ? 'Les raisons communiquées par votre agent, avec les éléments pour les examiner.' : 'Comprendre la logique du portefeuille compte autant que sa composition.'}</p>
-    <div class="decision-tabs" role="tablist" aria-label="Comprendre le portefeuille">${explanationTabs.map(([id, label]) => `<button id="decision-tab-${id}" role="tab" data-explanation-tab="${id}" aria-controls="decision-panel-${id}" aria-selected="${explanationView === id}" tabindex="${explanationView === id ? '0' : '-1'}">${label}${result && id !== 'overview' ? `<span>${id === 'sources' ? result.evidence.length : result.limitations.length}</span>` : ''}</button>`).join('')}</div>
-    <div class="decision-panel" id="decision-panel-overview" role="tabpanel" aria-labelledby="decision-tab-overview" tabindex="0" ${explanationView === 'overview' ? '' : 'hidden'}>
+    <div class="decision-panel" id="decision-panel-overview">
       ${result ? `<div class="agent-rationale">${explanationParagraphs(result.explanation)}</div>` : `<div class="explanation-empty"><span class="empty-label">${loadingPortfolio ? 'EXPLICATION EN PRÉPARATION' : 'DÉMONSTRATION · EXPLICATION NON DISPONIBLE'}</span><p>${loadingPortfolio ? 'L’explication apparaîtra avec le portefeuille, ses sources et ses limites.' : 'Cet exemple n’est pas personnalisé. Dès qu’une recommandation sera disponible, votre agent expliquera ici ses choix.'}</p><ol class="explanation-topics"><li><span>01</span><div><strong>Pourquoi ces actifs ?</strong><small>Leur rôle et les raisons de leur sélection.</small></div></li><li><span>02</span><div><strong>Pourquoi cette répartition ?</strong><small>La logique des pondérations et les compromis retenus.</small></div></li><li><span>03</span><div><strong>Qu’est-ce qui mérite votre attention ?</strong><small>Les risques, les hypothèses et les limites à comprendre.</small></div></li></ol></div>`}
-    </div>
-    <div class="decision-panel" id="decision-panel-sources" role="tabpanel" aria-labelledby="decision-tab-sources" tabindex="0" ${explanationView === 'sources' ? '' : 'hidden'}>
-      ${result ? `<h3>Sur quoi repose l’explication ?</h3><div class="evidence-sources">${result.evidence.map(sourceMarkup).join('')}</div><p class="decision-note">Ces références sont celles fournies avec ce résultat.</p>` : '<h3>Les éléments pour comprendre.</h3><p>Aucune source de recommandation n’est disponible pour cette allocation illustrative. Les références transmises avec le résultat seront présentées ici.</p>'}
-    </div>
-    <div class="decision-panel" id="decision-panel-limits" role="tabpanel" aria-labelledby="decision-tab-limits" tabindex="0" ${explanationView === 'limits' ? '' : 'hidden'}>
-      ${result ? `<h3>Les points à garder en tête.</h3>${result.limitations.length ? `<ul class="decision-limitations">${result.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '<p>L’agent n’a communiqué aucune limite. Cela ne signifie pas qu’il n’en existe aucune.</p>'}` : '<h3>Un aperçu, sans décision personnalisée.</h3><p>Les poids affichés ne découlent pas de vos réponses. Aucune performance ni adéquation à votre situation n’a été évaluée pour cet exemple.</p>'}
-      <p class="decision-note">Les placements comportent des risques de perte. Aucun rendement n’est garanti.</p>
     </div>
     <div class="decision-footer"><span>${result ? `Simulation · Réf. ${escape(result.runId)}` : 'Une question est toujours un bon point de départ.'}</span><button class="decision-question" data-discuss="${escape(prompt)}">${result ? 'Clarifier ces choix' : 'Préparer ma question'} ${icon('arrow')}</button></div>
   </section>`;
 }
 
-function selectExplanationTab(id, focus = false) {
-  if (!explanationTabs.some(([value]) => value === id)) return;
-  explanationView = id;
-  document.querySelectorAll('[data-explanation-tab]').forEach(button => {
-    const selected = button.dataset.explanationTab === id;
-    button.setAttribute('aria-selected', String(selected));
-    button.tabIndex = selected ? 0 : -1;
-    if (selected && focus) button.focus({ preventScroll: true });
-  });
-  document.querySelectorAll('.decision-panel').forEach(panel => { panel.hidden = panel.id !== `decision-panel-${id}`; });
-}
-
-function discussPortfolio(prompt) {
+function discussPortfolio(prompt, replaceDraft = false) {
   if (!state.complete || sending) return;
   if ($('#modal').open) $('#modal').close();
-  if (state.draft.trim() && state.draft !== prompt) {
+  if (!replaceDraft && state.draft.trim() && state.draft !== prompt) {
     navigate('assistant');
     $('#chat-input')?.focus({ preventScroll: true });
     toast('Votre brouillon a été conservé. Vous pouvez le compléter avec cette question.');
@@ -310,9 +293,108 @@ function refinementCallout() {
 }
 
 function profileFact(symbol, label, value) { return `<div class="profile-fact">${icon(symbol)}<span><small>${label}</small><strong>${escape(value)}</strong></span></div>`; }
-function donutGradient(positions) {
-  let angle = 0;
-  return `conic-gradient(${positions.map(position => { const start = angle; angle += position.weight * 3.6; const gap = Math.min(1.5, position.weight * 3.6 * .12); return `${position.color} ${start}deg ${angle - gap}deg, transparent ${angle - gap}deg ${angle}deg`; }).join(',')})`;
+let allocationMode = 'assets';
+let assetCategories = {};
+let assetGeographies = {};
+let geoSelection = null;
+let geoZoom = 1;
+let geographyStatus = 'loading';
+let categoryStatus = 'loading';
+function chartItems(portfolio = currentPortfolio()) {
+  return (allocationMode === 'groups' ? allocationGroups(portfolio, assetCategories) : portfolio.positions.map(p => ({ name: p.symbol, description: p.name, weight: p.weight, color: p.color, count: 1 }))).sort((a,b) => b.weight-a.weight);
+}
+function allocationLabel(item) { return formatWeight(item.weight); }
+function geoCountry(name) {
+  const normalized=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+  const key=normalized(name);
+  if(['etatsunis','etatsunis damerique'.replace(/ /g,''),'unitedstates','unitedstatesofamerica'].includes(key)) return WORLD_COUNTRIES.find(c=>c.id==='USA');
+  return WORLD_COUNTRIES.find(c=>normalized(c.name)===key);
+}
+function geographicItems(portfolio=currentPortfolio()) {
+  return geographicAllocation(portfolio,assetGeographies).map((item,index)=>({...item,country:geoCountry(item.name),color:['#526653','#7e8d73','#a39985','#787b82','#b4ac9d'][index%5]}));
+}
+function geographyDetail(item) {
+  const bases=[...new Set(item.contributors.map(p=>p.basis).filter(Boolean))];
+  return `<div class="geo-detail-heading"><div><span class="eyebrow">LES POSITIONS QUI CONTRIBUENT</span><h3>${escape(item.name)}</h3></div><strong>${formatWeight(item.weight)}<small> %</small></strong></div>
+    <div class="geo-contributors">${item.contributors.map(p=>`<button data-holding="${escape(p.symbol)}"><span><strong>${escape(p.symbol)}</strong><small>${escape(p.name)}</small></span><b>${formatWeight(p.weight)} % ${icon('arrow')}</b></button>`).join('')}</div>
+    <details class="geo-method"><summary>Que mesure cette répartition ?</summary><p>Chaque contribution correspond au poids de l’actif multiplié par sa répartition géographique dans le fichier.</p>${bases.map(b=>`<p>${escape(b)}</p>`).join('')}
+      ${item.contributors.map(p=>`<p><strong>${escape(p.symbol)}</strong> · ${formatWeight(p.sourcePercent)} % affectés à cette zone dans le fichier${p.date && p.date!=='Non disponible' ? ` · Donnée : ${escape(p.date)}` : ''}${p.zone ? `<br>Zone visée : ${escape(p.zone)}` : ''}${p.limitations ? `<br>${escape(p.limitations)}` : ''}</p>`).join('')}
+    </details>`;
+}
+function geographyChart(portfolio) {
+  const items=geographicItems(portfolio);
+  const chosen=items.find(i=>i.name===geoSelection)||items[0];
+  geoSelection=chosen?.name||null;
+  geoZoom=1;
+  const mapped=items.filter(i=>i.country && i.kind==='place');
+  const mappedWeight=mapped.reduce((sum,i)=>sum+i.weight,0);
+  const countries=WORLD_COUNTRIES.map(country=>{
+    const item=mapped.find(i=>i.country.id===country.id);
+    return `<path d="${country.d}" class="geo-country ${item?'geo-feature has-exposure':''} ${item?.name===geoSelection?'is-selected':''}" ${item?`data-geo-name="${escape(item.name)}" tabindex="0" role="button" aria-pressed="${item.name===geoSelection}" aria-label="${escape(item.name)} : ${formatWeight(item.weight)} % du portefeuille" style="--geo-color:${item.color}"`:'aria-hidden="true"'}><title>${escape(country.name)}${item?` : ${formatWeight(item.weight)} %`:''}</title></path>`;
+  }).join('');
+  return `<div class="allocation-explorer geography-explorer"><div class="allocation-switch" role="group" aria-label="Vue de la répartition"><button data-allocation-mode="assets" aria-pressed="false">Par actif</button><button data-allocation-mode="groups" aria-pressed="false">Par catégorie</button><button data-allocation-mode="geography" aria-pressed="true">Géographie</button></div>
+    <div class="geo-intro"><span class="eyebrow">UNE LECTURE AU-DELÀ DES FRONTIÈRES</span><h3>Votre portefeuille,<br><em>dans le monde.</em></h3><p>Explorez les pays et les zones renseignés pour vos actifs.</p></div>
+    ${geographyStatus!=='ready'?'<p class="geo-warning" role="status">Données géographiques indisponibles. Redémarrez le serveur local puis actualisez la page.</p>':''}
+    <div class="geo-stats"><div><strong>${mapped.length}</strong><span>pays sur la carte</span></div><div><strong>${formatWeight(mappedWeight)}<small> %</small></strong><span>rattachés à un pays</span></div></div>
+    <div class="geo-map-card"><div class="geo-map-heading"><span>Carte des positions renseignées</span><div class="geo-map-controls"><button data-geo-zoom="out" aria-label="Dézoomer la carte" disabled>−</button><button data-geo-zoom="in" aria-label="Zoomer sur la zone sélectionnée">+</button><button data-geo-zoom="reset" aria-label="Revenir à la carte du monde">Monde</button><button data-geo-expand aria-label="Agrandir la carte">Agrandir</button></div></div>
+      <svg class="geo-world" viewBox="0 0 800 400" role="group" aria-label="Carte interactive des pays du portefeuille"><rect width="800" height="400" fill="#f5f6f1"/><g class="geo-graticule" aria-hidden="true">${[100,200,300].map(y=>`<path d="M0 ${y}H800"/>`).join('')}${[200,400,600].map(x=>`<path d="M${x} 0V400"/>`).join('')}</g>${countries}
+      ${mapped.map(item=>`<g class="geo-map-label" transform="translate(${item.country.x} ${item.country.y})" aria-hidden="true"><rect x="-26" y="-12" width="52" height="24" rx="12"/><text text-anchor="middle" dominant-baseline="central">${formatWeight(item.weight)} %</text></g>`).join('')}</svg>
+      <p class="geo-map-help" aria-live="polite">Cliquez sur un pays ou une ligne pour découvrir les actifs concernés.</p>
+    </div>
+    <div class="geo-distribution" aria-label="Répartition géographique">${items.map(item=>`<button class="geo-row" data-geo-name="${escape(item.name)}" aria-pressed="${item.name===geoSelection}" style="--geo-color:${item.color}"><span class="geo-row-dot"></span><span class="geo-row-copy"><strong>${escape(item.name)}</strong><small>${item.country?'Pays renseigné':item.kind==='no_country'?'Exposition sans pays de rattachement':item.kind==='not_applicable'?'Série de taux, sans allocation géographique':item.kind==='unknown'?'Données absentes ou non quantifiées':'Zone renseignée, hors carte des pays'}</small><span class="geo-row-meter"><i style="width:${item.weight}%"></i></span></span><b>${formatWeight(item.weight)} %</b></button>`).join('')}</div>
+    <section class="geo-detail" data-geo-detail aria-live="polite" aria-label="Détail de la zone sélectionnée">${chosen?geographyDetail(chosen):''}</section>
+    <p class="geo-caveat">Selon le CSV : domicile de l’émetteur ou zone de placement du fonds. Cette vue ne mesure pas les revenus des entreprises par pays. Les parts sans pays unique ou non renseignées restent dans le total. La surface des pays ne représente pas leur poids.</p><small class="geo-map-credit">Fond de carte simplifié · Natural Earth</small>
+  </div>`;
+}
+function geographyRoot() { return ($('#modal').open && $('#modal').querySelector('.geography-explorer')) || $('.geography-explorer'); }
+function selectGeography(name) {
+  const item=geographicItems().find(i=>i.name===name);
+  if(!item) return;
+  geoSelection=name;
+  geographyRoot().querySelectorAll('[data-geo-name]').forEach(node=>{
+    const selected=node.dataset.geoName===name;
+    node.setAttribute('aria-pressed',String(selected)); node.classList.toggle('is-selected',selected);
+  });
+  geographyRoot().querySelector('[data-geo-detail]').innerHTML=geographyDetail(item);
+  geographyRoot().querySelector('.geo-map-help').textContent=`${item.name} · ${formatWeight(item.weight)} % du portefeuille · ${item.contributors.length} contribution${item.contributors.length>1?'s':''}`;
+}
+function zoomGeography(direction) {
+  geoZoom=direction==='reset'?1:Math.max(1,Math.min(3,geoZoom+(direction==='in'?.5:-.5)));
+  const item=geographicItems().find(i=>i.name===geoSelection);
+  const cx=item?.country?.x||400,cy=item?.country?.y||180;
+  const width=800/geoZoom,height=400/geoZoom;
+  const x=Math.max(0,Math.min(800-width,cx-width/2)),y=Math.max(0,Math.min(400-height,cy-height/2));
+  geographyRoot().querySelector('.geo-world').setAttribute('viewBox',`${x} ${y} ${width} ${height}`);
+  geographyRoot().querySelector('[data-geo-zoom="out"]').disabled=geoZoom===1;
+  geographyRoot().querySelector('[data-geo-zoom="in"]').disabled=geoZoom===3;
+}
+document.addEventListener('pointerover',event=>{
+  const feature=event.target.closest('.geo-feature');
+  if(!feature || !$('.geo-map-help')) return;
+  const item=geographicItems().find(i=>i.name===feature.dataset.geoName);
+  if(item) geographyRoot().querySelector('.geo-map-help').textContent=`${item.name} · ${formatWeight(item.weight)} % du portefeuille`;
+});
+function allocationChart(portfolio) {
+  if (allocationMode === 'geography') return geographyChart(portfolio);
+  const items = chartItems(portfolio);
+  let offset = 0;
+  const arcs = items.map((item,index) => {
+    const arc = `<circle class="allocation-arc" cx="120" cy="120" r="88" pathLength="100" fill="none" stroke="${item.color}" stroke-width="30" stroke-dasharray="${item.weight} ${Math.max(0,100-item.weight)}" stroke-dashoffset="${-offset}" transform="rotate(-90 120 120)" tabindex="0" role="button" data-allocation-index="${index}" aria-label="${escape(item.name)} : ${allocationLabel(item)} %"><title>${escape(item.name)} : ${allocationLabel(item)} %</title></circle>`;
+    offset += item.weight; return arc;
+  }).join('');
+  return `<div class="allocation-explorer">${allocationMode === 'groups' && categoryStatus !== 'ready' ? `<p class="allocation-instruction" role="status">${categoryStatus === 'loading' ? 'Chargement des catégories…' : 'Classification indisponible. Redémarrez le serveur local puis actualisez la page.'}</p>` : ''}<div class="allocation-switch" role="group" aria-label="Vue de la répartition"><button data-allocation-mode="assets" aria-pressed="${allocationMode==='assets'}">Par actif</button><button data-allocation-mode="groups" aria-pressed="${allocationMode==='groups'}">Par catégorie</button><button data-allocation-mode="geography" aria-pressed="${allocationMode==='geography'}">Géographie</button></div>
+    <div class="allocation-ring"><svg viewBox="0 0 240 240" aria-label="Répartition du portefeuille" role="group">${arcs}</svg><div class="allocation-center" aria-live="polite"><span id="allocation-label">Portefeuille total</span><strong><span id="allocation-value">100</span><small>%</small></strong><small id="allocation-detail">${portfolio.positions.length} positions</small></div></div>
+    <p class="allocation-instruction">Sélectionnez une part pour l’explorer.</p><div class="allocation-breakdown">${items.map((item,index)=>`<button class="allocation-item" data-allocation-index="${index}" aria-pressed="false" style="--allocation-color:${item.color}"><span class="allocation-dot"></span><span class="allocation-item-copy"><strong>${escape(item.name)}</strong><small>${escape(item.description || `${item.count} position${item.count>1?'s':''}`)}</small><span class="allocation-meter"><i style="width:${item.weight}%"></i></span></span><b>${allocationLabel(item)} %</b></button>`).join('')}</div></div>
+    `;
+}
+function highlightAllocation(index) {
+  const item = chartItems()[index];
+  if (!item && index !== null) return;
+  document.querySelectorAll('.allocation-arc').forEach((arc,i)=>arc.classList.toggle('is-muted',index!==null && i!==index));
+  document.querySelectorAll('.allocation-item').forEach((row,i)=>row.setAttribute('aria-pressed',String(i===index)));
+  $('#allocation-label').textContent=item?item.name:'Portefeuille total';
+  $('#allocation-value').textContent=item?allocationLabel(item):'100';
+  $('#allocation-detail').textContent=item?(item.description||`${item.count} position${item.count>1?'s':''}`):`${currentPortfolio().positions.length} positions`;
 }
 
 function portfolioBanner() {
@@ -321,22 +403,13 @@ function portfolioBanner() {
   return `<div class="demo-banner">${icon('info')}<p>Allocation illustrative, non personnalisée.${portfolioError ? `<span class="portfolio-error">${escape(portfolioError)}</span>` : ''}</p>${portfolioConnected ? `<button class="text-button" data-action="generate-portfolio">${portfolioError ? 'Réessayer' : 'Créer ma simulation'} ${icon('arrow')}</button>` : '<span class="badge">DÉMONSTRATION</span>'}</div>`;
 }
 
-function sourceMarkup(item) {
-  let source = escape(item.source);
-  try {
-    const url = new URL(item.source);
-    if (['https:', 'http:'].includes(url.protocol)) source = `<a href="${escape(url.href)}" target="_blank" rel="noopener noreferrer">${escape(item.source)}</a>`;
-  } catch { /* Une source peut être un fichier du jeu de données. */ }
-  return `<div class="evidence-source"><span>${escape(item.id)}</span><div><strong>${source}</strong><p>${escape(item.description)}</p></div></div>`;
-}
-
 function evidenceBody(result) {
-  return `<p class="result-explanation">${escape(result.explanation)}</p><details><summary>Consulter les sources · ${result.evidence.length}</summary><div class="evidence-sources">${result.evidence.map(sourceMarkup).join('')}</div></details><details><summary>Hypothèses et limites · ${result.limitations.length}</summary>${result.limitations.length ? `<ul>${result.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '<p>Le moteur n’a communiqué aucune limite. Cela ne signifie pas qu’il n’en existe aucune.</p>'}</details><p class="run-reference">Simulation · Référence ${escape(result.runId)}</p>`;
+  return `<div class="result-explanation">${explanationParagraphs(result.explanation)}</div><p class="run-reference">Simulation · Référence ${escape(result.runId)}</p>`;
 }
 
 function proposalCard() {
   const proposal = state.proposal;
-  return `<article class="proposal-card"><span class="eyebrow">UNE NOUVELLE PERSPECTIVE</span><h3>${escape(proposal.portfolio.name)}</h3><div class="proposal-positions">${proposal.portfolio.positions.map(position => { const previous = currentPortfolio().positions.find(item => item.symbol === position.symbol)?.weight || 0; return `<div><span>${escape(position.symbol)}</span><span>${formatWeight(previous)} % ${icon('arrow')} <strong>${formatWeight(position.weight)} %</strong></span></div>`; }).join('')}${currentPortfolio().positions.filter(position => !proposal.portfolio.positions.some(item => item.symbol === position.symbol)).map(position => `<div><span>${escape(position.symbol)}</span><span>${formatWeight(position.weight)} % ${icon('arrow')} <strong>0 %</strong></span></div>`).join('')}</div><p>Une proposition de simulation à examiner avant de l’appliquer à votre vue.</p><div class="proposal-actions"><button class="text-button" data-action="proposal-sources">Sources et limites</button><button class="button primary" data-action="accept-proposal">Retenir cette version ${icon('check')}</button></div></article>`;
+  return `<article class="proposal-card"><span class="eyebrow">UNE NOUVELLE PERSPECTIVE</span><h3>${escape(proposal.portfolio.name)}</h3><div class="proposal-positions">${proposal.portfolio.positions.map(position => { const previous = currentPortfolio().positions.find(item => item.symbol === position.symbol)?.weight || 0; return `<div><span>${escape(position.symbol)}</span><span>${formatWeight(previous)} % ${icon('arrow')} <strong>${formatWeight(position.weight)} %</strong></span></div>`; }).join('')}${currentPortfolio().positions.filter(position => !proposal.portfolio.positions.some(item => item.symbol === position.symbol)).map(position => `<div><span>${escape(position.symbol)}</span><span>${formatWeight(position.weight)} % ${icon('arrow')} <strong>0 %</strong></span></div>`).join('')}</div><p>Une proposition de simulation à examiner avant de l’appliquer à votre vue.</p><div class="proposal-actions"><button class="text-button" data-action="proposal-sources">Comprendre la proposition</button><button class="button primary" data-action="accept-proposal">Retenir cette version ${icon('check')}</button></div></article>`;
 }
 
 function chatMessage(message, index) {
@@ -347,14 +420,14 @@ function chatMessage(message, index) {
 
 function assistant() {
   return `<div class="assistant-page page-enter"><div class="assistant-title"><div><div class="eyebrow">VOTRE ESPACE PERSONNEL</div><h1>Affinons votre <em>portefeuille.</em></h1></div><button class="text-button" data-page="portfolio">Voir mon portefeuille ${icon('arrow')}</button></div>
-    <div class="conversation-layout"><aside class="conversation-sidebar"><span class="eyebrow">VOTRE POINT DE DÉPART</span><h2>Votre point de départ.</h2><div class="mini-allocation-bar">${currentPortfolio().positions.map(position => `<span style="width:${position.weight}%;background:${position.color}" title="${escape(position.symbol)} : ${formatWeight(position.weight)} %"></span>`).join('')}</div><span class="badge">${currentPortfolio().isDemo ? "ALLOCATION ILLUSTRATIVE" : "SIMULATION DU MOTEUR"}</span><div class="sidebar-positions">${currentPortfolio().positions.map(position => `<div><span style="--dot:${position.color}">${escape(position.symbol)}</span><strong>${formatWeight(position.weight)} %</strong></div>`).join('')}</div><div class="sidebar-profile">${profileFact('shield', 'Tolérance déclarée', answerLabel(QUESTIONS.find(q => q.id === 'risk'), state.answers))}${profileFact('clock', 'Votre horizon', QUESTIONS.find(q => q.id === 'horizon').options.find(([value]) => value === state.answers.horizon)?.[1] || 'À préciser')}</div><button class="text-button" data-action="profile">Mes réponses ${icon('arrow')}</button><div class="sidebar-hint"><p>Un projet, une préférence ou une contrainte ? Précisez ce qui compte pour vous.</p></div></aside>
+    <div class="conversation-layout"><aside class="conversation-sidebar"><span class="eyebrow">VOTRE POINT DE DÉPART</span><h2>Votre point de départ.</h2><div class="mini-allocation-bar">${currentPortfolio().positions.map(position => `<span style="width:${position.weight}%;background:${position.color}" title="${escape(position.symbol)} : ${formatWeight(position.weight)} %"></span>`).join('')}</div><span class="badge">${currentPortfolio().isDemo ? "ALLOCATION ILLUSTRATIVE" : "SIMULATION DU MOTEUR"}</span><div class="sidebar-positions">${currentPortfolio().positions.map(position => `<div><span style="--dot:${position.color}">${escape(position.symbol)}</span><strong>${formatWeight(position.weight)} %</strong></div>`).join('')}</div><div class="sidebar-profile">${profileFact('shield', 'Tolérance au risque', answerLabel(QUESTIONS.find(q => q.id === 'risk'), state.answers))}${profileFact('clock', 'Votre horizon', QUESTIONS.find(q => q.id === 'horizon').options.find(([value]) => value === state.answers.horizon)?.[1] || 'À préciser')}</div><button class="text-button" data-action="profile">Mes réponses ${icon('arrow')}</button></aside>
     <section class="chat-card ${!state.messages.length && !state.proposal && !sending ? 'is-empty' : ''}" aria-label="Conversation avec votre assistant"><header class="chat-header"><div class="assistant-avatar">${spark()}</div><div><strong>Votre assistant RecommanDathon</strong><span><i class="status-dot ${agentConnected ? '' : 'neutral'}"></i>${agentConnected ? 'Service configuré' : 'Assistant indisponible · espace brouillon'}</span></div><button class="icon-button" data-action="agent-info" aria-label="Informations sur la connexion de l’agent">${icon('info')}</button></header>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-label="Messages de la conversation">${state.messages.length ? state.messages.map(chatMessage).join('') : chatWelcome()}${state.proposal ? proposalCard() : ""}${sending ? `<div class="sending" role="status"><span></span><span></span><span></span><small>Votre agent prépare sa réponse…</small></div>` : ''}</div>
-    <div class="chat-compose-area">${!agentConnected ? `<div class="connection-note">${icon('info')}<span>L’assistant n’est pas encore disponible. Vous pouvez préparer votre message ; il reste en brouillon.</span></div>` : ''}${sendError ? `<p class="field-error chat-error" role="alert">${escape(sendError)}</p>` : ''}<form id="chat-form"><label for="chat-input" class="composer-label">Que souhaitez-vous préciser ?</label><textarea id="chat-input" maxlength="4000" rows="2" placeholder="Par exemple : je souhaite privilégier certains secteurs…" ${sending ? 'disabled' : ''}>${escape(state.draft)}</textarea><div class="composer-bottom"><span>${icon('lock')}<span>${agentConnected ? 'Envoyé uniquement à votre service configuré' : 'Brouillon enregistré sur cet appareil'}</span></span><button type="submit" class="send-button" ${!agentConnected || sending || !state.draft.trim() ? 'disabled' : ''} aria-label="Envoyer le message">${icon('send')}</button></div></form><p class="chat-disclaimer">Simulation. Les échanges ne constituent pas un conseil en placement.</p></div></section></div></div>`;
+    <div class="chat-compose-area">${!agentConnected ? `<div class="connection-note">${icon('info')}<span>L’assistant n’est pas encore disponible. Vous pouvez préparer votre message ; il reste en brouillon.</span></div>` : ''}${sendError ? `<p class="field-error chat-error" role="alert">${escape(sendError)}</p>` : ''}<form id="chat-form"><label for="chat-input" class="composer-label">Que souhaitez-vous préciser ?</label><textarea id="chat-input" maxlength="4000" rows="1" placeholder="Par exemple : je souhaite privilégier certains secteurs…" ${sending ? 'disabled' : ''}>${escape(state.draft)}</textarea><div class="composer-bottom"><span>${icon('lock')}<span>${agentConnected ? 'Envoyé uniquement à votre service configuré' : 'Brouillon enregistré sur cet appareil'}</span></span><button type="submit" class="send-button" ${!agentConnected || sending || !state.draft.trim() ? 'disabled' : ''} aria-label="Envoyer le message">${icon('send')}</button></div></form><p class="chat-disclaimer">Simulation. Les échanges ne constituent pas un conseil en placement.</p></div></section></div></div>`;
 }
 
 function chatWelcome() {
-  return `<div class="chat-welcome">${spark('welcome-spark')}<span class="eyebrow">VOTRE PORTEFEUILLE, VOS PRIORITÉS</span><h2>Qu’aimeriez-vous <em>affiner ?</em></h2><p>Choisissez un point de départ ou écrivez votre propre message.</p><div class="prompt-suggestions">${['Comprendre la répartition du portefeuille', 'Préciser les secteurs qui m’intéressent', 'Discuter de mes exclusions', 'Prendre en compte mon horizon'].map((prompt, index) => `<button data-prompt="${escape(prompt)}"><span>${icon(['chart', 'leaf', 'shield', 'clock'][index])}${prompt}</span>${icon('arrow')}</button>`).join('')}</div>${!agentConnected ? '<small class="welcome-status"><i class="status-dot neutral"></i>L’interface est prête. Aucun agent n’est encore actif.</small>' : ''}</div>`;
+  return `<div class="chat-welcome">${spark('welcome-spark')}<span class="eyebrow">VOTRE PORTEFEUILLE, VOS PRIORITÉS</span><h2>Qu’aimeriez-vous <em>affiner ?</em></h2><p>Écrivez votre message ci-dessous pour poursuivre la discussion.</p>${!agentConnected ? '<small class="welcome-status"><i class="status-dot neutral"></i>L’interface est prête. Aucun agent n’est encore actif.</small>' : ''}</div>`;
 }
 
 function showModal(title, content, className = '') {
@@ -391,7 +464,6 @@ function handleAction(action) {
   }
   if (action === 'confirm-reset') { showModal('Repartir d’une page blanche ?', '<p class="modal-intro">Vos réponses, votre brouillon et la conversation de cette plateforme seront effacés de ce navigateur. Vous pouvez les exporter avant de continuer.</p><div class="modal-buttons"><button class="button outline" data-action="export-json">Exporter mes données</button><button class="button primary" data-action="reset">Recommencer</button></div>'); return; }
   if (action === 'reset') {
-    explanationView = 'overview';
     invalidateConversation();
     Object.assign(state, { answers: {}, complete: false, step: 0, page: 'questionnaire', draft: '', messages: [] });
     try { for (const key of Object.keys(localStorage)) if (key.startsWith('recommand.platform.')) localStorage.removeItem(key); }
@@ -407,7 +479,7 @@ function handleAction(action) {
   }
   if (action === 'refresh-agent') { $('#modal').close(); checkAgent(true); return; }
   if (action === 'credits') {
-    showModal('Des inspirations, une identité.', `<p class="modal-intro">RecommanDathon est un prototype indépendant réalisé pour le Datathon 2026. Il n’est affilié à aucune institution financière.</p><div class="credits-list"><h3>Direction et parcours</h3><p>Un thème crème et noir inspiré de la référence Wealthsimple fournie.</p><h3>Illustrations</h3><p>Illustrations SVG originales et locales adaptées au sujet de chaque question. Le bulletin de baisse reproduit la composition de la capture fournie et reste une mise en situation fictive, sans cotations réelles. Sources des anciennes photos conservées : <code>docs/INSPIRATIONS.md</code>.</p><h3>Questionnaire</h3><p>Les 16 questions, les choix et les champs complémentaires proviennent exclusivement du Word sélectionné. Aucun profil de risque ni rendement n’est déduit par l’interface.</p></div>`);
+    showModal('Des inspirations, une identité.', `<p class="modal-intro">RecommanDathon est un prototype indépendant réalisé pour le Datathon 2026. Il n’est affilié à aucune institution financière.</p><div class="credits-list"><h3>Direction et parcours</h3><p>Un thème crème et noir inspiré de la référence Wealthsimple fournie.</p><h3>Illustrations</h3><p>Illustrations SVG originales et locales adaptées au sujet de chaque question. Le bulletin de baisse reproduit la composition de la capture fournie et reste une mise en situation fictive, sans cotations réelles. Sources des anciennes photos conservées : <code>docs/INSPIRATIONS.md</code>.</p><h3>Questionnaire</h3><p>Les ${QUESTIONS.length} questions, les choix et les champs complémentaires proviennent exclusivement du Word sélectionné. Aucun profil de risque ni rendement n’est déduit par l’interface.</p></div>`);
     return;
   }
   if (action === 'export') { showModal('Gardez une copie.', `<p class="modal-intro">Exportez vos réponses, votre conversation et la répartition affichée.</p><div class="export-options"><button data-action="export-json">${icon('file')}<span><strong>Le parcours complet</strong><small>Réponses, conversation et portefeuille · JSON</small></span>${icon('download')}</button><button data-action="export-csv">${icon('chart')}<span><strong>La répartition ${currentPortfolio().isDemo ? 'illustrative' : 'du moteur'}</strong><small>${currentPortfolio().positions.length} positions et leurs poids · CSV</small></span>${icon('download')}</button></div>`); return; }
@@ -512,12 +584,29 @@ async function sendMessage(retryIndex = null) {
 }
 
 document.addEventListener('click', event => {
+  if(event.target.closest('[data-geo-expand]')) { showModal('Votre portefeuille dans le monde.',geographyChart(currentPortfolio()),'geography-modal'); return; }
+
+  const geoButton=event.target.closest('[data-geo-name]');
+  if(geoButton) { selectGeography(geoButton.dataset.geoName); return; }
+  const geoZoomButton=event.target.closest('[data-geo-zoom]');
+  if(geoZoomButton) { zoomGeography(geoZoomButton.dataset.geoZoom); return; }
+
+  const mode = event.target.closest('[data-allocation-mode]');
+  if (mode) {
+    if (!['groups','assets','geography'].includes(mode.dataset.allocationMode)) return;
+    allocationMode=mode.dataset.allocationMode;
+    const visual=document.querySelector('.allocation-explorer');
+    const template=document.createElement('template'); template.innerHTML=allocationChart(currentPortfolio());
+    visual.replaceWith(template.content.firstElementChild);
+    document.querySelector(`[data-allocation-mode="${allocationMode}"]`).focus({preventScroll:true}); return;
+  }
+  const slice=event.target.closest('[data-allocation-index]');
+  if (slice) { highlightAllocation(Number(slice.dataset.allocationIndex)); return; }
+
   const retryButton = event.target.closest('[data-retry-message]');
   if (retryButton) { event.preventDefault(); sendMessage(Number(retryButton.dataset.retryMessage)); return; }
-  const explanationTab = event.target.closest('[data-explanation-tab]');
-  if (explanationTab) { selectExplanationTab(explanationTab.dataset.explanationTab); return; }
   const discussionButton = event.target.closest('[data-discuss]');
-  if (discussionButton) { event.preventDefault(); discussPortfolio(discussionButton.dataset.discuss); return; }
+  if (discussionButton) { event.preventDefault(); discussPortfolio(discussionButton.dataset.discuss, discussionButton.classList.contains('holding-question')); return; }
   const questionButton = event.target.closest('[data-question-index]');
   if (questionButton && state.page === 'questionnaire') {
     const index = Number(questionButton.dataset.questionIndex);
@@ -532,13 +621,11 @@ document.addEventListener('click', event => {
   if (actionButton) { event.preventDefault(); handleAction(actionButton.dataset.action); return; }
   const editButton = event.target.closest('[data-edit-question]');
   if (editButton) { $('#modal').close(); state.step = Number(editButton.dataset.editQuestion); state.page = 'questionnaire'; persist(); render(); focusQuestion(); return; }
-  const prompt = event.target.closest('[data-prompt]');
-  if (prompt) { if (sending) return; state.draft = prompt.dataset.prompt; persist(); render(); $('#chat-input').focus({ preventScroll: true }); return; }
   const holdingButton = event.target.closest('[data-holding]');
   if (holdingButton) {
     const position = currentPortfolio().positions.find(item => item.symbol === holdingButton.dataset.holding);
     if (!position) return;
-    showModal(escape(position.name), `<span class="holding-symbol">${escape(position.symbol)} · ${escape(position.category)}</span><div class="holding-detail-weight"><strong>${formatWeight(position.weight)}<span>%</span></strong><span>${currentPortfolio().isDemo ? 'de l’exemple illustratif' : 'de votre simulation'}</span></div>${currentPortfolio().isDemo ? '<p>Cette position fait partie d’un exemple fixe destiné à présenter la plateforme. Son poids ne découle pas de vos réponses au questionnaire.</p><p>Votre moteur fournira les actifs retenus, leurs pondérations, les raisons de ses choix et les limites des données utilisées.</p>' : `<p>Cette répartition a été transmise par votre moteur. Consultez ses sources et ses limites pour comprendre la simulation.</p><button class="button outline" data-action="sources">Comprendre le résultat ${icon('arrow')}</button>`}<button class="button primary holding-question" data-discuss="${escape(`Expliquez-moi le rôle de ${position.symbol} (${position.name}) dans ce portefeuille et les raisons de sa pondération de ${formatWeight(position.weight)} %.`)}">Demander pourquoi cet actif ${icon('arrow')}</button><p class="modal-note">Simulation uniquement. Aucune transaction, cotation en temps réel ou promesse de rendement.</p>`);
+    showModal(escape(position.name), `<span class="holding-symbol">${escape(position.symbol)} · ${escape(exposureCategory(position.symbol, assetCategories).label)}</span><div class="holding-detail-weight"><strong>${formatWeight(position.weight)}<span>%</span></strong><span>${currentPortfolio().isDemo ? 'de l’exemple illustratif' : 'de votre simulation'}</span></div>${currentPortfolio().isDemo ? '<p>Cette position fait partie d’un exemple fixe destiné à présenter la plateforme. Son poids ne découle pas de vos réponses au questionnaire.</p><p>Votre moteur fournira les actifs retenus, leurs pondérations, les raisons de ses choix et les limites des données utilisées.</p>' : `<p>Cette répartition a été transmise par votre moteur. Consultez son explication pour comprendre les choix de la simulation.</p><button class="button outline" data-action="sources">Comprendre le résultat ${icon('arrow')}</button>`}<button class="button primary holding-question" data-discuss="${escape(`Expliquez-moi le rôle de ${position.symbol} (${position.name}) dans ce portefeuille et les raisons de sa pondération de ${formatWeight(position.weight)} %.`)}">Demander pourquoi cet actif ${icon('arrow')}</button><p class="modal-note">Simulation uniquement. Aucune transaction, cotation en temps réel ou promesse de rendement.</p>`);
   }
 });
 
@@ -592,13 +679,11 @@ document.addEventListener('submit', event => {
 });
 
 document.addEventListener('keydown', event => {
-  const tab = event.target.closest('[data-explanation-tab]');
-  if (tab && !event.ctrlKey && !event.metaKey && !event.altKey && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-    event.preventDefault();
-    const current = explanationTabs.findIndex(([id]) => id === tab.dataset.explanationTab);
-    const index = event.key === 'Home' ? 0 : event.key === 'End' ? explanationTabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + explanationTabs.length) % explanationTabs.length;
-    selectExplanationTab(explanationTabs[index][0], true); return;
-  }
+  const geoFeature=event.target.closest('.geo-feature');
+  if(geoFeature && ['Enter',' '].includes(event.key)) { event.preventDefault(); selectGeography(geoFeature.dataset.geoName); return; }
+
+  if (event.target.matches('.allocation-arc') && ['Enter',' '].includes(event.key)) { event.preventDefault(); highlightAllocation(Number(event.target.dataset.allocationIndex)); return; }
+
   if (event.target.id === 'chat-input' && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); sendMessage(); }
 });
 $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) { const bounds = $('#modal').getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) $('#modal').close(); } });
@@ -606,3 +691,14 @@ $('#modal').addEventListener('click', event => { if (event.target === $('#modal'
 persist();
 render();
 checkAgent();
+fetch('/api/asset-categories', { signal: AbortSignal.timeout(5000) }).then(response => {
+  if (!response.ok) throw new Error();
+  return response.json();
+}).then(data => {
+  if (!data.categories || typeof data.categories !== 'object' || Array.isArray(data.categories)) throw new Error();
+  assetGeographies=data.geographies && typeof data.geographies==='object' && !Array.isArray(data.geographies) ? data.geographies : {};
+  geographyStatus=Object.keys(assetGeographies).length ? 'ready' : 'unavailable';
+  categoryStatus='ready';
+  assetCategories=Object.fromEntries(Object.entries(data.categories).filter(([key,value])=>key && typeof value==='string' && value.trim()));
+  refreshConnectionUI();
+}).catch(() => { assetCategories={}; categoryStatus='unavailable'; geographyStatus='unavailable'; refreshConnectionUI(); });

@@ -18,3 +18,7 @@ Vérifications : `node --test --test-isolation=none tests/*.test.mjs` depuis `pl
 
 Vérification DOM et HTTP locale, sans envoi à un agent réel ni capture d’un échange réel. Aucun calcul, CSV, service cloud, commit, push ou déploiement modifié.
 
+
+## Saisie libre
+
+Correction utilisateur : les quatre suggestions de messages sont retirees, ainsi que leur gestionnaire de clic. Le texte d’accueil invite directement a saisir un message. Le brouillon, l’envoi immediat et les questions contextuelles depuis le portefeuille restent disponibles. Role presentation/infrastructure ; lecon L-030 ; statut complete ; prochain proprietaire : utilisateur pour le test local.

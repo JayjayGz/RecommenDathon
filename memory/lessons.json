@@ -330,7 +330,9 @@
         "Source SHA-256 and actual extracted questions: plateforme/tests/fixtures/questionnaire-word.json; source review: plateforme/docs/QUESTIONNAIRE_WORD.md.",
         "Old eight-question tests failed against the new order; replacement tests replay the same stable-DOM cases plus numeric fields, all-assets choice and HTTP rejection cases.",
         "Originally L-005 on the questionnaire branch; ID changed to L-013 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt.",
-        "2026-11-15: user explicitly removed the separated/divorced/widowed option and target amount. The original Word snapshot remains intact; runtime, importer, JSON template and tests apply explicit user overrides under questionnaire-word-16-v4."
+        "2026-11-15: user explicitly removed the separated/divorced/widowed option and target amount. The original Word snapshot remains intact; runtime, importer, JSON template and tests apply explicit user overrides under questionnaire-word-16-v4.",
+        "User override: every Other choice requires nonblank context. Four situation fields are required when visible; goalDetails is required only for goal=other. Original Word fixture unchanged; importer and JSON template synchronized.",
+        "User removed the entire marital question and withdrawalTiming follow-up. Runtime/JSON/importer now use 15 questions under questionnaire-word-15-v5; original Word fixture preserved, removed answers pruned and old dependent results invalidated. Navigation regressions migrated to the new order."
       ],
       "prevention": "Read the actual supplied Word, preserve its titles/options/follow-ups, derive navigation from question count, use semantic IDs in summaries, version raw transport and local storage, and invalidate dependent results. Apply later explicit user corrections as documented overrides without rewriting the original source fixture; clean obsolete saved fields and invalidate dependent results, including when only an optional field was removed.",
       "regression": "Compare all source questions and options with the source snapshot; complete all sixteen steps including numeric zero and optional notes; reject the old version and invalid hidden fields through HTTP.",
@@ -345,6 +347,16 @@
           "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
           "result": "25 passed, 0 failed, including removed choices/amount, compatible saved answers and HTTP rejection of v3 and obsolete fields.",
           "scope": "DOM and API contract checks. Native Chrome screenshot separately inspected the revised assistant layout; no business profile mapping or external agent call."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "36 tests passed, including all five Other choices, whitespace rejection and optional project context.",
+          "scope": "DOM/shared validation checks; no financial mapping changed."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "46 tests passed including 15-question traversal, removal/migration, horizon without withdrawal detail, explanation-only UI and preservation of internal evidence/limitations.",
+          "scope": "Local DOM/API/CSS. Python adapter compatibility remains v2 and is documented as pending; no end-to-end financial run or new visual capture."
         }
       ]
     },
@@ -907,9 +919,14 @@
       "evidence": [
         "User request and screenshot on 2026-11-15: a clear zone for the agent to explain and clarify its choices is the most important feature.",
         "plateforme/src/app.js: decisionStudio uses accepted result.explanation, evidence, limitations and runId beside allocation; previous resultEvidence placement is replaced.",
-        "plateforme/docs/PORTFOLIO_EXPLANATION.md records the previous profile-card assertion failure and the native Chrome finding that Ctrl+End was intercepted by the new tab handler. The assertion targets the new profile summary; modified browser shortcuts are no longer intercepted."
+        "plateforme/docs/PORTFOLIO_EXPLANATION.md records the previous profile-card assertion failure and the native Chrome finding that Ctrl+End was intercepted by the new tab handler. The assertion targets the new profile summary; modified browser shortcuts are no longer intercepted.",
+        "User explicitly removed the four preset chat suggestions. chatWelcome now offers free text only; contextual clarification from the portfolio stays available. Regression checks absence of preset buttons and preservation of a manually typed draft.",
+        "Later explicit user correction: Demander pourquoi cet actif must replace any existing draft with the selected asset question. General clarification still preserves a different draft. This supersedes draft preservation for asset-specific questions only.",
+        "Allocation chart refinement: the old ring showed individual positions while its legend grouped categories. The SVG explorer now uses identical grouped/asset items for ring and legend; original position weights preserved.",
+        "User explicitly rejected the new decimal-sum/rounding implementation and selected dataset/exposures_profile_tickers.csv as the category authority. Those arithmetic changes and files were removed. Classification now joins ticker to asset_class; missing tickers remain unclassified and model group/category is ignored for display.",
+        "Geography feature: actual CSV separates numeric repartition_geographique from qualitative target zones, issuer domicile and no-country assets. The map uses only validated numeric splits and retains unknown/no-country weights outside country polygons. A DOM check caught and repaired a malformed helper declaration; enlarged-map checks scope queries to the active dialog."
       ],
-      "prevention": "Make the explanation a primary region near the allocation. Render only accepted current-result prose, evidence and limitations, and mark demo absence explicitly. Clarification should prepare a contextual draft without automatic submission or overwriting an existing draft. Keep keyboard tab behavior accessible without capturing modified browser shortcuts.",
+      "prevention": "Make the explanation a primary region near the allocation. Render only accepted current-result prose, evidence and limitations, and mark demo absence explicitly. Clarification should prepare a contextual draft without automatic submission; preserve an existing draft for general clarification, but replace it for the explicitly requested asset-question action. Keep keyboard tab behavior accessible without capturing modified browser shortcuts.",
       "regression": "Replay accepted response and reload, rejected saved compliance output, demo no-explanation state, safe text/link rendering, tab keyboard navigation including Ctrl+End, contextual clarification submission and preservation of an existing draft. Keep profile edits/reset invalidating the result.",
       "status": "verified",
       "verification": [
@@ -917,6 +934,26 @@
           "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
           "result": "30 passed, 0 failed, including actual response rendering under HTTP mocks, rejected saved output, keyboard shortcuts and contextual clarification.",
           "scope": "Deterministic DOM/API/style tests with synthetic fixtures. Native Chrome separately displayed the demo allocation, explanation region and tab content at the existing desktop window size; no real agent, numerical pipeline or mobile screenshot was tested."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "36 passed, 0 failed; asset question replaces an existing draft, is persisted and focused, survives reload and is not automatically submitted; general clarification preserves the draft.",
+          "scope": "Local DOM and API regression checks; no live agent message sent."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "37 tests passed including grouped/asset weights, six demo positions, keyboard selection, total reset and single-position result.",
+          "scope": "DOM and CSS checks for the allocation explorer; no visual browser capture or new financial interpretation."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "39 passed, including the actual 82-row CSV, category source precedence, unknown ticker and quoted CSV parsing.",
+          "scope": "Local loader, HTTP and DOM tests. Existing server on 4173 still requires restart for the new route; no CSV or Python financial method changed."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "45 tests passed, including actual CSV 60/30/10 demo, multi-country fixture, geography missing values, map click/keyboard/zoom and enlarged dialog. The older-service/missing-geography response is explicitly flagged.",
+          "scope": "Deterministic data, DOM and HTTP checks. Native Chrome inspected the unavailable-data map layout because the preexisting server still needs restarting; no mobile or enlarged-map visual capture claimed."
         }
       ]
     },

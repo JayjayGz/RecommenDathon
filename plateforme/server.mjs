@@ -1,3 +1,4 @@
+import { loadExposureCategories } from './lib/exposure-categories.mjs';
 import http from 'node:http';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -123,6 +124,10 @@ const server = http.createServer(async (req, res) => {
     const origin = req.headers.origin;
     if (origin && ![`http://${HOST}:${PORT}`, `http://localhost:${PORT}`].includes(origin)) return json(res, 403, { code: 'INVALID_ORIGIN', message: 'Origine non autorisée.' });
     const url = new URL(req.url, `http://${HOST}:${PORT}`);
+    if (url.pathname === '/api/asset-categories' && req.method === 'GET') {
+      try { return json(res,200,await loadExposureCategories()); }
+      catch { return json(res,503,{code:'CLASSIFICATION_UNAVAILABLE',message:'Classification indisponible.'}); }
+    }
     if (url.pathname === '/api/health' && req.method === 'GET') return json(res, 200, { ok: true, service: 'recommand-local' });
     if (url.pathname === '/api/config' && req.method === 'GET') return json(res, 200, { agentConnected: Boolean(AGENT_URL), portfolioConnected: Boolean(PORTFOLIO_URL) });
     if (url.pathname === '/api/agent/chat' && req.method === 'POST') return await chat(req, res);

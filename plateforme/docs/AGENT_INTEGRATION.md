@@ -16,7 +16,7 @@ Le site est un client local. Il ne contient ni agent, ni moteur de recommandatio
 | `GET /api/health` | `{ "ok": true, "service": "recommand-local" }` |
 | `GET /api/config` | `{ "agentConnected": false, "portfolioConnected": false }`. Chaque booléen devient `true` si l’URL correspondante est configurée ; cela ne vérifie pas la disponibilité du service. |
 | `POST /api/agent/chat` | Validation de la requête, puis appel de l’URL agent si elle est configurée. |
-| `POST /api/portfolio` | Validation des réponses du questionnaire à 16 étapes, puis appel du moteur de portefeuille. |
+| `POST /api/portfolio` | Validation des réponses du questionnaire à 15 étapes, puis appel du moteur de portefeuille. |
 
 ## Requête
 
@@ -26,12 +26,14 @@ L’endpoint agent reçoit le même objet que le serveur local :
 {
   "message": "Je souhaite comprendre cette répartition.",
   "conversation": [
-    { "role": "user", "content": "Je souhaite comprendre cette répartition." }
+    {
+      "role": "user",
+      "content": "Je souhaite comprendre cette répartition."
+    }
   ],
   "questionnaire": {
-    "version": "questionnaire-word-16-v4",
+    "version": "questionnaire-word-15-v5",
     "answers": {
-      "marital": "single",
       "dependents": "none",
       "annualIncome": "under_50k",
       "income": "regular",
@@ -49,16 +51,27 @@ L’endpoint agent reçoit le même objet que le serveur local :
       "assets": [
         "stocks"
       ],
-      "exclusions": "none",
-      "withdrawalTiming": "under_1"
+      "exclusions": "none"
     }
   },
   "portfolio": {
     "id": "example-contract",
     "name": "Exemple de contrat",
     "positions": [
-      { "symbol": "SPY", "name": "FNB S&P 500", "category": "Actions américaines", "group": "Actions", "weight": 60 },
-      { "symbol": "XBB.TO", "name": "FNB obligataire", "category": "Obligations canadiennes", "group": "Obligations", "weight": 40 }
+      {
+        "symbol": "SPY",
+        "name": "FNB S&P 500",
+        "category": "Actions américaines",
+        "group": "Actions",
+        "weight": 60
+      },
+      {
+        "symbol": "XBB.TO",
+        "name": "FNB obligataire",
+        "category": "Obligations canadiennes",
+        "group": "Obligations",
+        "weight": 40
+      }
     ]
   }
 }
@@ -66,9 +79,9 @@ L’endpoint agent reçoit le même objet que le serveur local :
 
 Cet exemple complet décrit uniquement le contrat. Il n’est pas un profil évalué ou une recommandation mesurée. `questionnaire.answers` contient les identifiants et valeurs brutes produits par les contrats front-end de `src/data.js`. `portfolio` contient le portefeuille actuellement affiché. `conversation` contient l’historique récent ; `message` porte le message courant, sans être ajouté une seconde fois à cet historique par l’interface. Le client conserve jusqu’à 40 messages localement et retire les plus anciens du contexte transmis si la requête dépasse 60 Kio, sans effacer leur copie locale.
 
-Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v4`, les réponses valides aux 15 questions principales obligatoires, le sous-champ obligatoire `withdrawalTiming` et, si fournis, les champs facultatifs de la seizième étape (notes) et un portefeuille dont les poids positifs totalisent 100 %. Les précisions textuelles facultatives sont `maritalOther`, `dependentsOther`, `incomeOther`, `debtOther`, `goalDetails`, `cryptoDetails`, `exclusionDetails` et `notes` (1 000 caractères chacune). Les autres sous-champs sont `supportMode` (choix), `mortgageAmount` (nombre fini positif ou nul) et `noNotes` (booléen). Les champs conditionnels ne sont acceptés que lorsqu’ils sont visibles selon `src/data.js` ; `noNotes: true` exclut `notes`. L’option conjugale `separated` et le champ `targetAmount` ont été retirés : ils sont rejetés par la validation HTTP. Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
+Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-15-v5`, les réponses valides aux 14 questions principales obligatoires et, si fournis, les champs facultatifs de la quinzième étape (notes) et un portefeuille dont les poids positifs totalisent 100 %. Les précisions textuelles facultatives sont `dependentsOther`, `incomeOther`, `debtOther`, `goalDetails`, `cryptoDetails`, `exclusionDetails` et `notes` (1 000 caractères chacune). Les autres sous-champs sont `supportMode` (choix), `mortgageAmount` (nombre fini positif ou nul) et `noNotes` (booléen). Les champs conditionnels ne sont acceptés que lorsqu’ils sont visibles selon `src/data.js` ; `noNotes: true` exclut `notes`. L’option conjugale `separated` et le champ `targetAmount` ont été retirés : ils sont rejetés par la validation HTTP. Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
 
-Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v4", "answers": { ... } } }` avec le même contrat de réponses. Aucun profil de risque n’est déduit par le serveur.
+Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-15-v5", "answers": { ... } } }` avec le même contrat de réponses. Aucun profil de risque n’est déduit par le serveur.
 
 ## Réponse
 
@@ -140,3 +153,33 @@ Dès la soumission, le message utilisateur apparaît et est sauvegardé localeme
 ## Fusion des changements locaux
 
 Les ajouts backend (`analysis` et lancement local) sont conserves avec le contrat UI v4 et le chat immediat. Le delai du chat reste de 130 secondes. L’adaptateur Python existe deja pour v2 ; la mention historique indiquant que tout le mapping reste a implementer ne decrit donc pas cet adaptateur. Sa compatibilite v4 reste a traiter : `word_questionnaire.py` exige encore v2. Aucun raccordement de bout en bout n’est certifie par cette resolution de conflits.
+
+## Precision obligatoire pour Autre
+
+Les choix `other` exigent un texte non vide apres suppression des espaces : `dependentsOther`, `incomeOther`, `debtOther` et `goalDetails`. Ce dernier reste facultatif pour `goal: project`. Le navigateur et la validation HTTP partagent cette regle ; les anciens profils incomplets doivent etre completes. Les autres precisions restent facultatives selon leur condition de visibilite.
+
+Handoff : Router presentation/contrat, infrastructure et frontiere compliance ; source : correction utilisateur, sortie : formulaire, contrat partage, importeur, modele JSON et tests. Lecon L-013 ; statut complete ; prochain proprietaire : utilisateur pour le test local. Aucun calcul ni mapping financier modifie.
+
+## Remplacement du brouillon pour un actif
+
+Correction utilisateur : le bouton Demander pourquoi cet actif remplace toujours le brouillon existant par la question contenant le symbole et le poids de la position choisie. Le chat est ouvert et la saisie prend le focus. La question est sauvegardee et reste prete a envoyer, sans envoi automatique. La clarification generale conserve son comportement precedent. Cette regle remplace les mentions anterieures de preservation du brouillon pour les questions sur un actif.
+
+Handoff : presentation/infrastructure ; lecon L-030 ; sorties : app.js, test et documentation ; 36 tests reussis ; statut complete ; prochain proprietaire : utilisateur pour test local.
+
+## Categories des actifs
+
+GET /api/asset-categories lit dataset/exposures_profile_tickers.csv. Reponse : categories (ticker -> asset_class), source et sha256. Cette reference pilote les categories affichees dans le graphique et le tableau, sans modifier les poids ni le portefeuille transmis a l’agent. Les symboles absents sont Non classes. Erreur de lecture ou CSV invalide : HTTP 503 CLASSIFICATION_UNAVAILABLE. Redemarrer le serveur pour enregistrer la nouvelle route.
+
+## Geographie
+
+GET /api/asset-categories ajoute geographies par ticker : exposures (name, kind, percent), zone, basis, date et limitations, lus depuis le meme CSV. Seules les ventilations numeriques valides sont utilisees dans la carte ; les autres poids restent explicitement hors pays ou non renseignes. Voir [GEOGRAPHY.md](GEOGRAPHY.md). Redemarrer le serveur pour charger cette extension.
+
+## Contrat courant : 15 questions et explication seule
+
+Correction utilisateur : situation conjugale (marital/maritalOther) et delai de retrait (withdrawalTiming) supprimes. Le questionnaire passe a questionnaire-word-15-v5. Les champs retires sont rejetes par le proxy ; les anciens enregistrements sont nettoyes, les reponses restantes conservees et les resultats dependants invalides. Le sous-champ d'horizon n'est plus requis et le resume ne contient plus de retrait envisage.
+
+Le bloc du resultat n'affiche que l'explication : les onglets Sources/Limites et leurs panneaux sont retires. Les explications accessibles dans les fenetres de resultat/proposition restent aussi sans ces panneaux. Les donnees evidence/limitations et les controles compliance du contrat sont conserves, ainsi que les exports. Cette correction remplace les anciennes descriptions d'onglets dans ce document.
+
+La zone des messages dispose d'une hauteur accrue ; la saisie utilise une ligne initiale, 48 px minimum et 88 px maximum. Les tailles mobiles sont adaptees. Le mecanisme d'envoi immediat, les echecs et reessais restent inchanges.
+
+Handoff : Router presentation/contrat (principal), infrastructure et limite compliance. Sorties : formulaire, modele JSON, importeur, interface, styles et tests. Source : corrections utilisateur et instantane Word original intact. Verification : 46 tests DOM/API/CSS reussis. Une ancienne assertion attendait un champ vide pour le premier choix conjugal supprime ; elle verifie maintenant la conservation du choix de personnes a charge. Statut complete pour l'interface ; prochain proprietaire : equipe questionnaire/backend pour accepter le contrat v5 (adaptateur Python encore v2), utilisateur pour le test local. Aucun mapping financier ou CSV modifie.

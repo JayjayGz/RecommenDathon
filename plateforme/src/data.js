@@ -1,41 +1,7 @@
 // Source : Word fourni, avec les retraits explicites utilisateur (Discussion, situation séparée, montant visé).
-export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v4';
+export const QUESTIONNAIRE_VERSION = 'questionnaire-word-15-v5';
 export const SECTIONS = ["Situation familiale", "Revenus", "Dettes et épargne disponible", "Objectifs et besoins de liquidités", "Tolérance au risque", "Connaissances et préférences de placement", "Exclusions et précisions complémentaires"];
 export const QUESTIONS = [
-  {
-    "id": "marital",
-    "section": 0,
-    "title": "Quelle est votre situation conjugale ?",
-    "type": "single",
-    "options": [
-      [
-        "single",
-        "Je suis célibataire."
-      ],
-      [
-        "partnered",
-        "Je suis marié(e) ou en union de fait."
-      ],
-      [
-        "other",
-        "Autre situation."
-      ]
-    ],
-    "details": [
-      {
-        "key": "maritalOther",
-        "label": "Si autre, précisez si vous le souhaitez",
-        "type": "text",
-        "required": false,
-        "when": {
-          "field": "marital",
-          "values": [
-            "other"
-          ]
-        }
-      }
-    ]
-  },
   {
     "id": "dependents",
     "section": 0,
@@ -63,9 +29,9 @@ export const QUESTIONS = [
     "details": [
       {
         "key": "dependentsOther",
-        "label": "Si autre, précisez si vous le souhaitez",
+        "label": "Précisez votre situation (obligatoire)",
         "type": "text",
-        "required": false,
+        "required": true,
         "when": {
           "field": "dependents",
           "values": [
@@ -130,9 +96,9 @@ export const QUESTIONS = [
     "details": [
       {
         "key": "incomeOther",
-        "label": "Si autre, précisez si vous le souhaitez",
+        "label": "Précisez votre situation (obligatoire)",
         "type": "text",
-        "required": false,
+        "required": true,
         "when": {
           "field": "annualIncome",
           "values": [
@@ -199,9 +165,9 @@ export const QUESTIONS = [
     "details": [
       {
         "key": "debtOther",
-        "label": "Si autre, précisez si vous le souhaitez",
+        "label": "Précisez votre situation (obligatoire)",
         "type": "text",
-        "required": false,
+        "required": true,
         "when": {
           "field": "debt",
           "values": [
@@ -252,13 +218,19 @@ export const QUESTIONS = [
     "details": [
       {
         "key": "goalDetails",
-        "label": "Si projet précis ou autre objectif, précisez si vous le souhaitez",
+        "label": "Précisez votre objectif (obligatoire si Autre)",
         "type": "text",
         "required": false,
         "when": {
           "field": "goal",
           "values": [
             "project",
+            "other"
+          ]
+        },
+        "requiredWhen": {
+          "field": "goal",
+          "values": [
             "other"
           ]
         }
@@ -288,32 +260,7 @@ export const QUESTIONS = [
         "15 ans et plus."
       ]
     ],
-    "details": [
-      {
-        "key": "withdrawalTiming",
-        "label": "Quand pourriez-vous avoir besoin de retirer une partie importante de cet argent ?",
-        "type": "single",
-        "required": true,
-        "options": [
-          [
-            "under_1",
-            "Moins d’un an."
-          ],
-          [
-            "1_3",
-            "De 1 à 3 ans."
-          ],
-          [
-            "4_6",
-            "De 4 à 6 ans."
-          ],
-          [
-            "7_plus",
-            "7 ans ou plus."
-          ]
-        ]
-      }
-    ]
+    "details": []
   },
   {
     "id": "liquidity",
@@ -602,9 +549,13 @@ function validValue(field, value) {
   return typeof value === 'string' && allowed.includes(value);
 }
 
+export function fieldRequired(field, answers) {
+  return field.required === true || Boolean(field.requiredWhen && fieldVisible({ when: field.requiredWhen }, answers));
+}
+
 export function isAnswered(question, answers) {
   const main = question.optional || validValue(question, answers[question.id]);
-  return Boolean(main && question.details.every(field => !field.required || !fieldVisible(field, answers) || validValue(field, answers[field.key])));
+  return Boolean(main && question.details.every(field => !fieldRequired(field, answers) || !fieldVisible(field, answers) || validValue(field, answers[field.key])));
 }
 
 export function cleanAnswers(input) {

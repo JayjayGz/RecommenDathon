@@ -81,13 +81,22 @@ export function normalizeRecommendation(result) {
   };
 }
 
-export function allocationGroups(portfolio) {
+const CLASS_LABELS = {
+  equity: 'Actions', etf_equity: 'FNB d’actions', etf_bond: 'FNB obligataires',
+  etf_commodity: 'FNB de matières premières', crypto: 'Cryptoactifs',
+  fx: 'Devises', commodity: 'Matières premières', bond_yield: 'Taux obligataires',
+};
+export function exposureCategory(symbol, categories = {}) {
+  const ticker = String(symbol).trim().toUpperCase();
+  const code = Object.hasOwn(categories,ticker) && typeof categories[ticker]==='string' ? categories[ticker] : '';
+  return { code: code || 'unclassified', label: CLASS_LABELS[code] || code || 'Non classé' };
+}
+export function allocationGroups(portfolio, categories = {}) {
   const groups = new Map();
   portfolio.positions.forEach(position => {
-    const item = groups.get(position.group) || { name: position.group, weight: 0, count: 0, color: position.color };
-    item.weight += position.weight;
-    item.count++;
-    groups.set(item.name, item);
+    const category=exposureCategory(position.symbol,categories);
+    const item=groups.get(category.code) || { name:category.label, weight:0, count:0, color:ALLOCATION_COLORS[groups.size % ALLOCATION_COLORS.length] };
+    item.weight+=position.weight; item.count++; groups.set(category.code,item);
   });
   return [...groups.values()];
 }

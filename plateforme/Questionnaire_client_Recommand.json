@@ -7,41 +7,6 @@
   "questions": [
     {
       "numero": 1,
-      "id": "situation_conjugale",
-      "section": "Situation familiale",
-      "libelle": "Quelle est votre situation conjugale ?",
-      "type": "choix_unique",
-      "reponse": null,
-      "options": [
-        {
-          "id": "situation_conjugale_1",
-          "libelle": "Je suis célibataire."
-        },
-        {
-          "id": "situation_conjugale_2",
-          "libelle": "Je suis marié(e) ou en union de fait."
-        },
-        {
-          "id": "situation_conjugale_4",
-          "libelle": "Autre situation."
-        }
-      ],
-      "champs_complementaires": [
-        {
-          "id": "situation_conjugale_autre",
-          "libelle": "Si autre, précisez si vous le souhaitez",
-          "type": "texte_libre",
-          "reponse": null,
-          "facultatif": true,
-          "afficher_si": {
-            "question_id": "situation_conjugale",
-            "option_id": "situation_conjugale_4"
-          }
-        }
-      ]
-    },
-    {
-      "numero": 2,
       "id": "personnes_a_charge",
       "section": "Situation familiale",
       "libelle": "Combien de personnes dépendent financièrement de vous ou sont sous votre responsabilité légale ?",
@@ -69,10 +34,10 @@
       "champs_complementaires": [
         {
           "id": "personnes_a_charge_autre",
-          "libelle": "Si autre, précisez si vous le souhaitez",
+          "libelle": "Précisez votre situation (obligatoire)",
           "type": "texte_libre",
           "reponse": null,
-          "facultatif": true,
+          "facultatif": false,
           "afficher_si": {
             "question_id": "personnes_a_charge",
             "option_id": "personnes_a_charge_4"
@@ -98,7 +63,7 @@
       ]
     },
     {
-      "numero": 3,
+      "numero": 2,
       "id": "revenu_annuel",
       "section": "Revenus",
       "libelle": "Quel est votre revenu annuel personnel avant impôt ?",
@@ -130,10 +95,10 @@
       "champs_complementaires": [
         {
           "id": "revenu_annuel_autre",
-          "libelle": "Si autre, précisez si vous le souhaitez",
+          "libelle": "Précisez votre situation (obligatoire)",
           "type": "texte_libre",
           "reponse": null,
-          "facultatif": true,
+          "facultatif": false,
           "afficher_si": {
             "question_id": "revenu_annuel",
             "option_id": "revenu_annuel_5"
@@ -142,7 +107,7 @@
       ]
     },
     {
-      "numero": 4,
+      "numero": 3,
       "id": "stabilite_revenus",
       "section": "Revenus",
       "libelle": "Vos revenus sont-ils prévisibles pour les douze prochains mois ?",
@@ -166,10 +131,11 @@
           "id": "stabilite_revenus_4",
           "libelle": "Inconnus — Je ne sais pas encore."
         }
-      ]
+      ],
+      "champs_complementaires": []
     },
     {
-      "numero": 5,
+      "numero": 4,
       "id": "dettes",
       "section": "Dettes et épargne disponible",
       "libelle": "À combien estimez-vous le montant total de vos dettes actuelles ?",
@@ -201,10 +167,10 @@
       "champs_complementaires": [
         {
           "id": "dettes_autre",
-          "libelle": "Si autre, précisez si vous le souhaitez",
+          "libelle": "Précisez votre situation (obligatoire)",
           "type": "texte_libre",
           "reponse": null,
-          "facultatif": true,
+          "facultatif": false,
           "afficher_si": {
             "question_id": "dettes",
             "option_id": "dettes_5"
@@ -222,7 +188,7 @@
       ]
     },
     {
-      "numero": 6,
+      "numero": 5,
       "id": "fonds_urgence",
       "section": "Dettes et épargne disponible",
       "libelle": "Quel montant avez-vous actuellement de côté pour faire face aux imprévus ?",
@@ -230,10 +196,11 @@
       "reponse": null,
       "aide": "Votre fonds d’urgence correspond à l’argent rapidement accessible pour une dépense imprévue ou une interruption de revenu. N’incluez pas vos limites de crédit. Inscrivez 0 si vous n’avez pas encore de fonds d’urgence.",
       "devise": "CAD",
-      "minimum": 0
+      "minimum": 0,
+      "champs_complementaires": []
     },
     {
-      "numero": 7,
+      "numero": 6,
       "id": "objectif_investissement",
       "section": "Objectifs et besoins de liquidités",
       "libelle": "Quel est votre objectif principal pour cet investissement ?",
@@ -260,15 +227,19 @@
       "champs_complementaires": [
         {
           "id": "objectif_details",
-          "libelle": "Si projet précis ou autre objectif, précisez si vous le souhaitez",
+          "libelle": "Précisez votre objectif (obligatoire si Autre)",
           "type": "texte_libre",
           "reponse": null,
-          "facultatif": true
+          "facultatif": true,
+          "obligatoire_si": {
+            "question_id": "objectif_investissement",
+            "option_id": "objectif_investissement_4"
+          }
         }
       ]
     },
     {
-      "numero": 8,
+      "numero": 7,
       "id": "horizon",
       "section": "Objectifs et besoins de liquidités",
       "libelle": "Quel est votre horizon de placement ?",
@@ -292,35 +263,10 @@
           "libelle": "15 ans et plus."
         }
       ],
-      "champs_complementaires": [
-        {
-          "id": "delai_retrait",
-          "libelle": "Quand pourriez-vous avoir besoin de retirer une partie importante de cet argent ?",
-          "type": "choix_unique",
-          "reponse": null,
-          "options": [
-            {
-              "id": "moins_1_an",
-              "libelle": "Moins d’un an."
-            },
-            {
-              "id": "1_3_ans",
-              "libelle": "De 1 à 3 ans."
-            },
-            {
-              "id": "4_6_ans",
-              "libelle": "De 4 à 6 ans."
-            },
-            {
-              "id": "7_ans_plus",
-              "libelle": "7 ans ou plus."
-            }
-          ]
-        }
-      ]
+      "champs_complementaires": []
     },
     {
-      "numero": 9,
+      "numero": 8,
       "id": "besoin_imprevu",
       "section": "Objectifs et besoins de liquidités",
       "libelle": "Si vous aviez une dépense imprévue importante, devriez-vous utiliser cet investissement ?",
@@ -343,10 +289,11 @@
           "id": "besoin_imprevu_4",
           "libelle": "Je ne sais pas."
         }
-      ]
+      ],
+      "champs_complementaires": []
     },
     {
-      "numero": 10,
+      "numero": 9,
       "id": "tolerance_risque",
       "section": "Tolérance au risque",
       "libelle": "Quelle est votre tolérance au risque ?",
@@ -374,10 +321,11 @@
           "libelle": "Très élevée."
         }
       ],
-      "aide": "La tolérance au risque décrit votre aisance face aux fluctuations et aux pertes possibles. Elle est distincte de votre capacité financière à supporter ces pertes."
+      "aide": "La tolérance au risque décrit votre aisance face aux fluctuations et aux pertes possibles. Elle est distincte de votre capacité financière à supporter ces pertes.",
+      "champs_complementaires": []
     },
     {
-      "numero": 11,
+      "numero": 10,
       "id": "reaction_baisse",
       "section": "Tolérance au risque",
       "libelle": "Si 10 000 $ investis devenaient, sur une période de 3 mois, 8 000 $, quel en serait l’effet sur votre perception de la bourse ?",
@@ -401,10 +349,11 @@
           "id": "reaction_baisse_4",
           "libelle": "Serein — J’accepte que de fortes baisses puissent arriver. Je pourrais rester investi, même sans savoir quand ni si la valeur remontera."
         }
-      ]
+      ],
+      "champs_complementaires": []
     },
     {
-      "numero": 12,
+      "numero": 11,
       "id": "connaissances",
       "section": "Connaissances et préférences de placement",
       "libelle": "Comment décririez-vous vos connaissances en placement ?",
@@ -427,10 +376,11 @@
           "id": "connaissances_4",
           "libelle": "Expérience approfondie — Je connais plusieurs produits et suis régulièrement les marchés."
         }
-      ]
+      ],
+      "champs_complementaires": []
     },
     {
-      "numero": 13,
+      "numero": 12,
       "id": "secteurs",
       "section": "Connaissances et préférences de placement",
       "libelle": "Quels secteurs vous intéressent particulièrement ?",
@@ -473,10 +423,11 @@
           "id": "secteurs_9",
           "libelle": "Services aux collectivités — Services publics."
         }
-      ]
+      ],
+      "champs_complementaires": []
     },
     {
-      "numero": 14,
+      "numero": 13,
       "id": "classes_actifs",
       "section": "Connaissances et préférences de placement",
       "libelle": "Quelles sont les classes d’actifs qui vous intéressent le plus ?",
@@ -537,7 +488,7 @@
       ]
     },
     {
-      "numero": 15,
+      "numero": 14,
       "id": "exclusions",
       "section": "Exclusions et précisions complémentaires",
       "libelle": "Y a-t-il des placements ou des activités que vous ne voulez pas dans votre portefeuille ?",
@@ -571,7 +522,7 @@
       ]
     },
     {
-      "numero": 16,
+      "numero": 15,
       "id": "precisions_finales",
       "section": "Exclusions et précisions complémentaires",
       "libelle": "Avez-vous d’autres précisions à apporter pour nous aider à comprendre votre situation ?",
@@ -584,7 +535,8 @@
         "libelle": "Je n’ai rien à ajouter.",
         "type": "booleen",
         "reponse": null
-      }
+      },
+      "champs_complementaires": []
     }
   ]
 }
