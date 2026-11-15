@@ -28,6 +28,11 @@ These rules build the 15 reference portfolios in profiles.json (implemented in b
 
 ## Rule 4: rounding
 Whole percentages; any leftover goes to the largest bond holding so the total is exactly 100.
+Equal-weight reserve ties are broken by ticker. Questionnaire-driven changes use
+the universe's `etf_bond` classification for all bond ETFs, including BND and XBB.TO.
+Bond additions draw weight from other non-bond holdings; reductions return weight
+to those holdings. Other bond positions are preserved except for disclosed rounding.
+All asset additions still pass the same price-history, funding and risk checks.
 
 ## Rule 5: validation and trimming
 1. Backtest over the data window in CAD, rebalanced monthly; compute volatility and maximum drawdown.

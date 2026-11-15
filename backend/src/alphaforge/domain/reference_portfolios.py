@@ -65,10 +65,11 @@ def build(band, style, crypto_allowed):
     return w
 
 
-def round_weights(w):
+def round_weights(w, bond_tickers=None):
     """Whole percentages; leftover goes to the largest bond holding so the total is exactly 100."""
     r = {t: round(v) for t, v in w.items() if round(v) > 0}
-    bond = max((t for t in r if t in {"XBB.TO", "ZST.TO", "AGG"}), key=lambda t: r[t])
+    bonds = {"XBB.TO", "ZST.TO", "AGG"} if bond_tickers is None else set(bond_tickers)
+    bond = max((t for t in r if t in bonds), key=lambda t: (r[t], t))
     r[bond] += 100 - sum(r.values())
     return r
 

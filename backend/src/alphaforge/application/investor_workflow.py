@@ -59,6 +59,7 @@ def prepare_investor(request, snapshot, changes):
         **request.requirements,
         "crypto_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"] == "crypto"),
         "etf_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"].startswith("etf_")),
+        "bond_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"] == "etf_bond"),
     }
     if "crypto" not in answers["assets"]:
         constraints["max_crypto_weight_pct"] = 0

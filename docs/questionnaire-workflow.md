@@ -1,7 +1,8 @@
 # Questionnaire matching and personalized proposals
 
-The backend accepts the supplied 16-question French form and the existing eight-answer
-`rendements-seuls-v1` frontend payload. It matches against `profiles.json`, evaluates
+The backend accepts the browser's `questionnaire-word-16-v2` payload, the supplied
+16-question French form, and the legacy eight-answer `rendements-seuls-v1` payload.
+It matches against `profiles.json`, evaluates
 allocations with current captured prices, and releases only checked, audited results.
 This integration implements reference-template matching. It does not implement a
 validated financial-risk-capacity questionnaire or claim investor suitability.
@@ -24,6 +25,13 @@ flowchart LR
 ```
 
 ## Input contracts
+
+The current browser sends `{version: "questionnaire-word-16-v2", answers: {...}}`.
+`application/word_questionnaire.py` validates its typed fields, visibility rules,
+exclusive `all` option and optional notes, then maps stable IDs and supplementary
+fields to the same normalization used by the French form. Missing required answers
+stop the workflow before data loading. Raw answers are retained in the private audit.
+This adapter does not invent financial risk scoring or change the approved risk map.
 
 For Lambda console testing, use `action: recommend` with a `request` containing
 `questionnaire` and optional `as_of`, `assessment`, and `requirements`. The complete
@@ -116,9 +124,13 @@ For a supported asset, the workflow validates its `prices_weekly.csv` history,
 currency and observation cadence together with the current portfolio, then calls
 the deterministic engine to evaluate the requested change and portfolio impact.
 Bond ETFs also require `macro_rates.csv` context. Macro rates are not bond prices
-and cannot supply portfolio returns. The engine's existing funding policy still
-rejects direct bond-weight changes; passing the membership check does not promise
-that an allocation is feasible or permitted.
+and cannot supply portfolio returns. Bond ETF additions and reductions use the same
+percentage-point change contract as stocks and other supported ETFs. Dataset
+`etf_bond` classification determines the bond funding group and rounding reserve;
+there is no special restriction for XBB.TO versus BND. Additions draw proportionally
+from other non-bond holdings, reductions return weight to that pool, and exclusions
+redistribute within the asset's bond/non-bond group. Missing funding, missing prices
+or failed constraints still prevent release.
 
 Use `action: personalize` (or `POST /chat` through an existing HTTP adapter) with
 the same questionnaire and the current `portfolio` in the returned frontend format.
@@ -149,7 +161,7 @@ financial-advice agent.
 
 An addition is an **additional number of percentage points**, not a target total.
 It uses the existing proportional non-bond funding policy. Whole-point rounding
-may assign a residual to the largest reference bond holding; the actual effect is
+may assign a residual to the largest evaluated bond holding (ticker breaks equal-weight ties); the actual effect is
 reported. An oversized unfundable edit is invalid. An evaluable policy conflict
 reports the requested conflict and releases a capped alternative only if every
 implemented check passes. Conditional searched maxima are limited to the requested
@@ -273,3 +285,20 @@ These are deterministic checks, not independent review or a live deployment.
 | Explanation | Verified rationale and bounded fallback reused; no per-profile model agents | Complete | Integration maintainer |
 | Compliance | Dataset, scope, evidence and audit release gates exercised by integration tests | Complete locally | Integration maintainer for live acceptance |
 | Infrastructure | Snapshot ports, Lambda routes, local runner and frontend proxy integration | Complete locally; AWS unchanged | Deployment owner: upload new inputs, grant reads, rebuild and deploy |
+
+## Replaying the connected local checks
+
+Run `python scripts/check_pipeline_e2e.py --as-of 2026-11-15` from the repository
+with the backend dependencies and Node installed. The runner connects the actual
+web proxy to the Lambda handler through a temporary local HTTP bridge, reads real
+CSVs and writes audit JSON under `.local-runs/e2e-verification/`. It checks browser
+and French payloads, stocks, equity/commodity/bond ETFs, Canadian `.TO` symbols,
+crypto constraints, rejected inputs, and evidence reconstruction after disk reload.
+It returns a nonzero status if a check fails and saves `report.json` and `report.md`.
+These checks use the deterministic explanation fallback, not a live Bedrock model,
+and do not certify graphical browser behavior or deployed AWS connectivity.
+
+Evidence method `proposal_evidence_v2_sorted_checks` assigns claim IDs after a
+stable sort of policy checks, so canonical JSON serialization cannot reorder them.
+Changed method metadata requires fresh calculations and explanations; previously
+saved runs retain their original method versions.

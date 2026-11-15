@@ -102,7 +102,7 @@ async function chat(req, res) {
 async function portfolio(req, res) {
   let body = await readJson(req);
   if (isFrenchQuestionnaire(body)) body = { questionnaire: body };
-  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les huit réponses versionnées au questionnaire sont requises.' });
+  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les réponses complètes à une version prise en charge du questionnaire sont requises.' });
   const payload = { questionnaire: body.questionnaire };
   for (const key of ['assessment', 'requirements', 'as_of', 'changes']) {
     if (body[key] !== undefined) payload[key] = body[key];

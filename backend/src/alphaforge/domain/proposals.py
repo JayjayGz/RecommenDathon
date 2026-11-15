@@ -50,8 +50,6 @@ def _check_changes(changes, valid_tickers):
                     or not math.isfinite(amount) or not float(amount).is_integer()
                     or not -100 <= amount <= 100):
                 raise ProposalError("INVALID_CHANGE", "add_pct must be a whole percentage-point change between -100 and 100")
-            if isinstance(ticker, str) and ticker in BONDS:
-                raise ProposalError("PROTECTED_BOND", "Direct bond changes are unsupported by this engine's funding policy")
         else:
             raise ProposalError("INVALID_CHANGE", "Use either {exclude} or {ticker, add_pct}")
         if not isinstance(ticker, str) or ticker not in valid_tickers:
@@ -81,6 +79,7 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers, constr
     constraints = constraints or {}
     crypto_tickers = set(constraints.get("crypto_tickers", CRYPTO))
     etfs = set(constraints.get("etf_tickers", ETFS))
+    bonds = set(constraints.get("bond_tickers", BONDS))
     _check_changes(changes, valid_tickers)
     _check_weights(profile["weights"])
 
@@ -94,7 +93,7 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers, constr
                 notes.append(f"{ticker}: not held, nothing to exclude")
                 continue
             removed = w.pop(ticker)
-            same_group = [t for t in w if (t in BONDS) == (ticker in BONDS)]
+            same_group = [t for t in w if (t in bonds) == (ticker in bonds)]
             pool_total = sum(w[t] for t in same_group)
             if pool_total <= TOLERANCE:
                 raise ProposalError("NO_REDISTRIBUTION_POOL", f"Cannot exclude {ticker}: no remaining holding in its funding group")
@@ -134,7 +133,7 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers, constr
                                  f"({band} band {label})")
 
         if delta != 0:
-            pool = {t: w[t] for t in w if t not in BONDS and t != ticker}
+            pool = {t: w[t] for t in w if t not in bonds and t != ticker}
             pool_total = sum(pool.values())
             if current + delta < -TOLERANCE:
                 raise ProposalError("INSUFFICIENT_HOLDING", f"Cannot sell {abs(delta):g} points of {ticker}; only {current:g} held")
@@ -144,12 +143,12 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers, constr
                 w[t] = max(0.0, w[t] - delta * (pool[t] / pool_total))
             w[ticker] = max(0.0, current + delta)
 
-    if not any(w.get(t, 0) > 0 for t in BONDS):
+    if not any(round(w.get(t, 0)) > 0 for t in bonds):
         raise ProposalError("NO_ROUNDING_RESERVE", "The engine's rounding policy requires a bond holding")
-    rounded = round_weights(w)
+    rounded = round_weights(w, bond_tickers=bonds)
     weights = {t: v / 100 for t, v in rounded.items()}
     _check_weights(weights)
-    if any(abs(rounded.get(t, 0) - w.get(t, 0)) > TOLERANCE for t in BONDS):
+    if any(abs(rounded.get(t, 0) - w.get(t, 0)) > TOLERANCE for t in bonds):
         notes.append("Whole-percent rounding assigned its residual to the largest bond holding")
     return weights, notes
 
