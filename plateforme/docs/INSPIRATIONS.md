@@ -1,10 +1,10 @@
 # Références de design et d’expérience utilisateur
 
-Recherche effectuée le 14 novembre 2026. Ces références servent à orienter la conception de Recommand. Elles ne constituent ni un partenariat avec les marques citées ni une validation de notre prototype.
+Recherche initiale effectuée le 14 novembre 2026, complétée le 15 novembre pour les photographies financières du questionnaire. Ces références servent à orienter la conception de Recommand. Elles ne constituent ni un partenariat avec les marques citées ni une validation de notre prototype.
 
 ## Direction visuelle
 
-La direction retenue s’inspire de l’univers éditorial de Wealthsimple : couleurs crème et pierre, texte sombre, grands titres, espaces généreux, photographie d’architecture et présentation calme des données. Le nom, les textes, les composants et les éléments graphiques de Recommand sont propres au projet. Aucun logo de banque n’est repris.
+La direction retenue s’inspire de l’univers éditorial de Wealthsimple : couleurs crème et pierre, texte sombre, grands titres, espaces généreux et présentation calme des données. Les photographies d’architecture de la première version sont remplacées dans le questionnaire par des sujets financiers, détaillés plus bas. Le nom, les textes, les composants et les éléments graphiques de Recommand sont propres au projet. Aucun logo de banque n’est repris.
 
 - [Wealthsimple en français](https://www.wealthsimple.com/fr-ca) : hiérarchie éditoriale, actions principales visibles et présentation progressive des produits.
 - [Wealthsimple Classic Portfolio](https://www.wealthsimple.com/en-ca/invest/classic-portfolios) : aperçu du portefeuille, diversification, niveau de risque et détails accessibles séparément.
@@ -32,7 +32,26 @@ Le [guide Progressive Disclosure de Nielsen Norman Group](https://www.nngroup.co
 
 Ces choix constituent une interprétation de conception. Aucun test utilisateur externe ni classement UX du prototype n’a été réalisé.
 
-## Photographies existantes
+## Photographies du questionnaire — révision du 15 novembre 2026
+
+Les pages [Placements de Wealthsimple](https://www.wealthsimple.com/fr-ca/invest), [How it works de RBC InvestEase](https://www.rbcinvestease.com/how-it-works.html) et [Betterment](https://www.betterment.com/) ont été consultées pour cette révision. RBC relie explicitement le parcours au risque et à l'horizon ; Betterment accompagne ses produits de visuels de comptes et de placements ; Wealthsimple présente ses portefeuilles et leurs objectifs. Notre interprétation : illustrer le sujet précis de chaque question, avec une photographie financière et une légende descriptive. Aucun logo, visuel propriétaire ni capture de compte de ces concurrents n'est réutilisé.
+
+Le visuel dépend de l'identifiant de la question, pas de sa section ni de la réponse choisie. Une sélection ne change donc pas la photo et n'oriente pas son message selon le choix de l'utilisateur. Les courbes et montants photographiés ne sont pas des données utilisées par Recommand : le panneau indique « Photographie d'illustration ».
+
+| Question | Fichier local | Sujet et auteur | Source |
+| --- | --- | --- | --- |
+| Tolérance au risque | `assets/risk-markets.jpg` | Courbe de marché avec variations — Markus Winkler | [Unsplash](https://unsplash.com/photos/stock-market-chart-displayed-on-laptop-screen-IrRbSND5EUc) |
+| Réaction à une baisse | `assets/reaction-volatility.jpg` | Écrans d'analyse avec baisse des cours — Jakub Żerdzicki | [Unsplash](https://unsplash.com/photos/stock-charts-are-displayed-on-multiple-screens-VM_6EtTAfDQ) |
+| Rendement souhaité | `assets/return-savings.jpg` | Piles de pièces — Markus Kammermann | [Unsplash](https://unsplash.com/photos/stacks-of-silver-coins-in-a-row-NxBUw0TXpBo) |
+| Horizon de placement | `assets/horizon-time.jpg` | Montre et pièces — Mateusz Matusiak | [Unsplash](https://unsplash.com/photos/a-clock-and-some-coins-noPuwoAOkmQ) |
+| Revenus prévisibles | `assets/income-budget.jpg` | Calculatrice et enveloppes de budget — Cht Gsml | [Unsplash](https://unsplash.com/photos/calculator-and-notepad-with-pencil-on-white-surface-8IXVKMfCGOo) |
+| Secteurs | `assets/sectors-economy.jpg` | Transport et conteneurs, activité économique — Bernd Dittrich | [Unsplash](https://unsplash.com/photos/a-truck-is-parked-in-front-of-a-bunch-of-shipping-containers-Xk1IfNnEhRA) |
+| Classes d'actifs | `assets/assets-investing.jpg` | Étude de graphiques et placements — Jakub Żerdzicki | [Unsplash](https://unsplash.com/photos/a-person-sitting-at-a-desk-with-a-calculator-and-a-notebook-LNnmSumlwO4) |
+| Exclusions | `assets/preferences-plan.jpg` | Carnet et calculatrice, choix à préciser — Cht Gsml | [Unsplash](https://unsplash.com/photos/desk-with-calculator-notebook-pencil-and-plant-QfQW294I8sQ) |
+
+Les huit pages indiquent la licence Unsplash gratuite (pas Unsplash+). La [licence](https://unsplash.com/license) autorise leur téléchargement et leur utilisation, y compris commerciale. Les fichiers téléchargés sont des JPEG de 1200 pixels de large ; le cadrage d'affichage utilise `object-fit` et `object-position`, sans modifier les fichiers sources. Les huit photos ont été ouvertes et inspectées avant intégration. Leur poids total est d'environ 1,05 Mo. La première image est préchargée dans `index.html` ; la suivante est préchargée pendant le questionnaire. Les polices et photos restent locales pendant le parcours.
+
+## Anciennes photographies conservées, retirées du questionnaire
 
 Les photographies sont conservées localement dans `assets/` afin que leur affichage ne dépende pas d’Internet.
 

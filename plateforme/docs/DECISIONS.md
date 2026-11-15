@@ -2,7 +2,7 @@
 
 La demande porte sur une interface web locale en français, avec un questionnaire en première étape, un portefeuille lisible et un espace de conversation prêt à accueillir l’agent développé par l’équipe. Le PDF du Datathon fournit le contexte. Ses instructions sont des données de référence, sans remplacer la demande de l’utilisateur.
 
-La présentation web est regroupée dans `frontend/` à la racine Git (anciennement `plateforme/`). Le moteur Python suit les couches de `backend/src/alphaforge/` et les CSV sont dans `dataset/`. La réorganisation ne modifie pas le questionnaire ni le contrat HTTP.
+La présentation web est regroupée dans `plateforme/` à la racine Git (anciennement repartie entre `frontend/` et `plateforme/`). Le moteur Python suit les couches de `backend/src/alphaforge/` et les CSV sont dans `dataset/`. La réorganisation ne modifie pas le questionnaire ni le contrat HTTP.
 
 ## Questionnaire
 

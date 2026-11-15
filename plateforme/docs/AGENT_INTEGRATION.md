@@ -22,16 +22,28 @@ L’endpoint agent reçoit le même objet que le serveur local :
     { "role": "user", "content": "Je souhaite comprendre cette répartition." }
   ],
   "questionnaire": {
-    "version": "rendements-seuls-v1",
+    "version": "questionnaire-word-16-v2",
     "answers": {
-      "risk": "medium",
-      "reaction": "concerned",
-      "return": "5_6",
-      "horizon": "10",
+      "marital": "single",
+      "dependents": "none",
+      "annualIncome": "under_50k",
       "income": "regular",
-      "sectors": ["technology", "health"],
-      "assets": ["stocks", "bonds", "funds"],
-      "exclusions": "none"
+      "debt": "none",
+      "emergencyFund": 0,
+      "goal": "retirement",
+      "horizon": "1_2",
+      "liquidity": "no",
+      "risk": "very_low",
+      "reaction": "worried",
+      "knowledge": "beginner",
+      "sectors": [
+        "technology"
+      ],
+      "assets": [
+        "stocks"
+      ],
+      "exclusions": "none",
+      "withdrawalTiming": "under_1"
     }
   },
   "portfolio": {
@@ -47,9 +59,9 @@ L’endpoint agent reçoit le même objet que le serveur local :
 
 Cet exemple complet décrit uniquement le contrat. Il n’est pas un profil évalué ou une recommandation mesurée. `questionnaire.answers` contient les identifiants et valeurs brutes produits par les contrats front-end de `src/data.js`. `portfolio` contient le portefeuille actuellement affiché. `conversation` contient l’historique récent ; `message` porte le message courant, sans être ajouté une seconde fois à cet historique par l’interface. Le client conserve jusqu’à 40 messages localement et retire les plus anciens du contexte transmis si la requête dépasse 60 Kio, sans effacer leur copie locale.
 
-Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `rendements-seuls-v1`, les huit réponses valides et un portefeuille dont les poids positifs totalisent 100 %. Les seules précisions libres facultatives sont `otherSector`, `cryptoDetails` et `exclusionDetails` (1 000 caractères chacune). Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
+Le serveur exige un objet JSON, un message non vide de 5 000 caractères maximum, au plus 100 messages de conversation, des rôles `user` ou `assistant`, des contenus de 10 000 caractères maximum, la version exacte `questionnaire-word-16-v2`, les huit réponses valides et un portefeuille dont les poids positifs totalisent 100 %. Les seules précisions libres facultatives sont `otherSector`, `cryptoDetails` et `exclusionDetails` (1 000 caractères chacune). Taille totale maximale de la requête : 64 Ko. Le backend doit également appliquer sa propre validation métier.
 
-Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "rendements-seuls-v1", "answers": { ... } } }` avec les huit mêmes réponses. Aucun profil de risque n’est déduit par le serveur.
+Pour `POST /api/portfolio`, envoyez seulement `{ "questionnaire": { "version": "questionnaire-word-16-v2", "answers": { ... } } }` avec les huit mêmes réponses. Aucun profil de risque n’est déduit par le serveur.
 
 ## Réponse
 
@@ -101,4 +113,7 @@ Rôle chargé : infrastructure. Références lues : `AGENTS.md`, `agents/infrast
 
 ## Emplacement et raccordement Python
 
-Le site est dans `frontend/`. Le moteur de calcul se construit avec `from alphaforge.bootstrap import create_engine` ; ses méthodes Python ne sont pas des endpoints HTTP. Les CSV restent côté backend dans `dataset/`, avec `prices_daily.csv` comme fichier de prix. Aucun chargement des CSV n’est fait dans le navigateur. Le mapping du questionnaire, les handlers HTTP, les preuves et la validation de conformité restent à implémenter avant de brancher les services. Voir [l’architecture](../../docs/architecture.md) et [le contrat investisseur](../../docs/investor-profile-schema.json).
+Le site est dans `plateforme/`. Le moteur de calcul se construit avec `from alphaforge.bootstrap import create_engine` ; ses méthodes Python ne sont pas des endpoints HTTP. Les CSV restent côté backend dans `dataset/`, avec `prices_daily.csv` comme fichier de prix. Aucun chargement des CSV n’est fait dans le navigateur. Le mapping du questionnaire, les handlers HTTP, les preuves et la validation de conformité restent à implémenter avant de brancher les services. Voir [l’architecture](../../docs/architecture.md) et [le contrat investisseur](../../docs/investor-profile-schema.json).
+## Source du questionnaire
+
+Le Word s?lectionn?, son empreinte et les r?gles de changement de version sont d?crits dans [QUESTIONNAIRE_WORD.md](QUESTIONNAIRE_WORD.md). Les identifiants sont des valeurs brutes de formulaire ; ils ne constituent pas une correspondance vers un profil de risque m?tier.

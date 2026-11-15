@@ -34,7 +34,7 @@ Paths below are relative to this Git repository, which is the inner `RecommenDat
 
 ## Repository locations
 
-- Web UI: `frontend/`; Python: `backend/src/alphaforge/{presentation,application,domain,infrastructure}/`.
+- Web UI: `plateforme/`; Python: `backend/src/alphaforge/{presentation,application,domain,infrastructure}/`.
 - All CSV inputs: `dataset/`; prices: `prices_daily.csv`. Use the Application repository port and local Infrastructure adapter.
 - Backend entry points: `backend/scripts/`; tests: `backend/tests/`; package and dependencies: `backend/pyproject.toml`, `backend/requirements.txt`. Project workflow checks stay in `scripts/`; root `profiles.json` is the retained profile contract.
 - See `README.md` and the migration map in `docs/architecture.md` for commands and current implementation gaps.

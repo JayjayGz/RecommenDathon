@@ -5,7 +5,7 @@ An educational portfolio simulation for the AlphaForge datathon. The French web 
 ## Repository layout
 
 ```text
-frontend/                       Web presentation: index.html, src/, assets/, HTTP proxy
+plateforme/                       Web presentation: index.html, src/, assets/, HTTP proxy
 backend/src/alphaforge/
   presentation/backtest_viewer.py  Streamlit reference-portfolio viewer
   application/                  PortfolioEngine, reference build/comparison, storage and LLM ports
@@ -44,11 +44,11 @@ On Linux/macOS, activate with `source .venv/bin/activate`. An existing interpret
 Web UI (Node.js 24+, no npm dependencies):
 
 ```powershell
-cd frontend
+cd plateforme
 npm start
 ```
 
-Open http://localhost:4173. See [frontend setup](frontend/README.md) and its [HTTP contracts](frontend/docs/AGENT_INTEGRATION.md) for optional external services.
+Open http://localhost:4173. See [frontend setup](plateforme/README.md) and its [HTTP contracts](plateforme/docs/AGENT_INTEGRATION.md) for optional external services.
 
 ## Use the calculation API
 
