@@ -7,7 +7,26 @@ from alphaforge.domain.profile_matching import (InvestorInputError, investible_u
                                                match_profile, resolve_message)
 
 
-def prepare_investor(request, snapshot):
+def validate_requested_assets(request, assets):
+    """Resolve user edits against the universe before matching or engine calls."""
+    changes = [c.to_dict() for c in request.changes]
+    if request.message is not None:
+        changes = [resolve_message(request.message, assets, request.conversation)]
+    tickers = {c.get("ticker", c.get("exclude")) for c in changes}
+    unknown = tickers - set(assets)
+    if unknown:
+        raise InvestorInputError("ASSET_NOT_IN_UNIVERSE",
+            "The requested asset is absent from assets_universe.csv. No calculation was performed.",
+            {"tickers": sorted(unknown)})
+    unsupported = tickers - investible_universe(assets)
+    if unsupported:
+        raise InvestorInputError("UNSUPPORTED_ASSET_CLASS",
+            "The requested asset exists in the universe but is not a supported portfolio holding.",
+            {"tickers": sorted(unsupported)})
+    return changes
+
+
+def prepare_investor(request, snapshot, changes):
     answers, missing = request.normalized_answers()
     if missing:
         raise InvestorInputError("QUESTIONNAIRE_INCOMPLETE",
@@ -15,9 +34,6 @@ def prepare_investor(request, snapshot):
             {"missing_answers": missing})
     match = match_profile(answers, request.assessment, request.requirements, snapshot.profiles, snapshot.assets)
     profile = deepcopy(next(p for p in snapshot.profiles["profiles"] if p["id"] == match["profile_id"]))
-    changes = [c.to_dict() for c in request.changes]
-    if request.message is not None:
-        changes = [resolve_message(request.message, snapshot.assets, request.conversation)]
     effective = RecommendationRequest.from_dict({"profile_id": profile["id"], "changes": changes,
                                                   "as_of": request.as_of.isoformat()})
     baseline = request.current_weights if request.current_weights is not None else profile["weights"]

@@ -10,7 +10,7 @@ from .llm import LLMCallError
 from .portfolio_engine import PortfolioEngine
 from .snapshots import DataUnavailable
 from .investor_requests import InvestorRequest
-from .investor_workflow import prepare_investor, frontend_recommendation
+from .investor_workflow import prepare_investor, frontend_recommendation, validate_requested_assets
 from alphaforge.domain.profile_matching import InvestorInputError, investible_universe
 from alphaforge.domain.macro_context import macro_context
 
@@ -71,12 +71,14 @@ class RecommendationOrchestrator:
                         {"missing_answers": missing})
             snapshot = self.source.load(request.as_of, include_universe=True) if investor else self.source.load(request.as_of)
             artifacts["data_manifest"] = snapshot.manifest
-            engine = PortfolioEngine(snapshot)
             effective, starting_weights, constraints, match = request, None, None, None
             if investor:
+                transition("VALIDATE_REQUESTED_ASSETS")
+                changes = validate_requested_assets(request, snapshot.assets)
                 transition("MATCH_PROFILE")
-                effective, profile, starting_weights, constraints, match = prepare_investor(request, snapshot)
+                effective, profile, starting_weights, constraints, match = prepare_investor(request, snapshot, changes)
                 artifacts["profile"] = {"request": request.to_dict(), "reference_profile": profile, "match": match}
+            engine = PortfolioEngine(snapshot)
             try:
                 profile = engine.get_profile(effective.profile_id)
             except ValueError:

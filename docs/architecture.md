@@ -47,6 +47,14 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 5. The **Compliance Gate** validates evidence, the disclaimer, limitations, wording and constraints. Repairable explanation failures share at most 2 retries, followed by one deterministic template fallback checked by the same gate. Structural failures or a failed fallback return an explicit error. See `agents-workflow.md` for the bounded sequence.
 6. The result goes to the UI together with the limitations. The whole run is written to S3.
 
+For post-questionnaire additions, the implemented workflow validates the requested
+asset against `assets_universe.csv` before matching or constructing the engine.
+Supported holdings require `prices_weekly.csv` history; evaluated bond ETFs also
+load `macro_rates.csv` as context. Unknown or unsupported assets stop before
+calculation. The engine then evaluates the change under the existing allocation
+policy, including its current restriction on direct bond-weight changes. See
+[follow-up request routing](questionnaire-workflow.md#follow-up-requests).
+
 ## Design features
 
 - **Evidence-grounded explanations:** the LLM sees only the Evidence Bundle, and a code validator rejects any number or citation that is not in it. This addresses invented figures.
@@ -122,6 +130,7 @@ The offline suite returned **48 passed, 8 skipped, 2 xfailed; 17 subtests passed
 ## Data handling rules (from the starter dataset)
 
 - Use `adj_close` for returns. Prices are in listing currency (`.TO` is CAD, others USD). Convert with `fx_usdcad_daily.csv`.
+- For cryptocurrencies, `prices_weekly.csv` stores a copy of `close` in `adj_close`, as explicitly requested. The engine continues reading `adj_close` for every asset; crypto rows are not independently adjusted prices.
 - Align calendars explicitly (TSX, U.S. and 7-day crypto) and record the method in the data manifest.
 - Do not use monthly macro values before their publication date in backtests.
 - The universe has survivorship bias. The limitations list states this on every result.

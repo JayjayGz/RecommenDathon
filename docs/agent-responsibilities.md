@@ -16,6 +16,15 @@ Personas will be added later as predefined `InvestorProfile` examples. They are 
 
 ## Pipeline agents
 
+For post-questionnaire additions, the screening step first resolves the requested
+name or ticker in `assets_universe.csv` and checks whether its asset class is
+supported. Unknown or unsupported holdings stop before engine calls. The data
+step validates `prices_weekly.csv` for the requested asset and current holdings,
+and loads `macro_rates.csv` context only for evaluated bond ETFs. Bond ETFs still
+need prices. The deterministic engine then checks the proposed allocation and its
+portfolio impact under the existing policy; an LLM does not calculate metrics or
+override a rejected change. See [the implemented request flow](questionnaire-workflow.md#follow-up-requests).
+
 | Agent | Uses LLM | Responsibility | Output |
 | --- | --- | --- | --- |
 | Data Agent | No | Load the CSVs, convert currency, align calendars, record the method used | Clean return matrix and data manifest |
