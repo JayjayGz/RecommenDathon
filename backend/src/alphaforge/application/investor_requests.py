@@ -6,6 +6,7 @@ import re
 
 from .contracts import RecommendationRequest, RequestError
 from .questionnaires import normalize_french
+from .word_questionnaire import WORD_VERSION, normalize_word
 
 QUESTIONNAIRE_VERSION = "rendements-seuls-v1"
 OPTIONS = {
@@ -50,16 +51,20 @@ class InvestorRequest:
         if not isinstance(questionnaire, dict):
             raise RequestError("Expected a questionnaire object")
         french = "questions" in questionnaire
+        word = questionnaire.get("version") == WORD_VERSION
         if french:
             normalize_french(questionnaire)
+            answers = None
+        elif word:
+            normalize_word(questionnaire)
             answers = None
         elif set(questionnaire) != {"version", "answers"} or questionnaire["version"] != QUESTIONNAIRE_VERSION:
             raise RequestError("Unsupported questionnaire version")
         else:
             answers = questionnaire["answers"]
-        if not french and (not isinstance(answers, dict) or set(OPTIONS) - set(answers) or set(answers) - (set(OPTIONS) | DETAILS)):
+        if not (french or word) and (not isinstance(answers, dict) or set(OPTIONS) - set(answers) or set(answers) - (set(OPTIONS) | DETAILS)):
             raise RequestError("Expected all eight questionnaire answers")
-        for key, options in ([] if french else OPTIONS.items()):
+        for key, options in ([] if french or word else OPTIONS.items()):
             answer = answers[key]
             if key in {"assets", "sectors"}:
                 if (not isinstance(answer, list) or not answer or len(answer) > len(options)
@@ -68,7 +73,7 @@ class InvestorRequest:
                     raise RequestError("Invalid questionnaire selections")
             elif not isinstance(answer, str) or answer not in options:
                 raise RequestError("Invalid questionnaire answer")
-        if not french and any(not isinstance(answers[k], str) or len(answers[k]) > 1000 for k in DETAILS & set(answers)):
+        if not (french or word) and any(not isinstance(answers[k], str) or len(answers[k]) > 1000 for k in DETAILS & set(answers)):
             raise RequestError("Invalid questionnaire details")
         assessment = value.get("assessment", {})
         if (not isinstance(assessment, dict) or set(assessment) - {"risk_band", "preferred_style"}
@@ -127,6 +132,8 @@ class InvestorRequest:
                 "changes": [c.to_dict() for c in self.changes], "conversation": list(self.conversation)}
 
     def normalized_answers(self):
+        if self.questionnaire.get("version") == WORD_VERSION:
+            return normalize_word(self.questionnaire)
         if "questions" in self.questionnaire:
             return normalize_french(self.questionnaire)
         return self.questionnaire["answers"], []

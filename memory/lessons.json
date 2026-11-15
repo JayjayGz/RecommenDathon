@@ -683,6 +683,58 @@
           "scope": "Complete offline backend regression replay after the overlapping rebase conflicts and duplicated preparation were repaired. Supported French JSON replay with real CSVs also passed with exactly one membership and matching stage; audit was in memory and no LLM or AWS calls were made."
         }
       ]
+    },
+    {
+      "id": "L-024",
+      "roles": [
+        "infrastructure",
+        "screening",
+        "portfolio",
+        "evidence",
+        "compliance"
+      ],
+      "trigger": "Claiming end-to-end readiness for questionnaire recommendations and arbitrary dataset-bound asset additions",
+      "boundary": "Does not authorize widening risk limits, inventing risk scoring, filling market history, adding outside assets, or treating local transport and fallback checks as deployed AWS or live-LLM acceptance",
+      "defect": "Local connected HTTP checks reproduced rejection of the browser-native questionnaire, incorrect ambiguity rejection for .TO tickers, and conflict evidence reconstruction drift after canonical audit reload. BND and protected XBB.TO also follow different bond-edit paths.",
+      "cause": "Frontend and backend questionnaire versions differ; the target-instruction regex matches TO after a ticker dot; evidence creation iterates failed-check dictionaries in insertion order while canonical audit JSON sorts keys. Bond protection uses a fixed ticker set.",
+      "evidence": [
+        "Initial connected run: 14 passed and 4 failed in 18 checks, preserved in .local-runs/e2e-verification/audit-1794769316091988600-report.json. Latest report.json/report.md contain the repaired replay.",
+        "NVDA, AAPL, VTI, BND and GLD additions passed through the proxy with the supported French questionnaire. Structured XEF.TO passed but chat Add XEF.TO 1% returned AMBIGUOUS_PERSONALIZATION_REQUEST. Structured XBB.TO returned INVALID_REQUEST.",
+        "All 13 backend runs wrote seven audit artifacts. Crypto conflict reconstruction changed ordering of max_crypto_pct and crypto_allowed checks; facts and sources matched when compared by field without ordinal IDs.",
+        "Repair: word_questionnaire.py adapts and validates the browser Word contract; the .TO target regex excludes ticker punctuation; evidence sorts failed checks and uses proposal_evidence_v2_sorted_checks.",
+        "Requested bond repair removes the hard-coded prohibition, passes dataset bond_tickers into proportional funding and rounding, and deterministically breaks reserve ties. Caps and release checks remain enforced.",
+        "Initial focused repair test: 110 passed and 2 failed. One new fixture tried funding SPY from a portfolio whose only other holding was a bond, contrary to the preserved non-bond funding rule; corrected it to a bond addition. An old invalid-change test assumed every bond reduction was forbidden; replaced it with an actual over-sale."
+      ],
+      "prevention": "Validate and normalize the current browser payload by stable field IDs and visibility rules while preserving French and legacy contracts. Keep target-instruction matching separate from ticker suffixes. Sort policy-check evidence before assigning IDs and version the method. Classify all evaluated bond ETFs from metadata for funding groups and rounding; preserve funding, price and release checks. Exercise all these paths through connected transports and disk-reloaded audits.",
+      "regression": "Replay native payload rejection against supported French input; compare message and structured XEF.TO requests; compare BND and XBB.TO bond edits; reconstruct a released conflict evidence bundle from canonical persisted artifacts.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe .local-runs/e2e-verification/run_e2e.py",
+          "result": "14 checks passed, 4 failed; 13 real-data audited runs. Findings remain unresolved.",
+          "scope": "Real local Node proxy and Lambda handler, source CSVs, disk audit and frontend response validator. No deployed AWS, graphical browser, S3 or live Bedrock invocation."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-e2e-full",
+          "result": "202 passed, 2 skipped, 2 xfailed; 17 subtests passed in 53.78s.",
+          "scope": "Offline backend regressions; connected testing above found cases not covered by these passing tests."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-pipeline-repaired-final",
+          "result": "229 passed, 2 skipped, 2 xfailed; 17 subtests passed in 36.21s.",
+          "scope": "Complete offline backend suite, including actual-browser-option parity, invalid/hidden payload rejection, Canadian ticker parsing controls, bond funding and audit round-trip regressions."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "18 checks passed, 0 failed; 14 real-data backend runs wrote complete local audit artifacts.",
+          "scope": "Real local proxy, Lambda handler, CSV calculations, frontend response validation, and audit reconstruction. Browser-native and supplied French forms passed; stocks, equity/commodity/bond ETFs and .TO messages passed; crypto constraints and invalid requests remained enforced. No graphical browser, deployed AWS, S3 or live Bedrock calls."
+        },
+        {
+          "command": "node --test plateforme/tests/server-questionnaire.test.mjs; node --check plateforme/server.mjs",
+          "result": "HTTP test and syntax check passed.",
+          "scope": "Local Node checks, not graphical layout verification."
+        }
+      ]
     }
   ]
 }

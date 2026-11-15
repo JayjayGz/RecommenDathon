@@ -270,14 +270,8 @@ def test_supported_addition_reaches_engine_after_universe_price_and_bond_checks(
     states = records["result"]["states"]
     assert states.index("VALIDATE_REQUESTED_ASSETS") < states.index("MATCH_PROFILE")
     assert states.index("CHECK_MACRO_CONTEXT") < states.index("EVALUATE_PORTFOLIO")
-    if ticker == "XBB.TO":
-        # Routing to the engine does not change its existing funding policy.
-        assert outcome.status == "INVALID_REQUEST"
-        assert "Direct bond changes are unsupported" in outcome.payload["message"]
-        assert "portfolio" not in outcome.payload
-    else:
-        assert outcome.status in {"PASS", "CONFLICT"}
-        assert set(outcome.payload["macro_context"]["applies_to_tickers"]) == {"XBB.TO", "ZST.TO"}
+    assert outcome.status in {"PASS", "CONFLICT"}
+    assert set(outcome.payload["macro_context"]["applies_to_tickers"]) == {"XBB.TO", "ZST.TO"}
 
 
 def test_uninterpretable_activity_exclusion_is_not_silently_ignored(investor_source):

@@ -51,8 +51,9 @@ For post-questionnaire additions, the implemented workflow validates the request
 asset against `assets_universe.csv` before matching or constructing the engine.
 Supported holdings require `prices_weekly.csv` history; evaluated bond ETFs also
 load `macro_rates.csv` as context. Unknown or unsupported assets stop before
-calculation. The engine then evaluates the change under the existing allocation
-policy, including its current restriction on direct bond-weight changes. See
+calculation. The engine then evaluates stock and ETF changes, including bond ETF
+additions and reductions, using metadata-defined bond groups, proportional non-bond
+funding, and the existing allocation and release checks. See
 [follow-up request routing](questionnaire-workflow.md#follow-up-requests).
 
 ## Design features

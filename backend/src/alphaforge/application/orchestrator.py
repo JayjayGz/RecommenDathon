@@ -49,7 +49,7 @@ class RecommendationOrchestrator:
             if status == "MISSING_INFO":
                 terminal = "NEEDS_INFORMATION"
             artifacts["result"] = {**result, "states": states + [terminal],
-                                   "workflow_version": "proposal_workflow_v1"}
+                                   "workflow_version": "proposal_workflow_v2"}
             try:
                 self.audit_store.save(run_id, artifacts)
             except Exception:
@@ -111,7 +111,7 @@ class RecommendationOrchestrator:
                                   allowed_tickers=sorted(investible_universe(snapshot.assets) & set(snapshot.prices.ticker)),
                                   requested_changes=[c.to_dict() for c in effective.changes],
                                   macro_context=macro,
-                                  funding_policy="proportional_non_bond_holdings_whole_points_v1")
+                                  funding_policy="proportional_non_bond_holdings_metadata_v2")
             artifacts["decisions"] = evaluation
             status = evaluation["status"]
             if status not in {"PASS", "CONFLICT"}:

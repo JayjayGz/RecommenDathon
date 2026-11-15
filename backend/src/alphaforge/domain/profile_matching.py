@@ -118,7 +118,7 @@ def resolve_message(message, assets, conversation=()):
                     found.add(ticker)
         return found
 
-    if re.search(r"\b(and|et|not|pas|without|sans|target|total)\b|don't|\bto\s+\d|\bà\s+\d", message, re.IGNORECASE):
+    if re.search(r"\b(and|et|not|pas|without|sans|target|total)\b|don't|(?<![\w.^=-])to\s+\d|\bà\s+\d", message, re.IGNORECASE):
         raise InvestorInputError("AMBIGUOUS_PERSONALIZATION_REQUEST",
             "I can interpret one explicit addition, reduction or exclusion at a time. Please use 'add NVDA 5%' for an additional five percentage points, or provide structured changes. I will not guess a target weight or a negated instruction.")
     found = mentions(message)

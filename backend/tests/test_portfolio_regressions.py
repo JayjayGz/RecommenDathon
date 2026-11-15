@@ -127,7 +127,7 @@ def test_unfundable_request_does_not_create_negative_weights(market):
 
 @pytest.mark.parametrize("change", [
     {"ticker": "NOTREAL", "add_pct": 10}, {"exclude": "NOTREAL"},
-    {"ticker": "XBB.TO", "add_pct": -20}, {"ticker": "TSLA", "add_pct": 20.5},
+    {"ticker": "XBB.TO", "add_pct": -100}, {"ticker": "TSLA", "add_pct": 20.5},
     {"ticker": "TSLA", "add_pct": float("inf")}, {"ticker": "TSLA", "add_pct": True},
     {"ticker": [], "add_pct": 5}, {"ticker": "TSLA"}, {"ticker": "TSLA", "add_pct": 5, "extra": 1},
 ])

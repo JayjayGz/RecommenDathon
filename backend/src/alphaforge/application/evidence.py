@@ -31,7 +31,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         entries.append({"id": f"{run_id}:E{len(entries) + 1}", "field": field,
                         "value": value, "unit": unit, "sentence": sentence,
                         "source": source, "manifest_hash": manifest_hash,
-                        "method": "proposal_workflow_v1"})
+                        "method": "proposal_evidence_v2_sorted_checks"})
 
     match = evaluation.get("profile_match")
     if match:
@@ -60,7 +60,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             f"Requested edits: {changes_description}. Additions are percentage-point changes, not target total weights.",
             "validated_personalization_request")
         add("funding_policy", evaluation["funding_policy"], "method",
-            "Additions are funded proportionally from other non-bond holdings. Funding preserves known reference bond weights before rounding; weights are rounded to whole percentages and any residual goes to the largest reference bond holding. An adjusted alternative is a checked proposal, not a guarantee that the requested weight can be included.",
+            "Additions are funded proportionally from other non-bond holdings. Bond edits change the requested bond; other evaluated bond weights are preserved before rounding. Weights are rounded to whole percentages and any residual goes to the largest evaluated bond holding, with ticker order breaking ties. An adjusted alternative is a checked proposal, not a guarantee that the requested weight can be included.",
             "domain.proposals.apply_proposal")
         add("starting_weights_source", match["starting_weights_source"], "source",
             "This assessment starts from " + ("the submitted current portfolio" if match["starting_weights_source"] == "submitted_current_portfolio" else "the matched reference portfolio") +
@@ -117,7 +117,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
                 raise ValueError("Nonfinite or missing metric")
             add(f"{branch}.{metric}", value, "percent",
                 f"The {branch} historical {metric} is {value:g}%.", validation["method"])
-        for name, check in validation["checks"].items():
+        for name, check in sorted(validation["checks"].items()):
             if check["passes"] is not True:
                 add(f"{branch}.checks.{name}", check, "policy_check",
                     f"The {branch} allocation fails the implemented {name} check "
