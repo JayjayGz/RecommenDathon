@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from docx import Document
 
-root = Path(__file__).resolve().parents[1]
+root = Path(__file__).resolve().parents[2]
 source = Path(r'C:/Users/alibe/Downloads/Questionnaire_client_Recommand_20261115_103525.docx')
 sections, questions = [], []
 for paragraph in Document(source).paragraphs:

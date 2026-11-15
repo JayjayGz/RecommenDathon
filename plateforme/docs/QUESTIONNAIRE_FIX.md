@@ -11,7 +11,7 @@ Rôle principal : Router, présentation/intégration. Entrées : branche `platef
 
 `src/app.js` actualise seulement les sélections, coches, détails conditionnels, erreurs et indicateurs de progression. La page, les contrôles actifs et la photo restent montés. Un champ libre encore pertinent conserve son nœud et sa saisie ; les précisions devenues sans objet sont retirées. Modifier un profil terminé invalide toujours l'ancien résultat et verrouille les pages dépendantes. `src/styles.css` garde le contenu visible dès la première frame de navigation et renforce le contraste des légendes sur les nouvelles photos. `index.html` précharge la photo de risque ; l'application précharge la suivante.
 
-Les photos financières locales, les crédits, `package.json`/lockfile, `tests/questionnaire.test.mjs` et les leçons L-003/L-004 complètent la correction. `node_modules/` est ignoré. Les anciennes photos sont conservées mais ne sont plus appelées par le questionnaire.
+Les photos financières locales, les crédits, `package.json`/lockfile, `tests/questionnaire.test.mjs` et les leçons L-011/L-012 complètent la correction. `node_modules/` est ignoré. Les anciennes photos sont conservées mais ne sont plus appelées par le questionnaire.
 
 ## Vérifications et transmission
 

@@ -57,7 +57,7 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 ## Implemented repository layout
 
 ```text
-frontend/                        # Web presentation, assets and local HTTP proxy
+plateforme/                        # Web presentation, assets and local HTTP proxy
 backend/src/alphaforge/
     presentation/backtest_viewer.py  # Streamlit UI
     application/                 # Calculation orchestration; repository and LLM ports
@@ -73,7 +73,7 @@ dataset/                         # All local CSV inputs; ignored by Git
 profiles.json                    # Existing profile contract, retained at root
 ```
 
-The web interface lives in `frontend/`. It sends raw questionnaire answers through optional HTTP adapters; a backend mapper to the investor schema and response contract is still required. The Streamlit viewer is a separate developer presentation of saved reference portfolios.
+The web interface lives in `plateforme/`. It sends raw questionnaire answers through optional HTTP adapters; a backend mapper to the investor schema and response contract is still required. The Streamlit viewer is a separate developer presentation of saved reference portfolios.
 
 Application code depends on `PortfolioRepository` and Domain functions. `LocalPortfolioRepository` implements that port; `bootstrap.create_engine()` supplies the adapter. Domain imports no presentation, application or infrastructure code and performs no I/O. LLM ports and Bedrock retain their existing layer placement.
 
@@ -81,7 +81,7 @@ Application code depends on `PortfolioRepository` and Domain functions. `LocalPo
 
 | Previous location | Current location |
 | --- | --- |
-| `plateforme/` | `frontend/` |
+| `frontend/` | `plateforme/` (all website files reunited here) |
 | `src/alphaforge/` | `backend/src/alphaforge/` |
 | `tests/` | `backend/tests/` |
 | Backend tools in `scripts/` | `backend/scripts/`; workflow checker stays in `scripts/` |

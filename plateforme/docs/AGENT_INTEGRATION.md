@@ -111,12 +111,9 @@ Le schéma existant du dépôt parent exige `profile_id`, `base_currency`, `risk
 
 Rôle chargé : infrastructure. Références lues : `AGENTS.md`, `agents/infrastructure-agent.md`, architecture, responsabilités, protocole de correction et leçons L-001/L-002. Leurs déclencheurs (routage de fichiers d’agents, réparations d’explications) ne sont pas engagés par cet adaptateur. Aucun fichier existant de mémoire ou de routage n’a été modifié.
 
-<<<<<<< Updated upstream:frontend/docs/AGENT_INTEGRATION.md
 ## Emplacement et raccordement Python
 
-Le site est dans `frontend/`. Le moteur de calcul se construit avec `from alphaforge.bootstrap import create_engine` ; ses méthodes Python ne sont pas des endpoints HTTP. Les CSV restent côté backend dans `dataset/`, avec `prices_daily.csv` comme fichier de prix. Aucun chargement des CSV n’est fait dans le navigateur. Le mapping du questionnaire, les handlers HTTP, les preuves et la validation de conformité restent à implémenter avant de brancher les services. Voir [l’architecture](../../docs/architecture.md) et [le contrat investisseur](../../docs/investor-profile-schema.json).
-=======
+Le site est dans `plateforme/`. Le moteur de calcul se construit avec `from alphaforge.bootstrap import create_engine` ; ses méthodes Python ne sont pas des endpoints HTTP. Les CSV restent côté backend dans `dataset/`, avec `prices_daily.csv` comme fichier de prix. Aucun chargement des CSV n’est fait dans le navigateur. Le mapping du questionnaire, les handlers HTTP, les preuves et la validation de conformité restent à implémenter avant de brancher les services. Voir [l’architecture](../../docs/architecture.md) et [le contrat investisseur](../../docs/investor-profile-schema.json).
 ## Source du questionnaire
 
 Le Word s?lectionn?, son empreinte et les r?gles de changement de version sont d?crits dans [QUESTIONNAIRE_WORD.md](QUESTIONNAIRE_WORD.md). Les identifiants sont des valeurs brutes de formulaire ; ils ne constituent pas une correspondance vers un profil de risque m?tier.
->>>>>>> Stashed changes:plateforme/docs/AGENT_INTEGRATION.md
