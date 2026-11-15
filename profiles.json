@@ -1,0 +1,398 @@
+{
+  "_note": "Reference portfolios built from rules in build_portfolios.py. Educational simulation with fictional profiles; not financial advice.",
+  "band_limits": {
+    "low": {
+      "max_volatility_pct": 7,
+      "max_drawdown_pct": -15,
+      "max_single_stock_pct": 5
+    },
+    "medium": {
+      "max_volatility_pct": 13,
+      "max_drawdown_pct": -22,
+      "max_single_stock_pct": 10
+    },
+    "high": {
+      "max_volatility_pct": 25,
+      "max_drawdown_pct": -40,
+      "max_single_stock_pct": 15
+    }
+  },
+  "profiles": [
+    {
+      "id": 1,
+      "band": "low",
+      "style": "Broad diversifier",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.45,
+        "ZST.TO": 0.25,
+        "XIU.TO": 0.15,
+        "SPY": 0.15
+      },
+      "validation": {
+        "annual_growth_pct": 5.0,
+        "volatility_pct": 5.5,
+        "max_drawdown_pct": -11.2,
+        "worst_drawdown_date": "2022-10-20",
+        "end_value": 12678.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 2,
+      "band": "low",
+      "style": "Home country",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.45,
+        "ZST.TO": 0.25,
+        "XIU.TO": 0.18,
+        "RY.TO": 0.03,
+        "CNR.TO": 0.03,
+        "FTS.TO": 0.03,
+        "ATD.TO": 0.03
+      },
+      "validation": {
+        "annual_growth_pct": 4.9,
+        "volatility_pct": 5.0,
+        "max_drawdown_pct": -8.8,
+        "worst_drawdown_date": "2022-10-20",
+        "end_value": 12686.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 3,
+      "band": "low",
+      "style": "Growth and innovation",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.51,
+        "ZST.TO": 0.25,
+        "QQQ": 0.18,
+        "SPY": 0.06
+      },
+      "validation": {
+        "annual_growth_pct": 4.4,
+        "volatility_pct": 6.4,
+        "max_drawdown_pct": -14.4,
+        "worst_drawdown_date": "2022-10-20",
+        "end_value": 12359.0,
+        "passes": true,
+        "adjustments": [
+          "moved 8% single stocks into QQQ",
+          "moved 5% from QQQ to XBB.TO"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "band": "low",
+      "style": "Income and stability",
+      "persona": "Robert",
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.45,
+        "ZST.TO": 0.25,
+        "XIU.TO": 0.09,
+        "RY.TO": 0.03,
+        "TD.TO": 0.03,
+        "FTS.TO": 0.03,
+        "ENB.TO": 0.03,
+        "PG": 0.03,
+        "JNJ": 0.03,
+        "JPM": 0.03
+      },
+      "validation": {
+        "annual_growth_pct": 5.6,
+        "volatility_pct": 4.7,
+        "max_drawdown_pct": -9.4,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 13031.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 5,
+      "band": "low",
+      "style": "Responsible (ESG)",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.45,
+        "ESGV": 0.3,
+        "ZST.TO": 0.25
+      },
+      "validation": {
+        "annual_growth_pct": 4.5,
+        "volatility_pct": 6.5,
+        "max_drawdown_pct": -14.1,
+        "worst_drawdown_date": "2022-10-20",
+        "end_value": 12409.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 6,
+      "band": "medium",
+      "style": "Broad diversifier",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.29,
+        "XIU.TO": 0.28,
+        "SPY": 0.28,
+        "AGG": 0.1,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 8.2,
+        "volatility_pct": 8.6,
+        "max_drawdown_pct": -14.8,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 14702.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 7,
+      "band": "medium",
+      "style": "Home country",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XIU.TO": 0.33,
+        "XBB.TO": 0.28,
+        "AGG": 0.1,
+        "RY.TO": 0.06,
+        "CNR.TO": 0.06,
+        "FTS.TO": 0.06,
+        "ATD.TO": 0.06,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 8.5,
+        "volatility_pct": 7.7,
+        "max_drawdown_pct": -10.8,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 14901.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 8,
+      "band": "medium",
+      "style": "Growth and innovation",
+      "persona": null,
+      "crypto_allowed": true,
+      "weights": {
+        "QQQ": 0.39,
+        "XBB.TO": 0.35,
+        "SPY": 0.11,
+        "AGG": 0.1,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 7.8,
+        "volatility_pct": 11.4,
+        "max_drawdown_pct": -21.6,
+        "worst_drawdown_date": "2022-11-09",
+        "end_value": 14435.0,
+        "passes": true,
+        "adjustments": [
+          "moved 2% crypto to gold",
+          "moved 16% single stocks into QQQ",
+          "moved 5% from QQQ to XBB.TO"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "band": "medium",
+      "style": "Income and stability",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XBB.TO": 0.27,
+        "XIU.TO": 0.16,
+        "AGG": 0.1,
+        "RY.TO": 0.06,
+        "TD.TO": 0.06,
+        "FTS.TO": 0.06,
+        "ENB.TO": 0.06,
+        "PG": 0.06,
+        "JNJ": 0.06,
+        "JPM": 0.06,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 9.7,
+        "volatility_pct": 7.1,
+        "max_drawdown_pct": -11.7,
+        "worst_drawdown_date": "2022-10-11",
+        "end_value": 15706.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 10,
+      "band": "medium",
+      "style": "Responsible (ESG)",
+      "persona": "Mateo",
+      "crypto_allowed": false,
+      "weights": {
+        "ESGV": 0.55,
+        "XBB.TO": 0.3,
+        "AGG": 0.1,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 7.2,
+        "volatility_pct": 10.7,
+        "max_drawdown_pct": -19.6,
+        "worst_drawdown_date": "2022-10-20",
+        "end_value": 14024.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 11,
+      "band": "high",
+      "style": "Broad diversifier",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XIU.TO": 0.42,
+        "SPY": 0.42,
+        "XBB.TO": 0.11,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 11.8,
+        "volatility_pct": 11.8,
+        "max_drawdown_pct": -16.9,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 17210.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 12,
+      "band": "high",
+      "style": "Home country",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XIU.TO": 0.51,
+        "XBB.TO": 0.09,
+        "GLD": 0.05,
+        "RY.TO": 0.05,
+        "CNR.TO": 0.05,
+        "FTS.TO": 0.05,
+        "ATD.TO": 0.05,
+        "SHOP.TO": 0.05,
+        "CSU.TO": 0.05,
+        "CNQ.TO": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 13.1,
+        "volatility_pct": 12.0,
+        "max_drawdown_pct": -17.3,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 18226.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 13,
+      "band": "high",
+      "style": "Growth and innovation",
+      "persona": "Amira",
+      "crypto_allowed": true,
+      "weights": {
+        "QQQ": 0.4,
+        "SPY": 0.16,
+        "XBB.TO": 0.11,
+        "NVDA": 0.06,
+        "MSFT": 0.06,
+        "SHOP.TO": 0.06,
+        "CSU.TO": 0.06,
+        "GLD": 0.05,
+        "BTC-USD": 0.02,
+        "ETH-USD": 0.02
+      },
+      "validation": {
+        "annual_growth_pct": 13.4,
+        "volatility_pct": 19.6,
+        "max_drawdown_pct": -34.8,
+        "worst_drawdown_date": "2022-10-11",
+        "end_value": 18481.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 14,
+      "band": "high",
+      "style": "Income and stability",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "XIU.TO": 0.26,
+        "XBB.TO": 0.13,
+        "RY.TO": 0.08,
+        "TD.TO": 0.08,
+        "FTS.TO": 0.08,
+        "ENB.TO": 0.08,
+        "PG": 0.08,
+        "JNJ": 0.08,
+        "JPM": 0.08,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 13.2,
+        "volatility_pct": 9.0,
+        "max_drawdown_pct": -13.0,
+        "worst_drawdown_date": "2022-10-12",
+        "end_value": 18315.0,
+        "passes": true,
+        "adjustments": []
+      }
+    },
+    {
+      "id": 15,
+      "band": "high",
+      "style": "Responsible (ESG)",
+      "persona": null,
+      "crypto_allowed": false,
+      "weights": {
+        "ESGV": 0.68,
+        "QQQ": 0.17,
+        "XBB.TO": 0.1,
+        "GLD": 0.05
+      },
+      "validation": {
+        "annual_growth_pct": 10.8,
+        "volatility_pct": 16.1,
+        "max_drawdown_pct": -25.3,
+        "worst_drawdown_date": "2022-10-11",
+        "end_value": 16493.0,
+        "passes": true,
+        "adjustments": []
+      }
+    }
+  ]
+}

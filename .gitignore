@@ -1,0 +1,5 @@
+.venv/
+alphaforge_starter/*.csv
+data/
+.env
+__pycache__/
