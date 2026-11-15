@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from alphaforge.application.contracts import RecommendationRequest, RequestError
+from alphaforge.application.investor_requests import InvestorRequest
 from alphaforge.application.orchestrator import RecommendationOrchestrator
 from alphaforge.infrastructure.local_data import DEFAULT_DATA_DIR, DEFAULT_PROFILES_PATH
 from alphaforge.infrastructure.workflow_storage import LocalAuditStore, LocalSnapshotSource
@@ -20,7 +21,11 @@ def main():
     parser.add_argument("--audit-dir", type=Path, default=Path(".local-runs"))
     args = parser.parse_args()
     try:
-        request = RecommendationRequest.from_dict(json.loads(args.event.read_text())["request"])
+        payload = json.loads(args.event.read_text(encoding="utf-8"))["request"]
+        if isinstance(payload, dict) and "questions" in payload and "langue" in payload:
+            payload = {"questionnaire": payload}
+        contract = InvestorRequest if isinstance(payload, dict) and "questionnaire" in payload else RecommendationRequest
+        request = contract.from_dict(payload)
     except (OSError, ValueError, KeyError, RequestError):
         print("Invalid event file", file=sys.stderr)
         return 2

@@ -16,12 +16,58 @@ from alphaforge.application.snapshots import DataUnavailable, InputSnapshot
 MAX_INPUT_BYTES = 64 * 1024 * 1024
 
 
+def _parse_macro(data, reference, as_of):
+    try:
+        frame = pd.read_csv(BytesIO(data), keep_default_na=False)
+        fields = {"date", "series_id", "value", "unit", "frequency", "label", "source"}
+        if not fields <= set(frame.columns):
+            raise ValueError("Missing macro columns")
+        frame["date"] = pd.to_datetime(frame["date"], format="%Y-%m-%d", errors="raise")
+        if frame.date.isna().any():
+            raise ValueError("Missing macro reference dates")
+        frame = frame[frame.date <= pd.Timestamp(as_of)].copy()
+        if frame.empty:
+            raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE")
+        if frame.duplicated(["series_id", "date"]).any():
+            raise ValueError("Duplicate macro observations")
+        frame["value"] = pd.to_numeric(frame["value"], errors="raise")
+        if not np.isfinite(frame.value.to_numpy(dtype=float)).all():
+            raise ValueError("Invalid macro values")
+        for field in fields - {"date", "value"}:
+            if not frame[field].map(lambda v: isinstance(v, str) and bool(v.strip()) and len(v) <= 300).all():
+                raise ValueError("Invalid macro metadata")
+        if frame.groupby("series_id")[["unit", "frequency"]].nunique().gt(1).any().any():
+            raise ValueError("Inconsistent macro units or frequencies")
+        if "release_date" in frame:
+            frame["release_date"] = pd.to_datetime(frame.release_date.replace("", pd.NaT),
+                                                   format="%Y-%m-%d", errors="raise")
+            if (frame.release_date.notna() & (frame.release_date < frame.date)).any():
+                raise ValueError("Macro release precedes reference date")
+        return frame, {**reference, "sha256": hashlib.sha256(data).hexdigest()}
+    except DataUnavailable:
+        raise
+    except (ValueError, KeyError, TypeError, AttributeError, UnicodeError) as error:
+        raise DataUnavailable("INVALID_MACRO_SNAPSHOT") from error
+
+
 def _parse_snapshot(objects, as_of):
     """Parse named fields without rewriting files; hash the actual downloaded bytes."""
     try:
         prices = pd.read_csv(BytesIO(objects["prices"][0]))
         fx = pd.read_csv(BytesIO(objects["fx"][0]))
         profiles = json.loads(objects["profiles"][0])
+        assets = {}
+        if "universe" in objects:
+            universe = pd.read_csv(BytesIO(objects["universe"][0]), keep_default_na=False)
+            fields = ["ticker", "name", "asset_class", "currency", "sector"]
+            if not set(fields) <= set(universe.columns) or universe.empty or universe.ticker.duplicated().any():
+                raise ValueError("Invalid asset universe")
+            for row in universe[fields].to_dict("records"):
+                if any(not isinstance(v, str) or not v.strip() or len(v) > 200 for v in row.values()):
+                    raise ValueError("Invalid asset metadata")
+                if not re.fullmatch(r"[A-Z0-9.^=-]{1,24}", row["ticker"]):
+                    raise ValueError("Invalid universe ticker")
+                assets[row["ticker"]] = row
         if not {"date", "ticker", "adj_close", "currency"} <= set(prices.columns):
             raise ValueError("Missing price columns")
         if not {"date", "usdcad"} <= set(fx.columns):
@@ -45,6 +91,14 @@ def _parse_snapshot(objects, as_of):
             raise ValueError("Invalid profile config")
         if not isinstance(profiles.get("band_limits"), dict):
             raise ValueError("Missing band limits")
+        if "questionnaire_matching" in profiles:
+            policy = profiles["questionnaire_matching"]
+            if not isinstance(policy, dict) or not isinstance(policy.get("version"), str) or not policy["version"]:
+                raise ValueError("Invalid matching policy version")
+            mapping = policy.get("risk_map")
+            if (not isinstance(mapping, dict) or set(mapping) != {"very_low", "low", "medium", "high", "very_high"}
+                    or any(not isinstance(v, str) or v not in {"low", "medium", "high"} for v in mapping.values())):
+                raise ValueError("Invalid questionnaire risk mapping")
         for band in ("low", "medium", "high"):
             limits = profiles["band_limits"][band]
             for name in ("max_volatility_pct", "max_drawdown_pct", "max_single_stock_pct"):
@@ -77,7 +131,7 @@ def _parse_snapshot(objects, as_of):
                                   "last_date": fx.date.max().date().isoformat()}}
         for name, (data, reference) in objects.items():
             manifest["inputs"][name] = {**reference, "sha256": hashlib.sha256(data).hexdigest()}
-        return InputSnapshot(prices, fx, deepcopy(profiles), manifest)
+        return InputSnapshot(prices, fx, deepcopy(profiles), manifest, assets)
     except (ValueError, KeyError, TypeError, AttributeError, UnicodeError) as error:
         raise DataUnavailable("INVALID_INPUT_SNAPSHOT") from error
 
@@ -86,29 +140,44 @@ class LocalSnapshotSource:
     def __init__(self, data_dir, profiles_path):
         self.paths = {"prices": Path(data_dir) / "prices_weekly.csv",
                       "fx": Path(data_dir) / "fx_usdcad_daily.csv", "profiles": Path(profiles_path)}
+        self.universe_path = Path(data_dir) / "assets_universe.csv"
+        self.macro_path = Path(data_dir) / "macro_rates.csv"
 
-    def load(self, as_of):
+    def load(self, as_of, include_universe=False):
         objects = {}
+        paths = {**self.paths, **({"universe": self.universe_path} if include_universe else {})}
         try:
-            for name, path in self.paths.items():
+            for name, path in paths.items():
                 with path.open("rb") as stream:
                     data = stream.read(MAX_INPUT_BYTES + 1)
                 if len(data) > MAX_INPUT_BYTES:
                     raise DataUnavailable("INPUT_TOO_LARGE")
                 objects[name] = (data, {"path": str(path.resolve())})
         except OSError as error:
-            raise DataUnavailable() from error
+            raise DataUnavailable("ASSET_UNIVERSE_UNAVAILABLE" if name == "universe" else "DATA_UNAVAILABLE") from error
         return _parse_snapshot(objects, as_of)
+
+    def load_macro(self, as_of):
+        try:
+            with self.macro_path.open("rb") as stream:
+                data = stream.read(MAX_INPUT_BYTES + 1)
+            if len(data) > MAX_INPUT_BYTES:
+                raise DataUnavailable("INPUT_TOO_LARGE")
+        except OSError as error:
+            raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE") from error
+        return _parse_macro(data, {"path": str(self.macro_path.resolve())}, as_of)
 
 
 class S3SnapshotSource:
     def __init__(self, client, bucket, prefix):
         self.client, self.bucket, self.prefix = client, bucket, prefix.rstrip("/")
 
-    def load(self, as_of):
+    def load(self, as_of, include_universe=False):
         objects = {}
-        for name, filename in (("prices", "prices_weekly.csv"), ("fx", "fx_usdcad_daily.csv"),
-                               ("profiles", "profiles.json")):
+        files = [("prices", "prices_weekly.csv"), ("fx", "fx_usdcad_daily.csv"), ("profiles", "profiles.json")]
+        if include_universe:
+            files.append(("universe", "assets_universe.csv"))
+        for name, filename in files:
             key = f"{self.prefix}/{filename}"
             try:
                 response = self.client.get_object(Bucket=self.bucket, Key=key)
@@ -123,8 +192,23 @@ class S3SnapshotSource:
                 raise
             except Exception as error:
                 # This I/O boundary converts SDK/service errors into the application port failure.
-                raise DataUnavailable() from error
+                raise DataUnavailable("ASSET_UNIVERSE_UNAVAILABLE" if name == "universe" else "DATA_UNAVAILABLE") from error
         return _parse_snapshot(objects, as_of)
+
+    def load_macro(self, as_of):
+        key = f"{self.prefix}/macro_rates.csv"
+        try:
+            response = self.client.get_object(Bucket=self.bucket, Key=key)
+            with response["Body"] as stream:
+                data = stream.read(MAX_INPUT_BYTES + 1)
+            if len(data) > MAX_INPUT_BYTES:
+                raise DataUnavailable("INPUT_TOO_LARGE")
+        except DataUnavailable:
+            raise
+        except Exception as error:
+            raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE") from error
+        return _parse_macro(data, {"bucket": self.bucket, "key": key,
+            "version_id": response.get("VersionId"), "etag": response.get("ETag")}, as_of)
 
 
 def _audit_items(run_id, artifacts):

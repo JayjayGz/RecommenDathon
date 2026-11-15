@@ -19,6 +19,8 @@ The existing `S3SnapshotSource` reads all three objects per invocation and recor
 their hashes and returned version metadata. Other CSVs are not consumed by this
 source. Uploading a file at the bucket root does not put it under `data/`.
 
+Questionnaire matching and personalization additionally require `data/assets_universe.csv`; evaluated bond assets also require `data/macro_rates.csv`. Upload the supplied files and permit `s3:GetObject` on both objects in the Lambda execution role policy. Requests evaluating bonds capture and hash all five files; macro is checked only for those bonds after asset and price validation; legacy explicit-profile requests continue to use three. The new workflow and example events are documented in [questionnaire-workflow.md](questionnaire-workflow.md).
+
 The same bucket receives audit JSON at `runs/{run_id}/`. This is separate from the
 input prefix. Storage and request charges apply; keep the bucket private, encrypted,
 and accessed over HTTPS. The stack references the bucket without managing its

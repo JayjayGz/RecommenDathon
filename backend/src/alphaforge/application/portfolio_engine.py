@@ -29,10 +29,10 @@ class PortfolioEngine:
     def _load_data(self, data_dir):
         return self.repository.load_data(data_dir)
 
-    def _apply(self, profile, changes, enforce_caps, data_dir, profiles_path):
+    def _apply(self, profile, changes, enforce_caps, data_dir, profiles_path, constraints=None):
         config = self._load_profiles(profiles_path)
         prices, _ = self._load_data(data_dir)
-        return apply_proposal(profile, changes, enforce_caps, config, set(prices["ticker"].unique()))
+        return apply_proposal(profile, changes, enforce_caps, config, set(prices["ticker"].unique()), constraints)
 
     def get_profile(self, profile_id, profiles_path=None):
         """Copy of one of the 15 base profiles: id, band, style, crypto_allowed, weights."""
@@ -55,7 +55,7 @@ class PortfolioEngine:
         return {"weights": weights, "notes": notes}
 
     def validate(self, weights, band, start=None, end=None, rebalance="monthly",
-                  data_dir=None, profiles_path=None, crypto_allowed=None):
+                  data_dir=None, profiles_path=None, crypto_allowed=None, constraints=None):
         """Backtest weights (fractions summing to 1) and check them against band limits.
 
         Default period: last 5 years of data in data_dir. Currency: CAD throughout
@@ -85,10 +85,11 @@ class PortfolioEngine:
                 raise ValueError("Risk metrics are not finite")
         except (FileNotFoundError, KeyError, ValueError) as error:
             return _failed("MISSING_INFO", "DATA_UNAVAILABLE", str(error))
-        return assess(weights, band, limits, metrics, df, rebalance, crypto_allowed)
+        return assess(weights, band, limits, metrics, df, rebalance, crypto_allowed, constraints)
 
 
-    def evaluate(self, profile_id, changes, data_dir=None, profiles_path=None, remaining_ms=None):
+    def evaluate(self, profile_id, changes, data_dir=None, profiles_path=None, remaining_ms=None,
+                 starting_weights=None, constraints=None):
         """The function agents call: base vs. as-requested (no caps) vs. adjusted (capped)."""
         def require_time():
             if remaining_ms is not None and remaining_ms() < 25000:
@@ -97,6 +98,9 @@ class PortfolioEngine:
         require_time()
         try:
             profile = self.get_profile(profile_id, profiles_path)
+            if starting_weights is not None:
+                _check_weights(starting_weights)
+                profile["weights"] = dict(starting_weights)
             prices, _ = self._load_data(data_dir)
             _check_changes(changes, set(prices["ticker"].unique()))
         except (ValueError, FileNotFoundError) as error:
@@ -107,20 +111,22 @@ class PortfolioEngine:
                     "adjusted": None, "notes": [], "outside_profile": None, "max_allowed": {},
                     "errors": failure["errors"]}
         band = profile["band"]
+        validation_kwargs = {"data_dir": data_dir, "profiles_path": profiles_path,
+                             "crypto_allowed": profile["crypto_allowed"]}
+        if constraints is not None:
+            validation_kwargs["constraints"] = constraints
 
         def run(enforce_caps):
             require_time()
             try:
-                weights, notes = self._apply(profile, changes, enforce_caps, data_dir, profiles_path)
-                return {"weights": weights, "validation": self.validate(weights, band, data_dir=data_dir,
-                            profiles_path=profiles_path, crypto_allowed=profile["crypto_allowed"])}, notes
+                weights, notes = self._apply(profile, changes, enforce_caps, data_dir, profiles_path, constraints)
+                return {"weights": weights, "validation": self.validate(weights, band, **validation_kwargs)}, notes
             except ProposalError as error:
                 failure = _failed("INVALID_REQUEST", error.code, str(error))
                 return {"weights": None, "validation": failure}, [str(error)]
 
         base = {"weights": profile["weights"],
-                "validation": self.validate(profile["weights"], band, data_dir=data_dir, profiles_path=profiles_path,
-                                       crypto_allowed=profile["crypto_allowed"])}
+                "validation": self.validate(profile["weights"], band, **validation_kwargs)}
         as_requested, pre_cap_notes = run(enforce_caps=False)
         adjusted, cap_notes = run(enforce_caps=True)
 
@@ -142,11 +148,10 @@ class PortfolioEngine:
                         trial = changes[:i] + [{**change, "add_pct": x}] + changes[i + 1:]
                         try:
                             weights, _ = self._apply(profile, trial, enforce_caps=False,
-                                                 data_dir=data_dir, profiles_path=profiles_path)
+                                                 data_dir=data_dir, profiles_path=profiles_path, constraints=constraints)
                         except ProposalError:
                             continue
-                        if self.validate(weights, band, data_dir=data_dir, profiles_path=profiles_path,
-                                    crypto_allowed=profile["crypto_allowed"])["passes"]:
+                        if self.validate(weights, band, **validation_kwargs)["passes"]:
                             found = x
                             break
                     max_allowed[change["ticker"]] = found

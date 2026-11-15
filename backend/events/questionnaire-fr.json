@@ -1,0 +1,93 @@
+{
+  "action": "recommend",
+  "request": {
+    "questionnaire": {
+      "titre": "Exemple fictif du questionnaire investisseur",
+      "langue": "fr-CA",
+      "devise": "CAD",
+      "questions": [
+        {
+          "id": "situation_conjugale",
+          "reponse": "situation_conjugale_1"
+        },
+        {
+          "id": "personnes_a_charge",
+          "reponse": "personnes_a_charge_1"
+        },
+        {
+          "id": "revenu_annuel",
+          "reponse": "revenu_annuel_2"
+        },
+        {
+          "id": "stabilite_revenus",
+          "reponse": "stabilite_revenus_1"
+        },
+        {
+          "id": "dettes",
+          "reponse": "dettes_1"
+        },
+        {
+          "id": "objectif_investissement",
+          "reponse": "objectif_investissement_1"
+        },
+        {
+          "id": "horizon",
+          "reponse": "horizon_3",
+          "champs_complementaires": [
+            {
+              "id": "delai_retrait",
+              "reponse": "7_ans_plus"
+            }
+          ]
+        },
+        {
+          "id": "besoin_imprevu",
+          "reponse": "besoin_imprevu_1"
+        },
+        {
+          "id": "tolerance_risque",
+          "reponse": "tolerance_risque_2"
+        },
+        {
+          "id": "reaction_baisse",
+          "reponse": "reaction_baisse_3"
+        },
+        {
+          "id": "connaissances",
+          "reponse": "connaissances_2"
+        },
+        {
+          "id": "exclusions",
+          "reponse": "exclusions_1"
+        },
+        {
+          "id": "fonds_urgence",
+          "reponse": 5000
+        },
+        {
+          "id": "secteurs",
+          "reponse": [
+            "secteurs_1"
+          ]
+        },
+        {
+          "id": "classes_actifs",
+          "reponse": [
+            "classes_actifs_1",
+            "classes_actifs_2",
+            "classes_actifs_3"
+          ]
+        },
+        {
+          "id": "precisions_finales",
+          "reponse": null,
+          "champ_rien_a_ajouter": {
+            "id": "rien_a_ajouter",
+            "reponse": true
+          }
+        }
+      ]
+    },
+    "as_of": "2026-11-12"
+  }
+}

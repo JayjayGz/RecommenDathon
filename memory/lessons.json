@@ -474,6 +474,77 @@
           "scope": "Structure only; both lesson branches preserved after conflict resolution."
         }
       ]
+    },
+    {
+      "id": "L-018",
+      "roles": [
+        "data",
+        "screening",
+        "portfolio",
+        "risk",
+        "backtest",
+        "evidence",
+        "explanation",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Integrating raw questionnaire JSON, reference-template matching or dataset-bound personalization",
+      "boundary": "Does not authorize invented financial-risk-capacity scoring, outside-asset recommendations, personal data in development memory, or AWS deployment",
+      "defect": "The user supplied a different 16-question French form than the existing eight-answer frontend contract. Initial new personalization tests also failed because NVIDIA followed by sentence punctuation did not resolve, and a new test incorrectly assumed bond weights could never change under whole-point rounding.",
+      "cause": "The initial adapter targeted the existing frontend shape; the name parser treated a sentence-final period as part of a ticker boundary, while the test overlooked the existing largest-bond rounding residual.",
+      "evidence": [
+        "User clarified the supplied fr-CA questionnaire shape and approved very_low/low -> low, medium -> medium, high/very_high -> high. Trailing ambiguous instructions were explicitly withdrawn.",
+        "Initial backend/tests/test_investor_workflow.py run: 2 failed, 29 passed. Repaired replay: 32 passed, including amount-only clarification after NVIDIA. and rejection of NVDA.OTHER.",
+        "backend/tests/test_investor_workflow.py checks both questionnaire formats, incomplete forms, approved risk mapping, current-portfolio follow-ups, conflicts, metadata/price limits, audit release and the actual frontend validator.",
+        "Real local fictional-answer French event matched reference profile 1, returned MISSING_HOLDING_HISTORY for XBB.TO, XIU.TO and ZST.TO, and saved its local audit. No weights or missing prices were fabricated.",
+        "Contract and ownership changes are documented in docs/questionnaire-workflow.md, AGENTS.md, docs/architecture.md and docs/agent-responsibilities.md."
+      ],
+      "prevention": "Validate stable question/option IDs and require unanswered mandatory fields. Version and document explicit risk-band mappings; never infer risk capacity from desired returns, debt or income without an agreed model. Match using sourced metadata, re-evaluate current weights and proposed alternatives, expose rounding and actual trade-offs, reject ambiguous or outside-asset requests, and retain interpretation context in the private audit. Use shared profile-driven stages rather than duplicated per-profile policy implementations.",
+      "regression": "Replay completed and blank French forms, legacy frontend compatibility, five-level risk mapping, NVIDIA with punctuation plus unknown dotted-symbol rejection, repeated additions from current weights, explicit caps/exclusions, unsupported assets, actual frontend response validation and audit failure.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-bond-scope-final",
+          "result": "189 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite, including synthetic questionnaire/personalization regressions and the actual Node frontend response validator. Real source history remains incomplete; no AWS deployment or live model invocation."
+        },
+        {
+          "command": "node --check frontend/server.mjs; node --check frontend/src/app.js; node --check frontend/src/questionnaire-contract.js",
+          "result": "All three syntax checks passed.",
+          "scope": "JavaScript syntax only; does not establish browser behavior or live HTTP integration."
+        }
+      ]
+    },
+    {
+      "id": "L-019",
+      "roles": [
+        "data",
+        "infrastructure",
+        "portfolio",
+        "risk",
+        "backtest",
+        "evidence"
+      ],
+      "trigger": "Using macro_rates.csv when evaluating dataset-bound portfolio assets",
+      "boundary": "Macro rates provide bond context only. They do not replace bond ETF prices, establish historical publication availability, or supply an allocation strategy.",
+      "defect": "The initial questionnaire integration omitted the requested macro check; the subsequent general macro stage was broader than the user's clarified bond-only requirement.",
+      "cause": "The first integration focused on asset eligibility and price history; the later macro stage did not yet distinguish bond context from the price checks required for every supported holding.",
+      "evidence": [
+        "User first requested checking macro_rates and prices_weekly for assets in the universe, then clarified that macro_rates is only for bonds and other assets must be verified in prices_weekly.",
+        "The orchestrator now reads macro data only when evaluated starting holdings or requested changes include dataset-classified etf_bond assets. Macro evidence lists only those bond tickers.",
+        "backend/tests/test_macro_context.py checks bond-only evidence scope, no-bond macro-read bypass, invalid non-bond scope, release-date filtering and source-hash invalidation.",
+        "The supplied macro catalog has nine series and no release_date column; output discloses unverified publication timing and does not claim point-in-time availability."
+      ],
+      "prevention": "Derive asset classes from the validated universe, require prices for every evaluated holding, and condition the macro read on bond exposure. Preserve raw macro hashes, reference dates and units; report publication limits and do not infer weight changes from rates without an agreed strategy.",
+      "regression": "Replay bond exposure with scoped macro context, equity-only portfolios without a macro read, an equity addition to a bond portfolio without applying macro evidence to the equity, future publication filtering and missing-price rejection.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-bond-scope-final",
+          "result": "189 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline suite with synthetic portfolios and macro boundary regressions. No source dataset changes, live AWS calls or deployment."
+        }
+      ]
     }
   ]
 }
