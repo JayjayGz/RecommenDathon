@@ -56,8 +56,12 @@ def portfolio_value(df, weights, rebalance="monthly", start_value=10_000.0):
         units = start_value * w / df.iloc[0]
         return (df * units).sum(axis=1)
 
-    values, current = [], start_value
+    values, current, units = [], start_value, None
     for _, month in df.groupby(df.index.to_period("M")):
+        if units is not None:
+            # Carry the old units through to this month's first price before
+            # rebalancing, so the return across the month boundary isn't lost.
+            current = (units * month.iloc[0]).sum()
         units = current * w / month.iloc[0]
         path = (month * units).sum(axis=1)
         values.append(path)
