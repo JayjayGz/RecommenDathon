@@ -89,7 +89,7 @@ Application code depends on `PortfolioRepository` and Domain functions. `LocalPo
 | `alphaforge_starter/dataset/*.csv` | `dataset/*.csv` |
 | `alphaforge_starter/README.md` | Archived `docs/starter-dataset.md`; current instructions in `dataset/README.md` |
 | `alphaforge_starter/build_dataset.py` | `backend/scripts/build_dataset.py` (separate rebuild output) |
-| `historique_actifs_2011.csv` | `dataset/prices_daily.csv` (current supplied replacement; columns selected by name) |
+| `historique_actifs_2011.csv` | `dataset/prices_weekly.csv` (current supplied replacement; columns selected by name) |
 | `portfolio_engine.py` | `application/portfolio_engine.py` plus pure `domain/proposals.py` |
 | `backtest_viewer.py` | `presentation/backtest_viewer.py`, `application/backtests.py`, `domain/backtest.py`, `domain/market_data.py`; launch via `backend/scripts/backtest_viewer.py` |
 | `build_portfolios.py` | `domain/reference_portfolios.py`, `application/reference_portfolios.py`; launch via `backend/scripts/build_portfolios.py` |
@@ -102,7 +102,7 @@ Python module paths in this table are under `backend/src/alphaforge/`. Existing 
 
 The code provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The [proposal workflow](orchestrator.md) connects the Lambda handler to per-run local/S3 snapshots, the existing engine, structured evidence, bounded explanation ordering/repairs, deterministic release checks and local/S3 audit-before-release. It supports the explicit profile ID/change contract. The full questionnaire-to-recommendation flow above remains the target: questionnaire mapping, sector/ESG screening, teammate-owned per-ticker risk and frontend HTTP contract mapping remain pending. The template enables runtime storage only when its bucket and reviewed policy parameters are set; no deployment is implied by the code. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
 
-The active 102-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
+The active 99-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
 
 ### Reorganization verification and development handoff
 
@@ -125,7 +125,7 @@ The offline suite returned **48 passed, 8 skipped, 2 xfailed; 17 subtests passed
 - Do not use monthly macro values before their publication date in backtests.
 - The universe has survivorship bias. The limitations list states this on every result.
 - The data has no ESG scores or fundamentals. The limitations list says so, and no ESG claim is made without a documented outside source.
-- The supplied local CSVs are listed in `dataset/README.md`. The active loader uses `prices_daily.csv` and `fx_usdcad_daily.csv`. A manifest-driven production pipeline and generated evidence IDs remain planned.
+- The supplied local CSVs are listed in `dataset/README.md`. The active loader uses `prices_weekly.csv` and `fx_usdcad_daily.csv`. A manifest-driven production pipeline and generated evidence IDs remain planned.
 
 ## Cross-cutting concerns
 

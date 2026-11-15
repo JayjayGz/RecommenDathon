@@ -200,6 +200,69 @@
           "scope": "Actual SAM translator with static managed-policy lookup, synthetic image URI and no AWS calls; no rebuild or deployment performed."
         }
       ]
+    },
+    {
+      "id": "L-009",
+      "roles": [
+        "data",
+        "infrastructure"
+      ],
+      "trigger": "Validating supported currencies in a multi-asset input snapshot",
+      "boundary": "Does not add FX support, repair missing market history, or authorize changing reference allocations or frequency assumptions",
+      "defect": "The snapshot rejected unrelated JPY rows before selecting portfolio holdings; the direct conversion function also treated non-USD currencies as CAD.",
+      "cause": "The snapshot applied the CAD/USD restriction to the entire CSV, while cad_prices used a non-USD fallback without a currency guard.",
+      "evidence": [
+        "Local dataset contains JPY rows for USDJPY=X and ^N225; after repair LocalSnapshotSource.load with as_of 2026-11-15 succeeded and profile 4 returned MISSING_HOLDING_HISTORY.",
+        "backend/tests/test_orchestrator.py covers unrelated JPY rows, required unsupported reference/addition assets, missing holdings and weekly frequency.",
+        "backend/tests/test_market_data_currency.py covers unsupported/inconsistent currencies and CAD/USD conversion controls.",
+        "Initial new test incorrectly assumed SPY was a profile 4 holding; corrected the fixture to read an actual reference holding. The isolated orchestrator suite also exposed an existing bootstrap test import-order failure; full-suite verification passed.",
+        "Weekly support supersedes the prior weekly-rejection expectation; L-010 records the migration. Original verification describes behavior before that migration."
+      ],
+      "prevention": "Preserve snapshot schema and integrity checks and full-file hashes; apply supported-currency validation to the reference holdings plus requested changes before evaluation. Reject unsupported and inconsistent currency in direct conversion callers.",
+      "regression": "Replay unrelated JPY success, required JPY rejection before model calls, CAD/USD conversion controls and missing holdings. Weekly history now uses 52 observations/year under L-010; sparse or mixed cadence must still fail.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-currency-full",
+          "result": "120 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite and synthetic currency regressions. Local real snapshot parsing also checked; missing history and weekly frequency remain unresolved. No deployment or live AWS calls."
+        }
+      ]
+    },
+    {
+      "id": "L-010",
+      "roles": [
+        "data",
+        "infrastructure",
+        "backtest",
+        "risk",
+        "evidence"
+      ],
+      "trigger": "Changing price input filenames or supporting weekly observations in portfolio calculations",
+      "boundary": "Does not supply missing holdings, alter allocation policy, certify an exchange calendar, or implement teammate-owned per-ticker risk measures",
+      "defect": "The supplied weekly observations were loaded under a daily filename while metrics assumed 252 observations/year and the workflow rejected weekly cadence. The user requested a weekly adapter and output.",
+      "cause": "Input adapters hardcoded prices_daily.csv and metric annualization was fixed at 252 regardless of observation dates.",
+      "evidence": [
+        "Adapters now read prices_weekly.csv locally and from S3; the local CSV was renamed with unchanged SHA256 842796acc71af0e2327b60ecb5e902eac0533f0061c420e3dae84fc4430e6f62.",
+        "backend/tests/test_weekly_backtest.py checks hand-computable weekly growth/sample volatility, zero variance, daily compatibility, month-boundary accounting and common-calendar cadence changes.",
+        "backend/tests/test_orchestrator.py checks weekly manifest/evidence and end-to-end release with a fake LLM; sparse and mixed history still fail.",
+        "Local AAPL USD-to-CAD data probe used 262 common weekly observations and annualization 52. Real profile 4 still returned MISSING_HOLDING_HISTORY; no reference allocations were substituted."
+      ],
+      "prevention": "Infer supported cadence from actual dates for each required holding and the common calendar. Use 52 for weekly or 252 for daily; reject missing-week, mixed or sparse history. Record the convention in metrics, manifest and evidence and disclose weekly sampling and first-observed-close rebalancing. Update local/S3 keys together and invalidate saved metrics after a convention change.",
+      "regression": "Replay weekly arithmetic and workflow success, daily flat control, weekly month boundary, mixed/sparse rejection, missing holdings and unsupported currency controls.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-weekly-final",
+          "result": "128 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend checks including weekly numerical, adapter, cadence, monthly accounting and workflow/evidence regressions. No live AWS calls, deployment or profile regeneration."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_agent_workflow.py",
+          "result": "PASS: 9 agent files; 10 lesson records.",
+          "scope": "Structure only; does not prove model behavior or runtime enforcement."
+        }
+      ]
     }
   ]
 }

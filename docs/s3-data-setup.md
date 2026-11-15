@@ -8,10 +8,12 @@ the deployment settings for review.
 Required object keys (case-sensitive):
 
 ```text
-data/prices_daily.csv
+data/prices_weekly.csv
 data/fx_usdcad_daily.csv
 data/profiles.json
 ```
+
+Upload the renamed local `dataset/prices_weekly.csv` to `data/prices_weekly.csv` before activating the updated Lambda. An existing `data/prices_daily.csv` object is not read by the updated adapter. If the runtime IAM policy enumerates individual input keys, update its price-object resource to the weekly key as well. No cloud objects or IAM permissions were changed by the local migration.
 
 The existing `S3SnapshotSource` reads all three objects per invocation and records
 their hashes and returned version metadata. Other CSVs are not consumed by this
