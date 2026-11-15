@@ -59,6 +59,10 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         add("requested_changes", evaluation["requested_changes"], "percentage_point_edits",
             f"Requested edits: {changes_description}. Additions are percentage-point changes, not target total weights.",
             "validated_personalization_request")
+        if "change_review" in evaluation:
+            review = evaluation["change_review"]
+            add("change_review", review, "questionnaire_change_assessment", review["conclusion"],
+                "questionnaire_and_checked_portfolio_evaluation")
         add("funding_policy", evaluation["funding_policy"], "method",
             "Additions use proportional non-bond funding; unedited bonds are preserved before whole-percent rounding. Residual goes to the largest bond (ticker breaks ties). Adjusted proposals do not guarantee requested weights.",
             "domain.proposals.apply_proposal")
@@ -94,7 +98,8 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
     add("selected_branch", selected_branch, "branch",
         (f"The {selected_branch} allocation passed the implemented profile checks." if selected_branch else
          "No evaluated allocation is released as a passing portfolio."), "PortfolioEngine.evaluate")
-    for branch in ("as_requested", "adjusted"):
+    branches = ("base", "as_requested", "adjusted") if evaluation.get("requested_changes") else ("as_requested", "adjusted")
+    for branch in branches:
         item = evaluation.get(branch)
         if not item:
             continue
@@ -222,6 +227,13 @@ def render(draft, bundle):
 
 def release_errors(bundle, manifest, evaluation, selected_branch):
     errors = []
+    if evaluation.get("profile_match") and evaluation.get("requested_changes"):
+        from .change_review import build_change_review
+        try:
+            if evaluation.get("change_review") != build_change_review(evaluation, selected_branch):
+                errors.append("INVALID_CHANGE_REVIEW")
+        except (KeyError, ValueError, TypeError):
+            errors.append("INVALID_CHANGE_REVIEW")
     if evaluation.get("profile_match") and not evaluation.get("portfolio_analysis"):
         errors.append("MISSING_PORTFOLIO_ANALYSIS")
     if evaluation.get("portfolio_analysis") is not None:

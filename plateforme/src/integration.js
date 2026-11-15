@@ -57,6 +57,35 @@ export function validateAnalysis(analysis, evidence) {
 }
 
 // Contrôle de forme uniquement. Le moteur reste responsable de ses calculs et de sa conformité.
+export function validateChangeReview(review, portfolio) {
+  return object(review) && JSON.stringify(review).length <= 16000
+    && review.method === 'questionnaire_change_review_v1' && review.applied === false
+    && review.confirmation_required === true
+    && ['compatible', 'clarification_required', 'not_retained'].includes(review.verdict)
+    && text(review.conclusion, 2000) && percentages(review.baseline_weights_pct)
+    && Math.abs(total(review.baseline_weights_pct) - 100) < 1e-5
+    && ['strengths', 'cautions', 'limitations'].every(key => Array.isArray(review[key]) && review[key].length <= 40 && review[key].every(item => text(item, 2000)))
+    && (review.verdict !== 'compatible' || review.cautions.length === 0)
+    && Array.isArray(review.assets) && review.assets.length > 0 && review.assets.length <= 40
+    && review.assets.every(asset => object(asset) && text(asset.ticker, 30) && text(asset.asset_class, 80)
+      && typeof asset.class_preference_match === 'boolean'
+      && [true, false, null].includes(asset.sector_preference_match)
+      && finite(asset.before_pct) && asset.before_pct >= 0 && asset.before_pct <= 100
+      && finite(asset.after_pct) && asset.after_pct >= 0 && asset.after_pct <= 100
+      && Math.abs(asset.before_pct - (review.baseline_weights_pct[asset.ticker] || 0)) < 1e-5
+      && Math.abs(asset.after_pct - (portfolio.positions.find(p => p.symbol === asset.ticker)?.weight || 0)) < 1e-5);
+}
+
+export function canRetainProposal(proposal, current) {
+  const review = proposal?.changeReview;
+  if (!review || !validateChangeReview(review, proposal.portfolio) || review.verdict !== 'compatible' || current?.isDemo) return false;
+  const currentWeights = Object.fromEntries(current.positions.map(p => [p.symbol, p.weight]));
+  const proposedWeights = Object.fromEntries(proposal.portfolio.positions.map(p => [p.symbol, p.weight]));
+  const tickers = new Set([...Object.keys(currentWeights), ...Object.keys(review.baseline_weights_pct)]);
+  if (![...tickers].every(ticker => Math.abs((currentWeights[ticker] || 0) - (review.baseline_weights_pct[ticker] || 0)) < 1e-5)) return false;
+  return [...new Set([...tickers, ...Object.keys(proposedWeights)])].some(ticker => Math.abs((currentWeights[ticker] || 0) - (proposedWeights[ticker] || 0)) > 1e-5);
+}
+
 export function validateRecommendation(result) {
   return Boolean(result && text(result.runId, 160) && validatePortfolio(result.portfolio)
     && text(result.portfolio.id, 160) && text(result.portfolio.name, 160)
@@ -66,6 +95,7 @@ export function validateRecommendation(result) {
     && result.evidence.every(item => item && text(item.id, 100) && text(item.source, 1000) && text(item.description, 2000))
     && Array.isArray(result.limitations) && result.limitations.length <= 40 && result.limitations.every(item => text(item, 2000))
     && result.compliance?.passed === true
+    && (result.changeReview === undefined || validateChangeReview(result.changeReview, result.portfolio))
     && (result.analysis === undefined || validateAnalysis(result.analysis, result.evidence)));
 }
 
@@ -77,6 +107,7 @@ export function normalizeRecommendation(result) {
     explanation: result.explanation,
     evidence: result.evidence.map(item => ({ id: item.id, source: item.source, description: item.description })),
     limitations: [...result.limitations], compliance: { passed: true },
+    ...(result.changeReview === undefined ? {} : { changeReview: JSON.parse(JSON.stringify(result.changeReview)) }),
     ...(result.analysis === undefined ? {} : { analysis: JSON.parse(JSON.stringify(result.analysis)) }),
   };
 }

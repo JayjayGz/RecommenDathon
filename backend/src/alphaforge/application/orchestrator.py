@@ -134,6 +134,11 @@ class RecommendationOrchestrator:
                 transition("REVIEW_PORTFOLIO")
                 evaluation["portfolio_analysis"] = build_analysis(engine, evaluation, selected, snapshot.manifest,
                     remaining_ms, begin_search=lambda: transition("CHECK_SUGGESTIONS"))
+                if effective.changes:
+                    from .change_review import build_change_review
+                    transition("REVIEW_REQUESTED_CHANGE")
+                    evaluation["questionnaire_answers"] = request.normalized_answers()[0]
+                    evaluation["change_review"] = build_change_review(evaluation, selected)
             transition("BUILD_EVIDENCE")
             bundle = build_evidence(run_id, snapshot.manifest, evaluation, selected)
             artifacts["evidence"] = bundle
@@ -193,9 +198,14 @@ class RecommendationOrchestrator:
                 public["portfolio"] = {"weights": evaluation[selected]["weights"],
                                        "validation": evaluation[selected]["validation"]}
             if investor:
+                from .investor_summary import investor_summary
+                public["explanation"], public["limitations"] = investor_summary(
+                    evaluation, selected, request.normalized_answers()[0])
                 public["profile_match"] = match
                 public["macro_context"] = macro
                 public["portfolio_analysis"] = public_analysis(evaluation["portfolio_analysis"])
+                if "change_review" in evaluation:
+                    public["change_review"] = evaluation["change_review"]
                 public["message"] = public["explanation"]
                 if selected:
                     public["recommendation"] = frontend_recommendation(run_id, public, match, snapshot.assets)

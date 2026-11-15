@@ -11,7 +11,16 @@ def validate_requested_assets(request, assets):
     """Resolve user edits against the universe before matching or engine calls."""
     changes = [c.to_dict() for c in request.changes]
     if request.message is not None:
-        changes = [resolve_message(request.message, assets, request.conversation)]
+        try:
+            changes = [resolve_message(request.message, assets, request.conversation)]
+        except InvestorInputError as error:
+            if error.code == "ALLOCATION_AMOUNT_REQUIRED":
+                from .change_review import unweighted_asset_review
+                ticker = error.details["ticker"]
+                raise InvestorInputError(error.code,
+                    unweighted_asset_review(request.normalized_answers()[0], ticker, assets[ticker], request.requirements),
+                    error.details) from error
+            raise
     tickers = {c.get("ticker", c.get("exclude")) for c in changes}
     unknown = tickers - set(assets)
     if unknown:
@@ -81,6 +90,8 @@ def frontend_recommendation(run_id, public, match, assets):
               "explanation": public["explanation"],
               "evidence": [{"id": e["id"], "source": e["source"], "description": e["sentence"]} for e in entries],
               "limitations": public["limitations"], "compliance": public["compliance"]}
+    if "change_review" in public:
+        result["changeReview"] = deepcopy(public["change_review"])
     analysis = public.get("portfolio_analysis")
     if analysis:
         ids = {e["field"]: e["id"] for e in entries}

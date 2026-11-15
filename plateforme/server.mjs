@@ -30,6 +30,7 @@ function recommendationFields(result) {
     evidence: result.evidence.map(({ id, source, description }) => ({ id, source, description })),
     limitations: result.limitations,
     compliance: { passed: true },
+    ...(result.changeReview === undefined ? {} : { changeReview: result.changeReview }),
     ...(result.analysis === undefined ? {} : { analysis: result.analysis }),
   };
 }

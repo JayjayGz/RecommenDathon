@@ -165,8 +165,18 @@ console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePa
             else:
                 passed = status == 200 and not proposal and trace.get("status") == "INVALID_REQUEST"
             check(name, passed, http_status=status, backend_status=trace.get("status"), backend_error=trace.get("error"), proposal=bool(proposal))
+            if proposal:
+                review = proposal.get("changeReview", {})
+                baseline = {p["symbol"]: p["weight"] for p in current["positions"]}
+                check("Avis préalable conservé par le proxy : " + name,
+                      review.get("method") == "questionnaire_change_review_v1"
+                      and review.get("applied") is False and review.get("confirmation_required") is True
+                      and review.get("baseline_weights_pct") == baseline
+                      and review.get("verdict") in {"compatible", "clarification_required", "not_retained"},
+                      verdict=review.get("verdict"))
             (OUTPUT / (name.lower().replace(" ", "-") + ".json")).write_text(json.dumps(response, indent=2), encoding="utf-8")
-            if name == "Equity addition" and passed:
+            # Le banc ne simule une confirmation que pour un avis compatible.
+            if name == "Equity addition" and passed and proposal.get("changeReview", {}).get("verdict") == "compatible":
                 current = proposal["portfolio"]
 
         # Isolate ticker parsing from the engine policy by exercising structured backend edits.
