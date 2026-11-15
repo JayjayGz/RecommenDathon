@@ -58,10 +58,11 @@ that bucket access, model access, input quality or an assessment will succeed.
 1. Load a fresh input snapshot and record the hashes of the actual source bytes.
 2. Exclude observations after the as-of date; validate dates, duplicates, positive
    prices/FX, currencies, reference weights and configured policy limits.
-3. Require holdings/history. The existing engine assumes 252 observations/year,
-   so clearly sparse history (median calendar gap over three days) is rejected.
-   This guard is not a trading-calendar certification. It does not repair the
-   current weekly dataset or substitute missing profile holdings.
+3. Require holdings/history and consistent daily or weekly cadence. Weekly returns
+   annualize at 52 observations/year; daily returns use 252. Record the selected
+   convention in the manifest and validation output. Reject mixed or sparse cadence
+   and verify the common-date calendar again before computing metrics. These checks
+   do not certify a trading calendar or substitute missing profile holdings.
 4. Call the existing `PortfolioEngine.evaluate()` against the captured snapshot.
    All engine reads within the run resolve to those same captured inputs.
 5. Build typed evidence entries, failed-check facts and mandatory limitations.
@@ -133,7 +134,7 @@ No resources are deployed by this implementation. The SAM template accepts:
 | RuntimePolicyArn | Reviewed managed runtime-permissions policy attached to the function's own execution role |
 | BedrockModelId | Optional accessible model/inference profile ID; blank selects deterministic rendering |
 
-Place `prices_daily.csv`, `fx_usdcad_daily.csv` and `profiles.json` under the
+Place `prices_weekly.csv`, `fx_usdcad_daily.csv` and `profiles.json` under the
 configured input prefix. Input objects should be immutable/versioned for
 reproducibility. Each downloaded object's ETag/version ID and SHA-256 are recorded;
 this does not imply the three independently uploaded objects came from a single

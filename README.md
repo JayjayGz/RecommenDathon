@@ -67,7 +67,7 @@ Tests run from the Git root or `backend/`; each `pytest.ini` resolves the backen
 ## Current status and limitations
 
 - Calculations, proposal validation, offline Bedrock tests and a local UI are implemented.
-- `dataset/prices_daily.csv` is the active prices file. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
+- `dataset/prices_weekly.csv` is the active prices file. Weekly observations annualize at 52/year; actual daily history remains supported at 252/year. Thirteen legacy profile tickers are absent; the [data notes](docs/DATA.md) describe the mismatch and shorter FX coverage. Existing stored validation metrics also predate the corrected monthly accounting method. Reconcile rules/data and regenerate before presenting them as validated results.
 - The per-ticker risk module remains an unimplemented teammate-owned contract at `backend/src/alphaforge/application/risk.py`.
 - The [proposal workflow](docs/orchestrator.md) connects the Lambda handler, existing engine, evidence, constrained explanations, release checks and S3/local auditing. Questionnaire-to-`InvestorProfile` mapping, sector/ESG screening, per-ticker risk and the frontend HTTP adapter remain pending. Unconnected web portfolios are illustrative.
 - Dataset downloads, profile regeneration and AWS calls are explicit operations; tests do not deploy or contact AWS.

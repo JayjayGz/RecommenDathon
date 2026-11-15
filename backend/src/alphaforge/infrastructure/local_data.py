@@ -14,7 +14,7 @@ class LocalPortfolioRepository:
     def load_data(self, data_dir=None):
         folder = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
         # CSV fields are addressed by header name, independent of column order.
-        prices = pd.read_csv(folder / "prices_daily.csv", parse_dates=["date"])
+        prices = pd.read_csv(folder / "prices_weekly.csv", parse_dates=["date"])
         fx = pd.read_csv(folder / "fx_usdcad_daily.csv", parse_dates=["date"]).sort_values("date")
         return prices, fx
 

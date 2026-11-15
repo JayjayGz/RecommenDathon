@@ -17,7 +17,7 @@ Parameters:
     Type: String
     Default: inputs
     AllowedPattern: '[A-Za-z0-9_/-]+'
-    Description: Prefix without trailing slash; contains prices_daily.csv, fx_usdcad_daily.csv and profiles.json.
+    Description: Prefix without trailing slash; contains prices_weekly.csv, fx_usdcad_daily.csv and profiles.json.
   BedrockModelId:
     Type: String
     Default: ''

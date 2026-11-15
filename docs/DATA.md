@@ -4,13 +4,13 @@ The canonical data folder is `dataset/` at the Git repository root. CSVs are loc
 
 ## Current price file
 
-`prices_daily.csv` is the active file, replacing `historique_actifs_2011.csv`. The supplied header begins `ticker,date`; the loader selects `date`, `ticker`, `adj_close` and `currency` by name, so their order does not matter. No data or header swap is required. `fx_usdcad_daily.csv` supplies CAD per USD in `usdcad`.
+`prices_weekly.csv` is the active file, renamed from `prices_daily.csv` without changing its bytes. Local and S3 adapters expect the weekly filename; the older daily filename is not used as a fallback. The supplied header begins `ticker,date`; the loader selects `date`, `ticker`, `adj_close` and `currency` by name, so their order does not matter. No data or header swap is required. `fx_usdcad_daily.csv` supplies CAD per USD in `usdcad`.
 
 `LocalPortfolioRepository` defaults to the repository's `dataset/` and `profiles.json`, independent of the current shell directory. Passing an explicit folder or profile path overrides those defaults; relative overrides follow the caller's working directory.
 
 ## Compatibility with reference portfolios
 
-The current local price snapshot has 57,560 rows and 102 tickers, from 2016-01-01 through 2026-11-20. Its median within-ticker date gap is seven days, indicating weekly observations despite the filename. Existing metrics assume 252 observations/year; frequency handling requires a separate review before these observations support annualized metrics. The snapshot also contains dates beyond the current 2026-11-14 client date; simulations must define and enforce an as-of date rather than treating all rows as past history.
+The current local price snapshot has 55,859 rows and 99 tickers, from 2016-01-01 through 2026-11-20. Its median within-ticker date gap is seven days. Metrics now infer cadence from actual dates: weekly returns use 52 observations/year and daily returns use 252. Volatility uses sample standard deviation times the square root of that factor; growth uses the number of return intervals divided by that factor. The workflow excludes dates after the requested as-of date. Saved profile validation metrics predate this methodology and must not be reused as current results.
 
 FX starts on 2021-11-12 and ends on 2026-11-12. USD observations without a preceding FX rate are unavailable; do not fabricate earlier FX history. Common-date alignment can shorten the usable portfolio window further.
 
@@ -24,7 +24,7 @@ From the Git root:
 python backend/scripts/build_dataset.py
 ```
 
-This is the **original 31-asset starter generator**, with its original 2021-11-12 to 2026-11-12 window. It writes to `dataset/rebuilt_starter/` to preserve the supplied active prices. Its price output uses `prices_daily.csv`; the name does not determine frequency or the generated window. This tool does not reproduce the currently supplied 102-ticker snapshot. `backend/scripts/universe_v2.py` is a proposed universe definition, not automatically applied to the generator or saved profiles. Source metadata and asset-selection rationale are maintained by hand.
+This is the **original 31-asset starter generator**, with its original 2021-11-12 to 2026-11-12 window. It writes to `dataset/rebuilt_starter/` to preserve the supplied active prices. Its price output remains `prices_daily.csv` in the separate rebuilt folder. To intentionally use that daily output with the active adapter, place it under the active `prices_weekly.csv` filename; actual daily dates still select daily annualization. The filename never determines cadence. This tool does not reproduce the currently supplied 99-ticker snapshot. `backend/scripts/universe_v2.py` is a proposed universe definition, not automatically applied to the generator or saved profiles. Source metadata and asset-selection rationale are maintained by hand.
 
 Once the team agrees on compatible inputs and rules, rebuild profiles explicitly:
 
@@ -35,6 +35,15 @@ python backend/scripts/build_portfolios.py dataset profiles.json
 That command overwrites its output. It has not been run as part of the file reorganization. Rebuilding requires pandas, yfinance and network access; no download is needed for offline checks.
 
 ## Data rules
+
+The workflow parses and hashes the complete input files, then checks supported currencies
+for the selected profile's reference holdings and requested changes. Unrelated JPY assets
+may remain in the CSV. A required asset outside CAD/USD returns
+`MISSING_INFO` / `UNSUPPORTED_HOLDING_CURRENCY` before calculations or explanation.
+Direct currency-conversion callers also reject unsupported or inconsistent currencies.
+Weekly observations are supported; absent reference holdings still require genuine history or agreed reference-allocation changes. Do not relabel currencies or forward-fill weekly prices to manufacture daily history.
+
+Cadence checks run per required holding and again on the aligned portfolio calendar. Daily history requires a median gap of at most three days and no gap over seven days; weekly history requires a median gap of five to nine days with every gap between five and nine days. These checks allow small holiday date shifts but reject missing weeks and clearly sparse or mixed cadence. They do not certify completeness against an exchange calendar. Monthly rebalancing uses the first observed close in the new month after marking existing holdings to that close. Weekly drawdown and volatility omit intraweek moves. FX continues to use the preceding daily USD/CAD rate without looking ahead.
 
 - Use `adj_close` for returns; prices are already split-adjusted.
 - Convert USD prices with the last available Bank of Canada USD/CAD rate on or before each date (`merge_asof`, backward). Never use a future rate.

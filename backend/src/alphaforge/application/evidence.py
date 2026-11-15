@@ -7,7 +7,8 @@ DISCLAIMER = "Educational simulation, not investment advice. Historical results 
 LIMITATIONS = [
     "This assessment uses reference-profile policy; questionnaire matching and ESG/sector screening are not implemented.",
     "Prices use adjusted closes, CAD conversion with prior available FX, and common observation dates.",
-    "The engine assumes 252 observations per year; a cadence check rejects clearly sparse history but does not certify a trading calendar.",
+    "Annualization uses 52 observations per year for weekly history and 252 for daily history; cadence checks do not certify a trading calendar.",
+    "Monthly rebalancing occurs at the first observed close of each month after valuing existing holdings; weekly history omits intraweek moves and drawdowns.",
     "Asset selection may contain survivorship bias; adjusted historical prices can be revised.",
     "No transaction costs, taxes, liquidity model, fundamentals or publication-aware macro strategy are included.",
     "This deterministic release check is not a legal suitability or compliance determination.",
@@ -46,6 +47,12 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         if validation.get("status") not in {"PASS", "CONFLICT"}:
             continue
         period = validation["period"]
+        add(f"{branch}.annualization", {"frequency": validation["observation_frequency"],
+                                      "observations_per_year": validation["annualization_observations"]},
+            "observation_convention",
+            f"The {branch} metrics use {validation['observation_frequency']} observations "
+            f"and {validation['annualization_observations']} observations per year.",
+            validation["annualization_method"])
         add(f"{branch}.period", period, "dates_and_count",
             f"The {branch} simulation spans {period['first_date']} to {period['last_date']} "
             f"with {period['observations']} common observations in CAD.", validation["method"])

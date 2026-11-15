@@ -15,12 +15,12 @@ def main(repository, default_data_dir):
         data_dir = st.text_input("Dataset folder", str(default_data_dir))
         uploaded = st.file_uploader("profiles.json", type="json")
         rebalance = st.radio("Rebalancing", ["monthly", "none"],
-                             help="monthly: back to target weights at each month start. none: buy and hold.")
+                             help="monthly: rebalance at the first observed close of each month. none: buy and hold.")
 
     try:
         prices, fx = repository.load_data(data_dir)
     except FileNotFoundError:
-        st.error(f"Put prices_daily.csv and fx_usdcad_daily.csv in the '{data_dir}' folder.")
+        st.error(f"Put prices_weekly.csv and fx_usdcad_daily.csv in the '{data_dir}' folder.")
         st.stop()
 
     config = json.load(uploaded) if uploaded else repository.load_profiles()
@@ -60,5 +60,6 @@ def main(repository, default_data_dir):
 
     st.caption("Method: Yahoo Finance adjusted close from the AlphaForge starter dataset; USD assets converted "
                "with the last Bank of Canada USD/CAD rate on or before each date; only days when every holding "
-               "traded (crypto weekends dropped); no fees, taxes or slippage.")
+               "has an observation; weekly metrics use 52 observations/year and omit intraweek moves; "
+               "daily metrics use 252; no fees, taxes or slippage.")
 

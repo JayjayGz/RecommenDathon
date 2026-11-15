@@ -46,7 +46,7 @@ def test_default_paths_and_profile_loading_ignore_shell_directory(tmp_path, monk
     "date,ticker,adj_close,currency\n2025-01-02,A,100,CAD\n",
 ])
 def test_price_column_order_and_explicit_repository_paths(tmp_path, price_csv):
-    (tmp_path / "prices_daily.csv").write_text(
+    (tmp_path / "prices_weekly.csv").write_text(
         price_csv, encoding="utf-8")
     (tmp_path / "fx_usdcad_daily.csv").write_text(
         "date,usdcad\n2025-01-02,1.25\n", encoding="utf-8")
@@ -63,7 +63,7 @@ def test_price_column_order_and_explicit_repository_paths(tmp_path, price_csv):
 
 def test_missing_holdings_return_information_request(tmp_path):
     # A usable CSV is insufficient when the requested profile holdings are absent.
-    (tmp_path / "prices_daily.csv").write_text(
+    (tmp_path / "prices_weekly.csv").write_text(
         "date,ticker,adj_close,currency\n2025-01-02,TSLA,100,CAD\n", encoding="utf-8")
     (tmp_path / "fx_usdcad_daily.csv").write_text(
         "date,usdcad\n2025-01-02,1.25\n", encoding="utf-8")
