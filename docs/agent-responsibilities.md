@@ -32,6 +32,7 @@ override a rejected change. See [the implemented request flow](questionnaire-wor
 | Risk Agent | No | Compute volatility, drawdown and correlations for candidates | Risk metrics |
 | Portfolio Agent | No | Build weights that fit the profile's risk level and constraints. Record the alternatives it rejected and the rule that rejected each | Weights, `rejected_alternatives` |
 | Backtest Agent | No | Simulate the portfolio over the data window | Performance series and metrics |
+| Portfolio Review | No | Produce composition, sector-coverage, concentration and profile-fit findings; evaluate bounded held-asset alternatives with the engine | Verified review and qualifying optional alternatives; rejected trials in private audit |
 | Explanation Agent | Yes | Write the rationale and trade-off narrative using only the Evidence Bundle | Text where every claim cites evidence IDs |
 | Compliance Gate | Partly | Final check before anything is shown (see below) | Pass or fail, with reasons |
 
@@ -44,7 +45,10 @@ Only the Explanation Agent needs the LLM in this pipeline. Everything else is de
 3. A validator (plain code) checks that every cited ID exists, and that every number in the text matches a bundle value after rounding. Any unmatched number fails validation.
 4. On repairable failure, the orchestrator retries the Explanation Agent with structured errors, at most 2 times total across evidence and wording checks. After that it falls back once to a template-based explanation built directly from validated evidence. The fallback must pass the same Compliance Gate; otherwise the run returns an explicit error. Missing or invalid calculated evidence stops the run rather than triggering prose repair.
 
-Evidence IDs will depend on the actual input CSVs listed in `dataset/README.md`. Evidence generation remains planned; the bundle format should stay the same when data changes.
+Evidence IDs depend on the captured source manifest. Evidence generation and the
+bounded claim-ID explanation contract are implemented in `application/evidence.py`.
+The current [portfolio review](portfolio-review.md) adds findings and candidate
+trade-offs before explanation; calculations and release decisions remain deterministic.
 
 ## Trade-offs
 

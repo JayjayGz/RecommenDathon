@@ -11,6 +11,7 @@ from .portfolio_engine import PortfolioEngine
 from .snapshots import DataUnavailable
 from .investor_requests import InvestorRequest
 from .investor_workflow import prepare_investor, frontend_recommendation, validate_requested_assets
+from .portfolio_review import build_analysis, public_analysis
 from alphaforge.domain.profile_matching import InvestorInputError, investible_universe
 from alphaforge.domain.macro_context import macro_context
 
@@ -49,7 +50,7 @@ class RecommendationOrchestrator:
             if status == "MISSING_INFO":
                 terminal = "NEEDS_INFORMATION"
             artifacts["result"] = {**result, "states": states + [terminal],
-                                   "workflow_version": "proposal_workflow_v2"}
+                                   "workflow_version": "proposal_workflow_v3_review"}
             try:
                 self.audit_store.save(run_id, artifacts)
             except Exception:
@@ -108,6 +109,7 @@ class RecommendationOrchestrator:
                                          remaining_ms=remaining_ms, **extra)
             if investor:
                 evaluation.update(profile_match=match, asset_metadata=snapshot.assets,
+                                  constraints=constraints,
                                   allowed_tickers=sorted(investible_universe(snapshot.assets) & set(snapshot.prices.ticker)),
                                   requested_changes=[c.to_dict() for c in effective.changes],
                                   macro_context=macro,
@@ -128,6 +130,10 @@ class RecommendationOrchestrator:
             # A capped alternative is eligible only if it actually passes every implemented check.
             selected = next((branch for branch in ("as_requested", "adjusted")
                              if evaluation[branch] and evaluation[branch]["validation"].get("passes") is True), None)
+            if investor:
+                transition("REVIEW_PORTFOLIO")
+                evaluation["portfolio_analysis"] = build_analysis(engine, evaluation, selected, snapshot.manifest,
+                    remaining_ms, begin_search=lambda: transition("CHECK_SUGGESTIONS"))
             transition("BUILD_EVIDENCE")
             bundle = build_evidence(run_id, snapshot.manifest, evaluation, selected)
             artifacts["evidence"] = bundle
@@ -189,6 +195,7 @@ class RecommendationOrchestrator:
             if investor:
                 public["profile_match"] = match
                 public["macro_context"] = macro
+                public["portfolio_analysis"] = public_analysis(evaluation["portfolio_analysis"])
                 public["message"] = public["explanation"]
                 if selected:
                     public["recommendation"] = frontend_recommendation(run_id, public, match, snapshot.assets)

@@ -31,7 +31,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         entries.append({"id": f"{run_id}:E{len(entries) + 1}", "field": field,
                         "value": value, "unit": unit, "sentence": sentence,
                         "source": source, "manifest_hash": manifest_hash,
-                        "method": "proposal_evidence_v2_sorted_checks"})
+                        "method": "proposal_evidence_v3_portfolio_review"})
 
     match = evaluation.get("profile_match")
     if match:
@@ -60,7 +60,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             f"Requested edits: {changes_description}. Additions are percentage-point changes, not target total weights.",
             "validated_personalization_request")
         add("funding_policy", evaluation["funding_policy"], "method",
-            "Additions are funded proportionally from other non-bond holdings. Bond edits change the requested bond; other evaluated bond weights are preserved before rounding. Weights are rounded to whole percentages and any residual goes to the largest evaluated bond holding, with ticker order breaking ties. An adjusted alternative is a checked proposal, not a guarantee that the requested weight can be included.",
+            "Additions use proportional non-bond funding; unedited bonds are preserved before whole-percent rounding. Residual goes to the largest bond (ticker breaks ties). Adjusted proposals do not guarantee requested weights.",
             "domain.proposals.apply_proposal")
         add("starting_weights_source", match["starting_weights_source"], "source",
             "This assessment starts from " + ("the submitted current portfolio" if match["starting_weights_source"] == "submitted_current_portfolio" else "the matched reference portfolio") +
@@ -84,8 +84,8 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
                 availability = (f"a release date of {row['release_date']} is supplied"
                                 if row["release_date"] else "publication timing is unverified")
                 add(f"macro.{row['series_id']}", row, "macro_dataset_observation",
-                    f"Bond macro context: {row['label']} ({row['series_id']}) reports {row['value']:g} {row['unit']} "
-                    f"for reference date {row['reference_date']}; {availability}. This observation does not change portfolio weights.",
+                    f"Bond context {row['series_id']}: {row['value']:g} {row['unit']} at {row['reference_date']}; "
+                    f"{availability}. No allocation effect.",
                     "macro_rates.csv")
 
     status = evaluation["status"]
@@ -98,6 +98,8 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         item = evaluation.get(branch)
         if not item:
             continue
+        if branch == "adjusted" and selected_branch != "adjusted" and item == evaluation.get("as_requested"):
+            continue  # The same weights/metrics need one set of claims, not duplicated prose.
         validation = item["validation"]
         if validation.get("status") not in {"PASS", "CONFLICT"}:
             continue
@@ -130,7 +132,7 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             if match:
                 asset = evaluation["asset_metadata"][ticker]
                 add(f"selected.asset.{ticker}", asset, "dataset_asset_metadata",
-                    f"{ticker} is {asset['name']}, classified as {asset['asset_class']} in {asset['sector']} by the dataset.",
+                    f"{ticker}: classified as {asset['asset_class']}, sector {asset['sector']} in the dataset.",
                     "assets_universe.csv")
                 previous = evaluation["base"]["weights"].get(ticker, 0)
                 if abs(previous - weight) > 1e-8:
@@ -143,10 +145,53 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
                     add(f"selected.removed.{ticker}", {"before": previous, "after": 0}, "weight_fractions",
                         f"The proposed allocation removes the previous {previous * 100:g}% position in {ticker}.",
                         "PortfolioEngine.evaluate/base_and_selected")
+    analysis = evaluation.get("portfolio_analysis")
+    if analysis:
+        review = analysis["review"]
+        split = lambda values: ", ".join(f"{k}: {v:g}%" for k, v in sorted(values.items())) or "none"
+        selection = review["selection"]
+        add("review.selection", selection, "reference_allocation_rules",
+            f"The {selection['risk_band']} reference template uses {split(selection['reference_asset_class_weights_pct'])}. "
+            "These are reference rules, not individually optimized weights.", "profiles.json/assets_universe.csv")
+        add("review.composition", {"asset_classes": review["asset_class_weights_pct"],
+                                   "listing_currencies": review["listing_currency_weights_pct"]}, "percent",
+            f"Evaluated asset classes: {split(review['asset_class_weights_pct'])}. "
+            f"Listing currencies: {split(review['listing_currency_weights_pct'])}; these are not underlying currency exposures.",
+            "assets_universe.csv/evaluated_weights")
+        sectors = review["sectors"]
+        add("review.sectors", sectors, "direct_stock_sector_percent",
+            f"Direct-stock sectors: {split(sectors['weights_pct'])}; {sectors['unclassified_pct']:g}% has no underlying sector breakdown. "
+            "ETF labels are not a sector look-through.", "assets_universe.csv/evaluated_weights")
+        d = review["diversification"]
+        add("review.diversification", d, "listed_position_concentration",
+            f"There are {d['holding_count']} listed holdings; largest is {d['largest_ticker']} at {d['largest_weight_pct']:g}%. "
+            f"Holding HHI is {d['holding_hhi']:g}, equivalent to {d['effective_holdings']:.3f} equal-weight positions, not underlying securities.",
+            "portfolio_review_v1/evaluated_weights")
+        add("review.findings", {"findings": review["findings"], "profile_fit": review["profile_fit"], "risk": review["risk"]},
+            "deterministic_findings", f"Profile-check result: {review['profile_fit']['status']}. "
+            "Unequal holding weights are observations, not an additional risk threshold. Historical metrics and failed checks govern profile fit.",
+            "PortfolioEngine.validate/portfolio_review_v1")
+        search = analysis["search"]
+        add("suggestion.search", {k: v for k, v in search.items() if k != "candidates"}, "bounded_search",
+            f"Optional search is {search['status']}: {len(search['candidates'])} same-class held-asset candidates evaluated; "
+            f"{len(analysis['suggestions'])} qualify. This is a bounded search, not an optimal allocation. Candidates are independent and not applied.",
+            search["method"])
+        for suggestion in analysis["suggestions"]:
+            comparison = suggestion["comparison"]
+            changes = ", ".join(f"{c['ticker']} {c['add_pct']:+g}pp" for c in suggestion["changes"])
+            metrics = "; ".join(f"{m}: {comparison[m]['before']:g}% to {comparison[m]['after']:g}%"
+                                for m in ("annual_growth_pct", "volatility_pct", "max_drawdown_pct"))
+            add(f"suggestion.{suggestion['id']}", suggestion, "engine_checked_optional_alternative",
+                f"Candidate {suggestion['id']} requests {changes}. Holding HHI falls from "
+                f"{comparison['holding_hhi']['before']:g} to {comparison['holding_hhi']['after']:g}; {metrics}. "
+                "All checks pass; asset-class totals are preserved. This independent alternative has not been applied.",
+                "PortfolioEngine.evaluate_candidate/portfolio_review_v1")
     limitations = (LIMITATIONS[1:] + match["limitations"] if match else LIMITATIONS) + [
         f"Input snapshot as-of date: {manifest['as_of']}; later observations are excluded."]
     if evaluation.get("macro_context"):
         limitations += evaluation["macro_context"]["limitations"]
+    if analysis:
+        limitations += analysis["review"]["limitations"]
     return {"run_id": run_id, "manifest_hash": manifest_hash, "entries": entries,
             "limitations": limitations, "disclaimer": DISCLAIMER}
 
@@ -177,6 +222,11 @@ def render(draft, bundle):
 
 def release_errors(bundle, manifest, evaluation, selected_branch):
     errors = []
+    if evaluation.get("profile_match") and not evaluation.get("portfolio_analysis"):
+        errors.append("MISSING_PORTFOLIO_ANALYSIS")
+    if evaluation.get("portfolio_analysis") is not None:
+        from .portfolio_review import analysis_errors
+        errors += analysis_errors(evaluation["portfolio_analysis"], evaluation, selected_branch, manifest)
     macro = evaluation.get("macro_context")
     if macro and (not macro.get("applies_to_tickers") or any(
             evaluation.get("asset_metadata", {}).get(ticker, {}).get("asset_class") != "etf_bond"

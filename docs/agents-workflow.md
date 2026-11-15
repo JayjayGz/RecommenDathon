@@ -35,7 +35,9 @@ flowchart TD
     S --> R[Risk]
     R --> W[Portfolio]
     W --> B[Backtest]
-    B --> E[Evidence and limitations]
+    B --> REV[Deterministic portfolio review]
+    REV --> SUG[Bounded engine-checked alternatives]
+    SUG --> E[Evidence and limitations]
     E --> X[Explanation]
     X --> C{Compliance gate}
     C -->|pass| A[Persist final audit]

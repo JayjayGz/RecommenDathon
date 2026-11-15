@@ -735,6 +735,118 @@
           "scope": "Local Node checks, not graphical layout verification."
         }
       ]
+    },
+    {
+      "id": "L-025",
+      "roles": ["evidence", "explanation", "infrastructure", "compliance"],
+      "trigger": "Adding review findings or optional-alternative claims to the bounded frontend explanation",
+      "boundary": "Does not authorize omitting required facts, truncating limitations, raising transport limits, changing weights or relaxing constraints",
+      "defect": "New portfolio-review claims pushed the deterministic explanation over the existing 10000-character frontend limit for multiple reference styles, returning FRONTEND_RESPONSE_TOO_LARGE.",
+      "cause": "Identical requested/adjusted branches repeated all metrics, and verbose macro/metadata sentences consumed space already needed for review and candidate trade-offs.",
+      "evidence": [
+        "test_all_reference_styles_fit_frontend_contract_with_real_macro_catalog reproduced the failure. First deduplication repair left profile 2 failing; a preserved diagnostic measured profile 9 at 11248 characters and profile 2 at 10393.",
+        ".local-runs/review-size-debug/debug-evidence.json preserves a pre-compaction evidence bundle; no source CSVs were changed.",
+        "Second repair kept every structured value, compacted macro/metadata/funding prose and retained mandatory limits. Evidence method is proposal_evidence_v3_portfolio_review."
+      ],
+      "prevention": "Test all 15 reference styles with the actual macro catalog before releasing added claims. Avoid duplicate identical branch narratives and keep prose concise while preserving structured evidence, timing caveats, candidate trade-offs and transport limits.",
+      "regression": "Replay all-reference-style response limits, an initial matched portfolio, a conflicting proposal and canonical audit reconstruction; validate actual responses through the frontend contract.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/review-pytest-final",
+          "result": "255 passed, 2 skipped, 2 xfailed; 17 subtests passed in 48.17s.",
+          "scope": "Offline backend regressions including all reference styles, review provenance, candidate rejection, frontend normalization, shared model repair budget and audit failure. Synthetic returns test contracts rather than market performance."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "20 passed, 0 failed; 14 complete audited real-data runs. Original source price CSV hash unchanged.",
+          "scope": "Actual local Node proxy, Lambda handler, CSV engine, qualifying concentration alternative, frontend validation and disk-reloaded evidence. No graphical browser, deployed AWS, S3 or live Bedrock calls."
+        }
+      ]
+    },
+    {
+      "id": "L-026",
+      "roles": ["infrastructure", "compliance"],
+      "trigger": "Starting the local Bedrock-backed workflow with an existing AWS CLI login profile",
+      "boundary": "Does not authorize logging secrets, replacing the credential chain with invented credentials, treating configuration as live access, or assuming a model response passed evidence checks",
+      "defect": "The local HTTP handler returned WORKFLOW_CONFIGURATION_UNAVAILABLE even with a model, bearer token and supported region configured. A safe initialization diagnostic identified MissingDependencyException.",
+      "cause": "Boto3 credential-provider initialization can resolve an existing login profile before making the Bedrock call. The installed SDK lacked its optional AWS CRT dependency; botocore LoginProvider.load requires it.",
+      "evidence": [
+        "bootstrap.py creates a Boto3 session/client; botocore credentials.py LoginProvider.load raises MissingDependencyException without the CRT EC support. Installing boto3[crt]==1.44.3 installed awscrt==0.38.0 and startup succeeded.",
+        "A prior sandboxed live replay, run 752e65f9-3457-463b-a49f-1198c11e51cf, returned the checked fallback after three EndpointConnectionError failures. This was a separate network restriction, not a successful live-model check.",
+        "After network escalation and the dependency repair, run 4f5a3c81-0dd7-4996-9b59-1dfd3a905ac5 returned HTTP 200 and PASS with bedrock_ordered, one model attempt, no failures and seven audit artifacts. Safe summary: .local-runs/launcher-verification/live-summary.json.",
+        "New local startup reports a missing CRT dependency with an installation command and suppresses raw exception details. Root dotenv loading preserves terminal precedence; AWS and Bedrock variables are removed from the frontend child environment."
+      ],
+      "prevention": "Include the CRT extra in local Python dependencies, check client construction at local startup without invoking a model, and distinguish configured, initialized, live-response and released-evidence states. Verify a real provider response separately from fallback and preserve failure codes without credentials.",
+      "regression": "Replay a mocked missing-dependency startup and valid startup, dotenv precedence and secret filtering, real local HTTP pipeline/audit controls, and an explicitly authorized live sample when credentials and network access are available.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_local_server.py backend/tests/test_bedrock.py backend/tests/test_orchestrator.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/launcher-crt-tests",
+          "result": "66 passed; 17 subtests passed in 25.00s.",
+          "scope": "Local transport, launcher, real source CSV offline request, mocked dependency failure and valid control, SDK schema, explanation gate and audit controls after installing the CRT dependency."
+        },
+        {
+          "command": "Python stdin: POST the repository questionnaire-fr.json questionnaire with as_of 2026-11-15 to http://127.0.0.1:4173/api/portfolio; read only status/mode/count/error-code fields from the run audit",
+          "result": "HTTP 200; PASS; bedrock_ordered; one model attempt; no failure codes; compliance passed; seven audit files; one qualifying optional alternative.",
+          "scope": "One actual live Bedrock invocation through the local launcher and proxy, with a fictional investor example. No graphical browser test or AWS deployment."
+        }
+      ]
+    },
+    {
+      "id": "L-027",
+      "roles": ["infrastructure"],
+      "trigger": "Testing HTTP header rejection before body receipt on Windows",
+      "boundary": "Does not authorize weakening body-size or origin checks, ignoring connection errors in legitimate complete-request tests, or reading unbounded bodies",
+      "defect": "The first complete launcher regression run failed the oversized-request fixture with ConnectionAbortedError WinError 10053 instead of receiving the expected 413; 293 other tests passed.",
+      "cause": "The fixture declared Content-Length 70000 but sent an unrelated two-byte body. Early rejection closed a connection with unread payload; the fixture mixed header-only rejection with incomplete-body behavior.",
+      "evidence": [
+        "Initial launcher-full-1 run: 1 failed, 293 passed, 2 skipped, 2 xfailed and 17 passing subtests. Failing case: test_local_transport_rejects_invalid_and_cross_origin_requests POST /portfolio with the oversized length header.",
+        "The fixture now sends only oversized headers with Expect: 100-continue and no body, checking rejection before transfer. Invalid-length and cross-origin header-only cases also send no unrelated payload. The production 64 KiB limit remains unchanged."
+      ],
+      "prevention": "Keep pre-body header rejection fixtures separate from complete-body parsing fixtures; construct the declared and transmitted data deliberately. Test legitimate complete requests nearby and verify both services shut down.",
+      "regression": "Replay oversized/invalid length and cross-origin header rejection, invalid JSON, valid portfolio/chat requests, and launcher lifecycle controls on Windows.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_local_server.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/launcher-tests-2",
+          "result": "13 passed in 13.13s.",
+          "scope": "Repaired header cases plus valid local engine/audit requests, dotenv handling, real-data offline startup and verified shutdown."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/launcher-full-2",
+          "result": "294 passed, 2 skipped, 2 xfailed; 17 subtests passed in 53.51s.",
+          "scope": "Full offline backend suite after the fixture repair, before the additional CRT startup regression was added."
+        }
+      ]
+    },
+    {
+      "id": "L-028",
+      "roles": ["infrastructure"],
+      "trigger": "Launching or stopping the local application when a previous instance may still own a port, especially through a Windows virtual-environment Python wrapper",
+      "boundary": "Does not authorize stopping unrelated listeners, changing credentials, or treating a healthy configuration endpoint as proof of live model access",
+      "defect": "The user launched a second instance and received a website port 4173 conflict after backend startup. Both existing endpoints were still healthy. The original launcher used child.kill(), which does not guarantee termination of a Windows Python wrapper's descendants.",
+      "cause": "The launcher did not preflight ports before spawning services; Windows virtual-environment executables can introduce a descendant interpreter beyond the immediate spawned process.",
+      "evidence": [
+        "Redacted user report: Backend 127.0.0.1:8000 followed by website port 4173 already in use. Safe health probes returned agentConnected=true, portfolioConnected=true and workflowConfigured=true for the existing application.",
+        "scripts/start_local.mjs now checks both requested ports before spawning and uses taskkill /PID <own-child-pid> /T /F on Windows for its own children only. Existing listeners are left running.",
+        "First cleanup test fixture used an invalid NODE_OPTIONS flag and failed during dotenv loading before backend startup (16 passed, 1 failed). First fixture repair used an unconditional preload, which also failed too early (16 passed, 1 failed). Second repair restricts the injected failure to the website entry point; backend readiness and shutdown are now exercised."
+      ],
+      "prevention": "Check website and backend ports before launch, direct users to a healthy existing instance or two available ports, and stop only owned child process trees. Make failure fixtures target the intended child entry point rather than parent configuration loading.",
+      "regression": "Replay occupied website rejection with an unusable Python executable to prove no backend is spawned; start valid real-data offline requests with explicit and virtual-environment Python selection; inject website startup failure after backend readiness and assert both listeners are gone.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_local_server.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/launcher-ports-3",
+          "result": "17 passed in 22.90s.",
+          "scope": "Windows local launcher, owned-process cleanup, occupied-port rejection, transport validation, real source CSV offline requests and persisted audit. No new live Bedrock call or deployment."
+        },
+        {
+          "command": "node --check scripts/start_local.mjs; git diff --check; GET /api/config on 4173 and /health on 8000",
+          "result": "Syntax and whitespace checks passed; both existing services returned healthy configured responses.",
+          "scope": "The already-running application remains available; configuration and liveness checks do not invoke the model."
+        }
+      ]
     }
   ]
 }

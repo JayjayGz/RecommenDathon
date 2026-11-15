@@ -11,7 +11,9 @@ flowchart TD
         SCREEN --> RISK["Risk Agent"]
         RISK --> PORT["Portfolio Agent (records rejected alternatives)"]
         PORT --> BT["Backtest Agent"]
-        BT --> EV["Evidence Bundle (all computed numbers)"]
+        BT --> REVIEW["Deterministic portfolio findings"]
+        REVIEW --> SEARCH["Bounded engine-checked optional alternatives"]
+        SEARCH --> EV["Evidence Bundle (all computed numbers)"]
         EV --> EXPL["Explanation Agent (cites evidence IDs only)"]
         LIM["Limitations Registry (fixed + data-derived)"] --> GATE
         EXPL --> GATE{"Compliance Gate"}

@@ -27,4 +27,5 @@ test('HTTP adapter accepts the typed Word contract and rejects stale or malforme
   assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,unexpected:'field'})).status,400);
   assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,withdrawalTiming:undefined})).status,400);
   for (const path of ['/', '/src/theme.css','/src/questionnaire.css','/src/illustrations.js']) assert.equal((await fetch(base+path)).status,200,path);
+  for (const path of ['/.env','/../.env','/docs/AGENT_INTEGRATION.md']) assert.equal((await fetch(base+path)).status,404,path);
 });

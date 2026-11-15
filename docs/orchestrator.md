@@ -2,8 +2,9 @@
 
 The handler now calls `RecommendationOrchestrator.run()` for the existing
 `profile_id`/`changes` contract. This is a synchronous assessment workflow in one
-Lambda. It does not implement questionnaire matching, a chat agent, sector/ESG
-screening or the teammate-owned per-ticker risk module.
+Lambda. Questionnaire matching and dataset-bound chat edits also use this workflow;
+see [questionnaire contracts](questionnaire-workflow.md). Broader financial-risk-capacity
+scoring, ESG screening and the teammate-owned per-ticker risk module remain pending.
 
 ## Request and response
 
@@ -28,9 +29,9 @@ future dates are rejected and later input observations are excluded.
 
 HTTP API v2 / Function URL event shapes use `POST /portfolio` with the inner
 request object as the JSON body, including base64-body support. This handler
-support does not provision an HTTP endpoint. `POST /chat` returns 501. The
-frontend's raw-questionnaire contract needs a separate teammate-owned adapter;
-it cannot call this calculation contract unchanged.
+support does not provision an HTTP endpoint. `POST /chat` accepts the validated
+questionnaire, current portfolio and dataset-bound edits described in
+[the follow-up contract](questionnaire-workflow.md#follow-up-requests).
 
 | Outcome | HTTP status | Meaning |
 | --- | --- | --- |
@@ -67,6 +68,10 @@ that bucket access, model access, input quality or an assessment will succeed.
    All engine reads within the run resolve to those same captured inputs.
 5. Build typed evidence entries, failed-check facts and mandatory limitations.
    Evidence IDs contain the run ID and refer to a hash of the input manifest.
+   For questionnaire requests, first run deterministic portfolio review and bounded
+   engine-checked alternatives. Findings, rationale and qualifying trade-offs enter
+   the evidence bundle before explanation; rejected trials stay in the audit.
+   See [review and suggestion methods](portfolio-review.md).
 6. Optionally ask Bedrock to order those verified statements. Its response is
    restricted to `{"claim_ids":[...]}` containing every supplied ID exactly once.
    Free-form explanations are deliberately not accepted in this version.
@@ -114,9 +119,9 @@ python backend/scripts/run_workflow.py --event backend/events/recommend.json
 
 This uses the existing local dataset and profiles, writes `.local-runs/`, and
 uses the checked deterministic explanation. It does not download data or call
-AWS. The current incompatible dataset is expected to produce MISSING_INFO.
-Successful end-to-end controls use explicitly fictional flat-price fixtures in
-`backend/tests/test_orchestrator.py`, not fabricated market results.
+AWS. Missing or incompatible history produces MISSING_INFO. Offline controls use
+fictional flat-price fixtures; `scripts/check_pipeline_e2e.py` additionally exercises
+the actual source CSVs through local HTTP transports and persisted audit checks.
 
 To invoke the handler locally on the host instead, set `ALPHAFORGE_MODE=local`.
 Optional `DATA_DIR`, `PROFILES_PATH` and `AUDIT_DIR` override local paths. The

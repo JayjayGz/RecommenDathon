@@ -2,7 +2,7 @@ pandas
 numpy
 streamlit
 yfinance
-boto3
+boto3[crt]
 strands-agents
 pytest
 aws-sam-translator

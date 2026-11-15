@@ -4,6 +4,12 @@ Une interface en français pour le Datathon 2026 : questionnaire investisseur, a
 
 ## Démarrer
 
+Pour connecter le site au backend Python local, lancez
+`node scripts/start_local.mjs` depuis la racine du dépôt (un dossier au-dessus).
+Ce lanceur charge le `.env` de la racine et démarre les deux services.
+Voir [le lancement complet](../docs/local-development.md). La commande `npm start`
+ci-dessous démarre uniquement le site et son proxy.
+
 Avec Node.js 24 ou plus récent, lancez le serveur depuis `plateforme/` avec la commande ci-dessous. Ouvrez **http://localhost:4173** et gardez le serveur ouvert pendant l’utilisation.
 
 Depuis PowerShell, dans ce dossier :

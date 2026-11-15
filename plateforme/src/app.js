@@ -351,7 +351,7 @@ async function generatePortfolio() {
   requestGuard.invalidate(); sending = false; sendError = '';
   loadingPortfolio = true; portfolioError = ''; render();
   try {
-    const response = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionnaire: makeQuestionnairePayload(state.answers) }), signal: AbortSignal.any([request.signal, AbortSignal.timeout(35000)]) });
+    const response = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionnaire: makeQuestionnairePayload(state.answers) }), signal: AbortSignal.any([request.signal, AbortSignal.timeout(130000)]) });
     const payload = await response.json();
     if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Le moteur n’a pas pu fournir une simulation complète. Vos réponses sont conservées.');
     const result = normalizeRecommendation(payload);
@@ -372,7 +372,7 @@ async function sendMessage() {
   const message = submittedDraft.trim(); render();
   try {
     const payload = boundedChatPayload({ message, conversation: state.messages, questionnaire: makeQuestionnairePayload(state.answers), portfolio: currentPortfolio() });
-    const response = await fetch('/api/agent/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.any([request.signal, AbortSignal.timeout(35000)]) });
+    const response = await fetch('/api/agent/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.any([request.signal, AbortSignal.timeout(130000)]) });
     if (!response.ok) throw new Error(response.status === 503 ? 'Votre agent n’est pas encore disponible. Votre brouillon est conservé.' : 'Le service n’a pas pu répondre. Votre brouillon est conservé ; réessayez.');
     const result = await response.json();
     if (!requestGuard.isCurrent(request)) return;
