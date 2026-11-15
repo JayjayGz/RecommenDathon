@@ -12,19 +12,19 @@ PROFILES = json.loads((Path(__file__).resolve().parents[2] / "profiles.json").re
 # characteristics, not reverse-engineered from the expected profile id.
 
 ROBERT = {
-    "risk": "low", "reaction": "hesitant", "return": "3_4",
+    "risk": "low", "reaction": "hesitant", "knowledge": "basic",
     "horizon": "5", "income": "regular",
     "sectors": [], "assets": ["bonds", "cash"], "exclusions": "none",
 }
 
 MATEO = {
-    "risk": "medium", "reaction": "concerned", "return": "5_6",
+    "risk": "medium", "reaction": "concerned", "knowledge": "good",
     "horizon": "10", "income": "regular",
     "sectors": [], "assets": ["funds"], "exclusions": "limits",
 }
 
 AMIRA = {
-    "risk": "very_high", "reaction": "calm", "return": "10_plus",
+    "risk": "very_high", "reaction": "calm", "knowledge": "advanced",
     "horizon": "15_plus", "income": "regular",
     "sectors": ["technology"], "assets": ["stocks", "crypto"], "exclusions": "none",
 }
@@ -51,7 +51,7 @@ def test_amira_maps_to_profile_13():
 
 def test_tolerance_is_the_lower_of_its_signals():
     # A confident self-report shouldn't win against a worried loss reaction.
-    answers = {"risk": "very_high", "reaction": "worried", "return": "10_plus"}
+    answers = {"risk": "very_high", "reaction": "worried", "knowledge": "advanced"}
     assert pm.tolerance_score(answers) == 1
 
 
@@ -65,9 +65,19 @@ def test_missing_answer_raises():
         pm.tolerance_score({"risk": "low", "reaction": "calm"})
 
 
+def test_tolerance_does_not_need_a_desired_return_answer():
+    # Desired return isn't a tolerance input -- it's an output the engine
+    # calculates from the actual portfolio. The questionnaire has no
+    # "return" question (it asks "goal" instead); tolerance_score must not
+    # require one.
+    answers = {"risk": "medium", "reaction": "concerned", "knowledge": "good"}
+    assert "return" not in answers
+    assert pm.tolerance_score(answers) == 4
+
+
 def test_unexpected_answer_value_raises():
     with pytest.raises(ValueError, match="Unexpected"):
-        pm.tolerance_score({"risk": "extreme", "reaction": "calm", "return": "10_plus"})
+        pm.tolerance_score({"risk": "extreme", "reaction": "calm", "knowledge": "advanced"})
 
 
 def test_no_sector_or_asset_signal_defaults_to_broad_diversifier():

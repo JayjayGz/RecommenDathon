@@ -6,8 +6,15 @@ lower of the two -- so one optimistic answer can never outweigh a cautious
 one. Band = low (1-2) / medium (3-4) / high (5-6).
 
 Answers use the real questionnaire's field names and values
-(frontend/src/data.js): risk, reaction, return, horizon, income, sectors,
-assets, exclusions.
+(plateforme/src/data.js): risk, reaction, knowledge, horizon, income,
+sectors, assets, exclusions.
+
+There is deliberately no "desired return" signal here. A user can't
+meaningfully self-report what return they should expect -- that's the
+engine's job to calculate from the actual portfolio (annual_growth_pct
+in validate()'s backtest), not a risk-tolerance input. The questionnaire
+dropped that question (replacing it with "goal": retirement/project/
+wealth) for the same reason; this module follows that correction.
 
 Known gap: the questionnaire has no question about home-country preference
 or ESG/responsible investing, so "Home country" and "Responsible (ESG)"
@@ -20,7 +27,7 @@ exclusions free text) -- not inferred here.
 # Tolerance signals (willingness), each scored 1-6.
 RISK_SCORE = {"very_low": 1, "low": 2, "medium": 4, "high": 5, "very_high": 6}
 REACTION_SCORE = {"worried": 1, "hesitant": 2, "concerned": 4, "calm": 6}
-RETURN_SCORE = {"3_4": 1, "5_6": 3, "7_9": 5, "10_plus": 6}
+KNOWLEDGE_SCORE = {"beginner": 1, "basic": 2, "good": 4, "advanced": 6}
 
 # Capacity signals (ability), each scored 1-6.
 HORIZON_SCORE = {"1_2": 1, "5": 3, "10": 5, "15_plus": 6}
@@ -40,10 +47,10 @@ def _lookup(table, answers, key):
 
 
 def tolerance_score(answers):
-    """1-6: willingness to take risk, the lower of self-report, loss reaction and desired return."""
+    """1-6: willingness to take risk, the lower of self-report, loss reaction and investment knowledge."""
     return min(_lookup(RISK_SCORE, answers, "risk"),
                _lookup(REACTION_SCORE, answers, "reaction"),
-               _lookup(RETURN_SCORE, answers, "return"))
+               _lookup(KNOWLEDGE_SCORE, answers, "knowledge"))
 
 
 def capacity_score(answers):
