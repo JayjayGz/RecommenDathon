@@ -63,7 +63,7 @@
 @media(min-width:721px) {
   .onboarding { padding-top: 36px; row-gap: 30px; }
   .onboarding { grid-template-columns: minmax(0,3fr) minmax(210px,1fr); column-gap: clamp(24px,3vw,48px); }
-  .onboarding .question-column > h1 { font-size: clamp(43.26px,4.532vw,65.92px); letter-spacing: -2px; margin: 16px 0; }
+  .onboarding .question-column > h1 { font-size: clamp(41.53px,4.35vw,63.28px); letter-spacing: -2px; margin: 16px 0; }
   .onboarding .hero-description { font-size: 14.42px; line-height: 1.6; }
   .onboarding .questionnaire-content { margin-top: 24px; }
   .question-illustration { min-height: 0; margin-top: 170px; padding: 24px; border-radius: 18px; }
@@ -74,7 +74,7 @@
   .market-body { grid-template-columns: minmax(0,2.1fr) minmax(0,1fr); }
 }
 @media(max-width:720px) {
-  .onboarding .question-column > h1 { font-size: clamp(39.14px,9.27vw,51.5px); letter-spacing: -1.6px; margin: 16px 0; }
+  .onboarding .question-column > h1 { font-size: clamp(37.57px,8.9vw,49.44px); letter-spacing: -1.6px; margin: 16px 0; }
   .onboarding .hero-description { font-size: 13.39px; }
   .onboarding .questionnaire-content { margin-top: 22px; }
   .progress-track { gap: 4px; }
@@ -91,4 +91,21 @@
 @media(max-width:720px) {
   .scenario-page .market-body { grid-template-columns: minmax(0,1fr); padding: 18px; gap: 18px; }
   .scenario-page .market-bulletin { font-size: 15.45px; padding: 16px; }
+}
+.onboarding .hero-description { font-size: 17px; line-height: 1.65; }
+.onboarding .question-title { font-size: 29px; line-height: 1.4; }
+.onboarding .question-help { font-size: 16px; line-height: 1.7; }
+.onboarding .option .option-label { font-size: 18px; line-height: 1.6; }
+.onboarding .section-label { font-size: 14px; }
+.onboarding .detail-field legend,
+.onboarding .detail-field > label,
+.onboarding .supplement-option { font-size: 16px; line-height: 1.65; }
+.onboarding .detail-field input:not([type="radio"]):not([type="checkbox"]),
+.onboarding .detail-field textarea { font-size: 17px; }
+.onboarding .detail-field > small { font-size: 13px; }
+@media (max-width: 720px) {
+  .onboarding .question-title { font-size: 25px; }
+  .onboarding .hero-description,
+  .onboarding .question-help,
+  .onboarding .option .option-label { font-size: 16px; }
 }

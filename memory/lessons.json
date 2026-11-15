@@ -330,7 +330,9 @@
         "Source SHA-256 and actual extracted questions: plateforme/tests/fixtures/questionnaire-word.json; source review: plateforme/docs/QUESTIONNAIRE_WORD.md.",
         "Old eight-question tests failed against the new order; replacement tests replay the same stable-DOM cases plus numeric fields, all-assets choice and HTTP rejection cases.",
         "Originally L-005 on the questionnaire branch; ID changed to L-013 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt.",
-        "2026-11-15: user explicitly removed the separated/divorced/widowed option and target amount. The original Word snapshot remains intact; runtime, importer, JSON template and tests apply explicit user overrides under questionnaire-word-16-v4."
+        "2026-11-15: user explicitly removed the separated/divorced/widowed option and target amount. The original Word snapshot remains intact; runtime, importer, JSON template and tests apply explicit user overrides under questionnaire-word-16-v4.",
+        "User override: every Other choice requires nonblank context. Four situation fields are required when visible; goalDetails is required only for goal=other. Original Word fixture unchanged; importer and JSON template synchronized.",
+        "User removed the entire marital question and withdrawalTiming follow-up. Runtime/JSON/importer now use 15 questions under questionnaire-word-15-v5; original Word fixture preserved, removed answers pruned and old dependent results invalidated. Navigation regressions migrated to the new order."
       ],
       "prevention": "Read the actual supplied Word, preserve its titles/options/follow-ups, derive navigation from question count, use semantic IDs in summaries, version raw transport and local storage, and invalidate dependent results. Apply later explicit user corrections as documented overrides without rewriting the original source fixture; clean obsolete saved fields and invalidate dependent results, including when only an optional field was removed.",
       "regression": "Compare all source questions and options with the source snapshot; complete all sixteen steps including numeric zero and optional notes; reject the old version and invalid hidden fields through HTTP.",
@@ -345,6 +347,16 @@
           "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
           "result": "25 passed, 0 failed, including removed choices/amount, compatible saved answers and HTTP rejection of v3 and obsolete fields.",
           "scope": "DOM and API contract checks. Native Chrome screenshot separately inspected the revised assistant layout; no business profile mapping or external agent call."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "36 tests passed, including all five Other choices, whitespace rejection and optional project context.",
+          "scope": "DOM/shared validation checks; no financial mapping changed."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "46 tests passed including 15-question traversal, removal/migration, horizon without withdrawal detail, explanation-only UI and preservation of internal evidence/limitations.",
+          "scope": "Local DOM/API/CSS. Python adapter compatibility remains v2 and is documented as pending; no end-to-end financial run or new visual capture."
         }
       ]
     },
@@ -912,7 +924,11 @@
     },
     {
       "id": "L-030",
-      "roles": ["explanation", "evidence", "compliance"],
+      "roles": [
+        "explanation",
+        "evidence",
+        "compliance"
+      ],
       "trigger": "Expliquer une modification de portefeuille après le questionnaire",
       "boundary": "Ne modifie ni les poids, ni les calculs, ni les limites ; une comparaison historique ne prédit pas le risque futur",
       "defect": "Le résumé décrivait surtout le portefeuille final et répétait les observations du questionnaire sans analyser le changement demandé.",
@@ -945,7 +961,13 @@
     },
     {
       "id": "L-031",
-      "roles": ["portfolio", "screening", "explanation", "evidence", "compliance"],
+      "roles": [
+        "portfolio",
+        "screening",
+        "explanation",
+        "evidence",
+        "compliance"
+      ],
       "trigger": "Analyser un ajout ou une modification après un questionnaire investisseur",
       "boundary": "Avis éducatif fondé sur les données disponibles ; ne crée aucun seuil de risque, aucune capacité financière estimée ni ordre de bourse",
       "defect": "Toute simulation numériquement admissible présentait une version à retenir sans avis préalable suffisamment relié aux préférences et aux tensions du questionnaire.",
@@ -984,7 +1006,15 @@
     },
     {
       "id": "L-032",
-      "roles": ["data", "screening", "portfolio", "infrastructure", "evidence", "explanation", "compliance"],
+      "roles": [
+        "data",
+        "screening",
+        "portfolio",
+        "infrastructure",
+        "evidence",
+        "explanation",
+        "compliance"
+      ],
       "trigger": "Utiliser le nouveau mapping du questionnaire et le catalogue d’exposition fourni pour analyser le portefeuille",
       "boundary": "Le score de référence fourni ne valide pas la capacité financière complète ; les métadonnées datées ne servent pas à recalculer des rendements passés ni à inventer des données manquantes",
       "defect": "Le nouveau profile_mapping.py n’était pas branché au formulaire ; les connaissances restaient dans le contexte brut et la revue n’utilisait pas exposures_profile_tickers.csv. Le parcours réel a également révélé un backend limité à Word v2 face au site v4.",
@@ -1077,9 +1107,11 @@
         "node --check passed for both resolved files; targeted DOM/confirmation tests passed 39/39; all four frontend test files passed 42/42 on Node 22.17.1.",
         "Repeat conflict after commit f231a1d (Better response): index stage 2 now contains the prior resolution (app bfbe270; tests 9a3d013), while stage 3 retains the original stash blobs (app 2693b5a; tests 68c0eb9). Fresh conflicted work copies were backed up under .local-runs/merge-resolution/repeat-*/ before resolving five and four blocks again.",
         "A further user-requested replay found identical stage-2 and stage-3 objects and the same five/four conflict blocks. Current files were backed up in a fresh repeat folder; stripping the reviewed conflict alternatives reproduced the committed resolution exactly after newline normalization.",
-        "Final requested recurrence again had exactly the same six index blobs. Fresh backups under .local-runs/merge-resolution/final-*/ preserve the conflict input; the resolved text matches the committed stage-2 text after newline normalization."
+        "Final requested recurrence again had exactly the same six index blobs. Fresh backups under .local-runs/merge-resolution/final-*/ preserve the conflict input; the resolved text matches the committed stage-2 text after newline normalization.",
+        "Rebase of b469132 (platform improvements) onto da556a5 introduced distinct conflicts in app.js, word-questionnaire.test.mjs and lessons.json. Preserved new CSV categories, geography, 15-question form and free-text chat while retaining conditional portfolio confirmation. Both test groups were combined; colliding website lessons were renumbered {\"L-029\": \"L-035\", \"L-030\": \"L-036\", \"L-031\": \"L-037\"}. Pre-resolution files preserved under .local-runs/merge-resolution/rebase-*/.",
+        "A preservation check initially rejected the rewritten L-034 trigger identity; the original trigger was restored and the check replayed instead of weakening it."
       ],
-      "prevention": "Compare all conflict stages and preserve non-conflicting edits. Check consumers of removed helpers, not only syntax. Reconcile tests with the selected harness contract and documented public-output boundaries. Verify delayed/retried chat, explicit confirmation and hidden internal evidence before staging only the resolved files. When conflict markers recur, compare current stage object identities with the previously verified resolution and the latest commit. A retained stash can conflict again when reapplied; do not drop it without authorization or assume the previous successful resolution applies to new inputs.",
+      "prevention": "Compare all conflict stages and preserve non-conflicting edits. Check consumers of removed helpers, not only syntax. Reconcile tests with the selected harness contract and documented public-output boundaries. Verify delayed/retried chat, explicit confirmation and hidden internal evidence before staging only the resolved files. When conflict markers recur, compare current stage object identities with the previously verified resolution and the latest commit. A retained stash can conflict again when reapplied; do not drop it without authorization or assume the previous successful resolution applies to new inputs. For overlapping feature rebases, merge runtime imports and both test groups, preserve newer explicit questionnaire overrides, and join lesson records by trigger rather than selecting one branch by numeric ID.",
       "regression": "Run every plateforme/tests/*.test.mjs via node --test, covering DOM keyboard tabs, escaped explanations/limits, no displayed evidence catalog, immediate chat delivery, retry draft preservation, questionnaire state and portfolio confirmation. Check git ls-files -u and conflict markers are empty after scoped git add.",
       "status": "verified",
       "verification": [
@@ -1107,6 +1139,123 @@
           "command": "$testPaths = @(rg --files tests -g '*.test.mjs'); & node --test --test-reporter=spec $testPaths",
           "result": "Final requested replay: 42 passed, 0 failed. Both files passed node --check. No unmerged index entries or file conflict markers remained after scoped git add.",
           "scope": "Offline frontend verification of the same repeated conflict; no commits or stash deletion."
+        },
+        {
+          "command": "$testPaths = @(rg --files tests -g '*.test.mjs'); & node --test --test-reporter=spec $testPaths",
+          "result": "Rebase b469132 resolution: 53 passed, 0 failed. Both resolved JavaScript files passed node --check.",
+          "scope": "All six frontend test files, including categories, geography, 15-question v5 form, chat and explicit confirmation. No live model or browser capture. Python v5 compatibility remains pending and was separately confirmed rejected by the current request validator."
+        },
+        {
+          "command": "Parse Git index stages 2/3 and compare every lesson trigger, evidence item and verification record with merged memory/lessons.json; python scripts/check_agent_workflow.py",
+          "result": "All original triggers, evidence and verification histories preserved; 37 unique lesson IDs; structural checker passed.",
+          "scope": "Website lesson IDs L-029/L-030/L-031 migrated to L-035/L-036/L-037 with documentation references updated; no learning-history record discarded."
+        }
+      ]
+    },
+    {
+      "id": "L-035",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Adding or changing the global website profile reset or its persisted state",
+      "boundary": "Website state only; does not delete financial datasets or unrelated localStorage keys",
+      "defect": "The user requested a reset button on every page; the existing reset was only reachable through the privacy dialog.",
+      "cause": "The reset action existed but was not exposed by the shared header, and legacy application storage keys were not removed.",
+      "evidence": [
+        "User correction on 2026-11-15: a reset on all pages must restart the profile from zero.",
+        "plateforme/src/app.js: shared header reset, invalidateConversation, application-prefixed storage cleanup and first-question navigation.",
+        "plateforme/tests/word-questionnaire.test.mjs: three-page reset, legacy storage, reload, valid neighboring state and in-flight response cases.",
+        "Renumbered from L-029 to L-035 during the b469132 rebase conflict to preserve the distinct existing backend lesson."
+      ],
+      "prevention": "Expose the reset through the common header. Clear all profile-derived UI state, abort pending requests and ignore late responses, remove only this application's current/legacy keys, and persist a blank first-step state.",
+      "regression": "Reset from questionnaire, portfolio and assistant; reload; confirm empty answers/draft/messages/results and first question. Preserve unrelated localStorage and compatible normal reloads; resolve pending chat/portfolio responses after reset and confirm old state is not restored.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "25 passed, 0 failed, including global reset, reload and aborted in-flight chat/portfolio cases.",
+          "scope": "Actual UI handlers in jsdom with deterministic synthetic fixtures. The user's real browser profile was preserved during visual inspection; reset was not clicked there."
+        }
+      ]
+    },
+    {
+      "id": "L-036",
+      "roles": [
+        "explanation",
+        "evidence",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Changing the portfolio result screen, explanation visibility or contextual clarification",
+      "boundary": "Website presentation and existing raw result transport only; never fabricate asset rationales, infer business risk mappings or treat shape validation as source certification",
+      "defect": "The user identified the explanation of investment choices as the project's most important feature; the result screen placed a tall profile sidebar beside holdings and rendered the real explanation only below holdings and the conversation callout.",
+      "cause": "portfolio() rendered resultEvidence after the complete portfolio grid and refinement callout, and no explanation region appeared for the unconnected demonstration.",
+      "evidence": [
+        "User request and screenshot on 2026-11-15: a clear zone for the agent to explain and clarify its choices is the most important feature.",
+        "plateforme/src/app.js: decisionStudio uses accepted result.explanation, evidence, limitations and runId beside allocation; previous resultEvidence placement is replaced.",
+        "plateforme/docs/PORTFOLIO_EXPLANATION.md records the previous profile-card assertion failure and the native Chrome finding that Ctrl+End was intercepted by the new tab handler. The assertion targets the new profile summary; modified browser shortcuts are no longer intercepted.",
+        "User explicitly removed the four preset chat suggestions. chatWelcome now offers free text only; contextual clarification from the portfolio stays available. Regression checks absence of preset buttons and preservation of a manually typed draft.",
+        "Later explicit user correction: Demander pourquoi cet actif must replace any existing draft with the selected asset question. General clarification still preserves a different draft. This supersedes draft preservation for asset-specific questions only.",
+        "Allocation chart refinement: the old ring showed individual positions while its legend grouped categories. The SVG explorer now uses identical grouped/asset items for ring and legend; original position weights preserved.",
+        "User explicitly rejected the new decimal-sum/rounding implementation and selected dataset/exposures_profile_tickers.csv as the category authority. Those arithmetic changes and files were removed. Classification now joins ticker to asset_class; missing tickers remain unclassified and model group/category is ignored for display.",
+        "Geography feature: actual CSV separates numeric repartition_geographique from qualitative target zones, issuer domicile and no-country assets. The map uses only validated numeric splits and retains unknown/no-country weights outside country polygons. A DOM check caught and repaired a malformed helper declaration; enlarged-map checks scope queries to the active dialog.",
+        "Renumbered from L-030 to L-036 during the b469132 rebase conflict to preserve the distinct existing backend lesson."
+      ],
+      "prevention": "Make the explanation a primary region near the allocation. Render only accepted current-result prose, evidence and limitations, and mark demo absence explicitly. Clarification should prepare a contextual draft without automatic submission; preserve an existing draft for general clarification, but replace it for the explicitly requested asset-question action. Keep keyboard tab behavior accessible without capturing modified browser shortcuts.",
+      "regression": "Replay accepted response and reload, rejected saved compliance output, demo no-explanation state, safe text/link rendering, tab keyboard navigation including Ctrl+End, contextual clarification submission and preservation of an existing draft. Keep profile edits/reset invalidating the result.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "30 passed, 0 failed, including actual response rendering under HTTP mocks, rejected saved output, keyboard shortcuts and contextual clarification.",
+          "scope": "Deterministic DOM/API/style tests with synthetic fixtures. Native Chrome separately displayed the demo allocation, explanation region and tab content at the existing desktop window size; no real agent, numerical pipeline or mobile screenshot was tested."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "36 passed, 0 failed; asset question replaces an existing draft, is persisted and focused, survives reload and is not automatically submitted; general clarification preserves the draft.",
+          "scope": "Local DOM and API regression checks; no live agent message sent."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "37 tests passed including grouped/asset weights, six demo positions, keyboard selection, total reset and single-position result.",
+          "scope": "DOM and CSS checks for the allocation explorer; no visual browser capture or new financial interpretation."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "39 passed, including the actual 82-row CSV, category source precedence, unknown ticker and quoted CSV parsing.",
+          "scope": "Local loader, HTTP and DOM tests. Existing server on 4173 still requires restart for the new route; no CSV or Python financial method changed."
+        },
+        {
+          "command": "node --test --test-isolation=none plateforme/tests/*.test.mjs",
+          "result": "45 tests passed, including actual CSV 60/30/10 demo, multi-country fixture, geography missing values, map click/keyboard/zoom and enlarged dialog. The older-service/missing-geography response is explicitly flagged.",
+          "scope": "Deterministic data, DOM and HTTP checks. Native Chrome inspected the unavailable-data map layout because the preexisting server still needs restarting; no mobile or enlarged-map visual capture claimed."
+        }
+      ]
+    },
+    {
+      "id": "L-037",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Changing chat submission, delivery feedback or retries in the website conversation",
+      "boundary": "Browser delivery state and existing HTTP chat transport only; does not authorize automatic resend, claim exactly-once backend processing or alter financial calculations",
+      "defect": "The user reported that their submitted message appeared only when the agent replied.",
+      "cause": "sendMessage appended the user message and assistant response together after awaiting a successful HTTP response.",
+      "evidence": [
+        "User correction on 2026-11-15 requested immediate display in step 3.",
+        "Before the repair, the delayed-response test in plateforme/tests/word-questionnaire.test.mjs failed at the immediate bubble count: actual 1, expected 2.",
+        "The initial test command without --test-isolation=none hit spawn EPERM; rerunning with the existing in-process mode reproduced the actual delayed-display defect.",
+        "plateforme/src/app.js now persists and renders the user bubble before awaiting HTTP; completion adds only the assistant reply. Pending/failed delivery metadata never enters the transport conversation.",
+        "Renumbered from L-031 to L-037 during the b469132 rebase conflict to preserve the distinct existing backend lesson."
+      ],
+      "prevention": "Display and persist the submitted user message immediately, clear the composer for a new submission, and show pending status. On failure keep the bubble recoverable, retry it in place and preserve a different draft. Strip local delivery metadata and exclude unresolved messages from the HTTP history; never send the current message twice as both message and conversation. On reload convert interrupted pending status to manual retry, without automatic resubmission.",
+      "regression": "Use a deferred response to assert the user bubble before resolution, a single request on double-submit and no duplicate user bubble after success. Replay HTTP/network/timeout/invalid-response failures, retry with another draft, interrupted reload without resend, and existing reset/late-response guards.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "35 passed, 0 failed, including deferred chat response, retry in place, reload recovery, failure cases and concise portfolio copy.",
+          "scope": "Actual UI handlers under deterministic HTTP mocks and local API/static checks; no real agent call or live browser chat submission."
         }
       ]
     }

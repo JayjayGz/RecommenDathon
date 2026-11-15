@@ -1,3 +1,5 @@
+import { loadExposureCategories } from '../lib/exposure-categories.mjs';
+const exposureFixture = await loadExposureCategories();
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
@@ -12,7 +14,6 @@ const appUrl = new URL('../src/app.js', import.meta.url);
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const completeAnswers = () => Object.fromEntries([
   ...QUESTIONS.filter(q => !q.optional).map(q => [q.id, q.type === 'number' ? 0 : q.type === 'multi' ? [q.options[0][0]] : q.options[0][0]]),
-  ['withdrawalTiming', 'under_1'],
 ]);
 
 async function open(t, saved = {}, legacy = false, options = {}) {
@@ -27,7 +28,8 @@ async function open(t, saved = {}, legacy = false, options = {}) {
   w.HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   w.AbortSignal = AbortSignal;
   w.AbortController = AbortController;
-  w.fetch = options.fetch || (async () => ({ ok: true, json: async () => options.config || { agentConnected: false, portfolioConnected: false } }));
+  const serviceFetch=options.fetch || (async () => ({ ok: true, json: async () => options.config || { agentConnected: false, portfolioConnected: false } }));
+  w.fetch=(url,...args)=>url==='/api/asset-categories' ? Promise.resolve({ok:true,json:async()=>options.exposureData || exposureFixture}) : serviceFetch(url,...args);
   w.__modules = {};
   let source = await readFile(appUrl, 'utf8');
   for (const [statement,names,path] of [...source.matchAll(/^import\s+\{([^}]+)\}\s+from\s+'([^']+)';/gm)]) {
@@ -47,18 +49,22 @@ async function open(t, saved = {}, legacy = false, options = {}) {
   };
 }
 
-test('all 16 questions match the Word snapshot with the explicit user removals', () => {
+test('all 15 questions match the Word snapshot with the explicit user removals', () => {
   assert.equal(fixture.source, 'Questionnaire_client_Recommand_20261115_103525.docx');
   assert.match(fixture.sha256, /^[0-9a-f]{64}$/);
-  assert.equal(QUESTIONS.length, 16);
+  assert.equal(QUESTIONS.length, 15);
   assert.deepEqual(SECTIONS, fixture.sections);
-  const expected = structuredClone(fixture.questions);
-  expected.find(q => q.id === 'marital').options = expected.find(q => q.id === 'marital').options.filter(([value]) => value !== 'separated');
+  const expected = structuredClone(fixture.questions.filter(q=>q.id!=='marital'));
+  for(const q of expected) q.details=q.details.filter(f=>f.key!=='withdrawalTiming');
   expected.find(q => q.id === 'goal').details = expected.find(q => q.id === 'goal').details.filter(field => field.key !== 'targetAmount');
   const exclusions = expected.find(q => q.id === 'exclusions');
   exclusions.options = exclusions.options.filter(([value]) => value !== 'discussion');
   exclusions.details[0].label = 'Si limites, vos précisions facultatives';
   exclusions.details[0].when.values = ['limits'];
+  for (const q of expected) for (const f of q.details) {
+    if (['maritalOther','dependentsOther','incomeOther','debtOther'].includes(f.key)) { f.required=true; f.label='Pr\u00e9cisez votre situation (obligatoire)'; }
+    if (f.key==='goalDetails') { f.requiredWhen={field:'goal',values:['other']}; f.label='Pr\u00e9cisez votre objectif (obligatoire si Autre)'; }
+  }
   assert.deepEqual(QUESTIONS, expected);
   assert.equal(QUESTIONS.some(q => q.id === 'return'), false);
   assert.equal(QUESTIONS.some(q => q.id === 'monthlyExpenses'), false);
@@ -74,7 +80,7 @@ const resetResult = () => ({
 
 test('the shared reset clears the entire profile from each page and survives reload', async t => {
   for (const page of ['questionnaire', 'portfolio', 'assistant']) {
-    const app = await open(t, { page, step: 6, complete: true, answers: completeAnswers(), draft: 'Brouillon', messages: [{role:'user',content:'Ancienne conversation'}], result: resetResult(), proposal: resetResult() });
+    const app = await open(t, { page, step: 5, complete: true, answers: completeAnswers(), draft: 'Brouillon', messages: [{role:'user',content:'Ancienne conversation'}], result: resetResult(), proposal: resetResult() });
     app.w.localStorage.setItem('recommand.platform.v1', 'obsolete');
     app.w.localStorage.setItem('recommand.platform.word16.v1', 'obsolete');
     app.w.localStorage.setItem('unrelated-app', 'keep');
@@ -104,11 +110,11 @@ test('removed marital choice and goal amount are absent, pruned and rejected by 
   assert.equal(app.saved().complete, false);
   assert.equal(app.saved().result, null);
   assert.deepEqual(app.saved().messages, []);
-  assert.equal(app.$('#question-form input:checked'), null);
+  assert.equal(app.$('#question-form input:checked').value, 'none');
   const amountOnly = await open(t, { answers: { ...completeAnswers(), targetAmount: 50000 }, complete: true, page: 'portfolio', result: resetResult() });
   assert.equal(amountOnly.saved().complete, false);
   assert.deepEqual(amountOnly.saved().answers, completeAnswers());
-  amountOnly.$('[data-question-index="6"]').click();
+  amountOnly.$('[data-question-index="5"]').click();
   assert.equal(amountOnly.$('[data-detail="targetAmount"]'), null);
   amountOnly.choose('project');
   assert.ok(amountOnly.$('[data-detail="goalDetails"]'));
@@ -116,7 +122,8 @@ test('removed marital choice and goal amount are absent, pruned and rejected by 
   assert.equal(validateAnswers({ ...completeAnswers(), targetAmount: 50000 }), false);
   assert.equal(validateAnswers(completeAnswers()), true);
   const template = JSON.parse(await readFile(new URL('../Questionnaire_client_Recommand.json', import.meta.url), 'utf8'));
-  assert.equal(template.questions.find(q => q.id === 'situation_conjugale').options.some(o => o.id === 'situation_conjugale_3'), false);
+  assert.equal(template.questions.some(q => q.id === 'situation_conjugale'), false);
+  assert.equal(template.questions.find(q=>q.id==='horizon').champs_complementaires.some(f=>f.id==='delai_retrait'),false);
   assert.equal(template.questions.find(q => q.id === 'objectif_investissement').champs_complementaires.some(f => f.id === 'objectif_montant'), false);
 });
 
@@ -146,16 +153,16 @@ test('reset cancels pending chat and portfolio responses instead of restoring th
   }
 });
 
-test('the refined conversation shows a compact context, four working suggestions and a labelled draft', async t => {
+test('the refined conversation shows a compact context, free text entry without preset suggestions', async t => {
   const app = await open(t, { page: 'assistant', complete: true, answers: completeAnswers() });
   assert.match(app.$('.assistant-title h1').textContent, /Affinons votre portefeuille/);
   assert.equal(app.$('.conversation-sidebar img'), null);
-  assert.equal(app.w.document.querySelectorAll('[data-prompt]').length, 4);
+  assert.equal(app.w.document.querySelectorAll('[data-prompt]').length, 0);
   assert.ok(app.$('.chat-card.is-empty'));
   assert.match(app.$('label[for="chat-input"]').textContent, /Que souhaitez-vous préciser/);
-  const suggestion = app.$('[data-prompt]');
-  const prompt = suggestion.dataset.prompt;
-  suggestion.click();
+  assert.equal(app.$('.prompt-suggestions'), null);
+  const prompt = 'Ma question personnelle';
+  app.type('#chat-input', prompt);
   assert.equal(app.$('#chat-input').value, prompt);
   assert.equal(app.w.document.activeElement, app.$('#chat-input'));
   assert.equal(app.saved().draft, prompt);
@@ -166,17 +173,17 @@ test('the refined conversation shows a compact context, four working suggestions
 test('single choices preserve main, form, illustration and keyboard focus', async t => {
   const app = await open(t);
   const main = app.$('#main'), form = app.$('#question-form'), art = app.$('.question-illustration');
-  const a = app.choose('single');
+  const a = app.choose('none');
   assert.equal(app.$('#main'), main); assert.equal(app.$('#question-form'), form);
   assert.equal(app.$('.question-illustration'), art); assert.equal(app.w.document.activeElement, a);
-  app.choose('partnered');
-  assert.equal(a.checked, false); assert.equal(app.saved().answers.marital, 'partnered');
+  app.choose('one');
+  assert.equal(a.checked, false); assert.equal(app.saved().answers.dependents, 'one');
   assert.equal(app.$('[role="progressbar"]').getAttribute('aria-valuenow'), '1');
-  assert.equal(app.$('[role="progressbar"]').getAttribute('aria-valuemax'), '16');
+  assert.equal(app.$('[role="progressbar"]').getAttribute('aria-valuemax'), '15');
 });
 
 test('other details and shared charges keep typed values and remove hidden answers', async t => {
-  const app = await open(t, { step: 1 });
+  const app = await open(t, { step: 0 });
   app.choose('other');
   const field = app.type('[data-detail="dependentsOther"]', 'Responsabilité familiale');
   app.choose('shared','supportMode');
@@ -189,44 +196,41 @@ test('other details and shared charges keep typed values and remove hidden answe
 });
 
 test('emergency fund accepts numeric zero and rejects missing or negative amount', async t => {
-  const app = await open(t, { step: 5 });
+  const app = await open(t, { step: 4 });
   app.next(); assert.match(app.$('#question-error').textContent, /montant valide/);
   const main = app.$('#main');
   app.type('[data-answer="emergencyFund"]', '-1'); app.next();
-  assert.equal(app.$('#question-title').textContent, QUESTIONS[5].title);
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[4].title);
   app.type('[data-answer="emergencyFund"]', '0');
   assert.equal(app.$('#main'), main); assert.equal(app.saved().answers.emergencyFund, 0);
-  app.next(); assert.equal(app.$('#question-title').textContent, QUESTIONS[6].title);
+  app.next(); assert.equal(app.$('#question-title').textContent, QUESTIONS[5].title);
 });
 
-test('horizon follow-up required by the source is captured without losing focus', async t => {
-  const app = await open(t, { step: 7 });
-  app.choose('10'); app.next();
-  assert.equal(app.$('#question-title').textContent, QUESTIONS[7].title);
-  const input = app.choose('4_6','withdrawalTiming');
-  assert.equal(app.w.document.activeElement, input);
-  app.next(); assert.equal(app.$('#question-title').textContent, QUESTIONS[8].title);
+test('horizon has no removed withdrawal follow-up and a single answer is sufficient',async t=>{
+ const app=await open(t,{step:QUESTIONS.findIndex(q=>q.id==='horizon')});
+ app.choose('10');assert.equal(app.$('[data-detail="withdrawalTiming"]'),null);
+ app.next();assert.equal(app.$('#question-title').textContent,QUESTIONS.find(q=>q.id==='liquidity').title);
 });
 
 test('empty fields show examples without saving them as answers or replacing entered values', async t => {
-  const amount = await open(t, { step: 5 });
+  const amount = await open(t, { step: 4 });
   assert.equal(amount.$('[data-answer="emergencyFund"]').placeholder, 'Ex. : 100');
   assert.equal(amount.$('[data-answer="emergencyFund"]').value, '');
   amount.next(); assert.equal(amount.saved().answers?.emergencyFund, undefined);
   amount.type('[data-answer="emergencyFund"]', '100');
   assert.equal(amount.saved().answers.emergencyFund, 100);
-  const debt = await open(t, { step: 4, answers: { mortgageAmount: 24 } });
+  const debt = await open(t, { step: 3, answers: { mortgageAmount: 24 } });
   assert.equal(debt.$('[data-detail="mortgageAmount"]').placeholder, 'Ex. : 100 000');
   assert.equal(debt.$('[data-detail="mortgageAmount"]').value, '24');
   debt.choose('other');
   assert.ok(debt.$('[data-detail="debtOther"]').placeholder);
-  const notes = await open(t, { step: 15 });
+  const notes = await open(t, { step: 14 });
   assert.ok(notes.$('[data-answer="notes"]').placeholder);
   assert.equal(notes.$('[data-answer="notes"]').value, '');
 });
 
 test('all assets is exclusive, crypto details persist for all and are cleared when irrelevant', async t => {
-  const app = await open(t, { step: 13 });
+  const app = await open(t, { step: 12 });
   app.choose('crypto'); const text = app.type('[data-detail="cryptoDetails"]', 'Précision');
   app.choose('bonds'); assert.equal(app.$('[data-detail="cryptoDetails"]'), text);
   app.choose('all'); assert.deepEqual(app.saved().answers.assets, ['all']);
@@ -236,7 +240,7 @@ test('all assets is exclusive, crypto details persist for all and are cleared wh
 });
 
 test('optional final notes can be empty, typed or explicitly declined', async t => {
-  const app = await open(t, { step: 15, answers: completeAnswers() });
+  const app = await open(t, { step: 14, answers: completeAnswers() });
   app.type('[data-answer="notes"]', 'Mon projet');
   app.$('[data-detail="noNotes"]').click();
   assert.equal(app.$('[data-answer="notes"]').disabled, true);
@@ -245,7 +249,7 @@ test('optional final notes can be empty, typed or explicitly declined', async t 
 });
 
 test('exclusion details survive a relevant choice and disappear with no exclusions', async t => {
-  const app = await open(t, { step: 14 });
+  const app = await open(t, { step: 13 });
   app.choose('limits'); const field = app.type('[data-detail="exclusionDetails"]','Précision sur les placements');
   assert.equal(app.$('input[value="discussion"]'), null);
   assert.equal(app.$('[data-detail="exclusionDetails"]'),field);
@@ -255,7 +259,7 @@ test('exclusion details survive a relevant choice and disappear with no exclusio
 });
 
 test('removed discussion answers are cleared without inventing a replacement', async t => {
-  const app = await open(t, { step: 14, complete: true, answers: { ...completeAnswers(), exclusions: 'discussion', exclusionDetails: 'Ancien choix' } });
+  const app = await open(t, { step: 13, complete: true, answers: { ...completeAnswers(), exclusions: 'discussion', exclusionDetails: 'Ancien choix' } });
   assert.equal(app.$('input:checked'), null);
   assert.equal(app.$('[data-detail="exclusionDetails"]'), null);
   assert.equal(app.$('[data-page="portfolio"]').disabled, true);
@@ -265,19 +269,18 @@ test('removed discussion answers are cleared without inventing a replacement', a
   assert.equal(validateAnswers({ ...completeAnswers(), exclusions: 'limits', exclusionDetails: 'Mes limites' }), true);
 });
 
-test('all 16 questions are traversable and answers remain available on return', async t => {
+test('all 15 questions are traversable and answers remain available on return', async t => {
   const app = await open(t);
   for (const q of QUESTIONS) {
     assert.equal(app.$('#question-title').textContent, q.title);
     if (q.type === 'number') app.type('[data-answer="emergencyFund"]', '2500.50');
     else if (q.type !== 'text') app.choose(q.options[0][0]);
-    if (q.id === 'horizon') app.choose('1_3','withdrawalTiming');
     app.next();
   }
   assert.equal(app.saved().page, 'portfolio'); assert.ok(app.$('.dashboard'));
   assert.equal(app.$('.portfolio-context').textContent.includes('Rendement souhaité'), false);
   app.$('[data-page="questionnaire"]').click();
-  assert.equal(app.$('#question-title').textContent, QUESTIONS[15].title);
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[14].title);
   app.$('[data-action="previous"]').click();
   assert.equal(app.$('input[value="none"]').checked, true);
 });
@@ -286,26 +289,26 @@ test('progress navigation jumps freely and preserves radio and numeric answers',
   const app = await open(t);
   assert.equal(app.w.document.querySelectorAll('.progress-track button').length, QUESTIONS.length);
   assert.equal(app.$('[aria-current="step"]').dataset.questionIndex, '0');
-  app.choose('partnered');
+  app.choose('one');
   assert.equal(app.$('[data-question-index="0"]').classList.contains('filled'), true);
-  app.$('[data-question-index="5"] span').click();
-  assert.equal(app.$('#question-title').textContent, QUESTIONS[5].title);
+  app.$('[data-question-index="4"] span').click();
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[4].title);
   assert.equal(app.w.document.activeElement, app.$('#question-title'));
-  assert.equal(app.$('[aria-current="step"]').dataset.questionIndex, '5');
+  assert.equal(app.$('[aria-current="step"]').dataset.questionIndex, '4');
   app.type('#main-answer', '100');
   app.$('[data-question-index="0"]').click();
-  assert.equal(app.$('input[value="partnered"]').checked, true);
-  app.$('[data-question-index="5"]').click();
+  assert.equal(app.$('input[value="one"]').checked, true);
+  app.$('[data-question-index="4"]').click();
   assert.equal(app.$('#main-answer').value, '100');
-  assert.equal(app.saved().step, 5);
+  assert.equal(app.saved().step, 4);
   assert.equal(app.saved().answers.emergencyFund, 100);
   assert.equal(app.$('[role="progressbar"]').getAttribute('aria-valuenow'), '2');
 });
 
 test('jumping to the last question cannot bypass required answers', async t => {
   const app = await open(t);
-  app.$('[data-question-index="15"]').click();
-  assert.equal(app.$('#question-title').textContent, QUESTIONS[15].title);
+  app.$('[data-question-index="14"]').click();
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[14].title);
   app.next();
   assert.equal(app.$('#question-title').textContent, QUESTIONS[0].title);
   assert.equal(app.saved().step, 0);
@@ -315,7 +318,7 @@ test('jumping to the last question cannot bypass required answers', async t => {
 });
 
 test('reaction question keeps the large centered scenario within the question and preserves its answer', async t => {
-  const app = await open(t, { step: 10 });
+  const app = await open(t, { step: 9 });
   assert.ok(app.$('.onboarding.scenario-page #question-form .market-scenario'));
   assert.equal(app.$('.onboarding > .market-scenario'), null);
   assert.ok(app.$('.hero-description'));
@@ -324,8 +327,8 @@ test('reaction question keeps the large centered scenario within the question an
   app.choose('worried');
   assert.equal(app.$('.market-chart'), chart);
   assert.equal(app.$('#question-title'), title);
+  app.$('[data-question-index="8"]').click();
   app.$('[data-question-index="9"]').click();
-  app.$('[data-question-index="10"]').click();
   assert.equal(app.$('input[value="worried"]').checked, true);
   assert.ok(app.$('#question-form .market-scenario'));
 });
@@ -345,7 +348,7 @@ test('portfolio refinement appears directly below results and opens the conversa
 });
 
 test('changing a completed profile invalidates earlier result and dependent navigation', async t => {
-  const app = await open(t, { step: 9, page: 'questionnaire', complete: true, answers: completeAnswers(), messages: [{role:'user',content:'test'}] });
+  const app = await open(t, { step: 8, page: 'questionnaire', complete: true, answers: completeAnswers(), messages: [{role:'user',content:'test'}] });
   const main = app.$('#main');
   app.choose('high');
   assert.equal(app.$('#main'), main); assert.equal(app.saved().complete, false);
@@ -371,7 +374,7 @@ test('typed payload accepts legitimate values and rejects unknown, stale and con
   assert.equal(validateAnswers({...answers, notes:'texte', noNotes:true}), false);
   assert.equal(validateAnswers({...answers, notes:'<script>not executable</script>'}), true);
   assert.equal(cleanAnswers({...answers, mortgageAmount:0}).mortgageAmount, 0);
-  assert.equal(isAnswered(QUESTIONS[15], {}), true);
+  assert.equal(isAnswered(QUESTIONS[14], {}), true);
 });
 
 test('source scenario is fictional and illustrations cover each subject without market data', () => {
@@ -385,7 +388,7 @@ test('source scenario is fictional and illustrations cover each subject without 
 
 test('styles parse and retain an entry animation without opacity-zero page flashes', async () => {
   const dom = new JSDOM('<html><head></head></html>');
-  for (const file of ['styles','theme','questionnaire','portfolio']) {
+  for (const file of ['styles','theme','questionnaire','portfolio','geography']) {
     const css = await readFile(new URL(`../src/${file}.css`,import.meta.url),'utf8');
     const element = dom.window.document.createElement('style'); element.textContent = css;
     dom.window.document.head.append(element); assert.ok(element.sheet.cssRules.length > 0);
@@ -402,26 +405,14 @@ test('the portfolio gives the explanation a main region and keeps demo reasons e
   assert.match(studio.textContent, /EXPLICATION NON DISPONIBLE/);
   assert.equal(app.$('.agent-rationale'), null);
   assert.equal(app.$('.profile-card'), null);
-  assert.equal(app.w.document.querySelectorAll('.portfolio-context .profile-fact').length, 4);
+  assert.equal(app.w.document.querySelectorAll('.portfolio-context .profile-fact').length, 3);
   assert.equal(app.$('.holdings-card').previousElementSibling.className, 'portfolio-refine');
   assert.equal(app.$('[href="#portfolio-explanation"]').textContent.includes('Comprendre'), true);
-  const tabs = [...studio.querySelectorAll('[role="tab"]')];
-  assert.equal(tabs.length, 2);
-  tabs[1].click();
-  assert.equal(app.$('#decision-panel-limits').hidden, false);
-  assert.equal(app.$('#decision-panel-overview').hidden, true);
-  assert.equal(tabs[1].getAttribute('aria-selected'), 'true');
-  const browserShortcut = new app.w.KeyboardEvent('keydown', { key: 'End', ctrlKey: true, bubbles: true, cancelable: true });
-  tabs[1].dispatchEvent(browserShortcut);
-  assert.equal(browserShortcut.defaultPrevented, false);
-  assert.equal(app.$('#decision-panel-limits').hidden, false);
-  tabs[0].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-  assert.equal(app.w.document.activeElement.id, 'decision-tab-limits');
-  assert.equal(app.$('#decision-panel-limits').hidden, false);
-  tabs[1].dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-  assert.equal(app.w.document.activeElement.id, 'decision-tab-overview');
-  assert.equal(app.$('#decision-panel-overview').hidden, false);
-  assert.match(app.$('#decision-panel-limits').textContent, /Aucune performance ni adéquation/);
+  assert.equal(studio.querySelectorAll('[role="tab"]').length,0);
+  assert.equal(app.$('#decision-panel-sources'),null);
+  assert.equal(app.$('#decision-panel-limits'),null);
+  assert.ok(app.$('#decision-panel-overview'));
+
 });
 
 test('the actual explanation and limitations are displayed while internal evidence stays hidden', async t => {
@@ -452,9 +443,10 @@ test('the actual explanation and limitations are displayed while internal eviden
   assert.equal(app.$('.evidence-sources'), null);
   assert.doesNotMatch(app.$('#portfolio-explanation').textContent, /Source synthétique uniquement|https:\/\/example.com\/fixture/);
   assert.deepEqual(app.saved().result.evidence, result.evidence);
-  app.$('#decision-tab-limits').click();
-  assert.equal(app.$('#decision-panel-limits li').textContent, result.limitations[0]);
-  assert.equal(app.$('#decision-panel-limits script'), null);
+  assert.equal(app.$('#decision-panel-sources'),null);
+  assert.equal(app.$('#decision-panel-limits'),null);
+  assert.deepEqual(app.saved().result.evidence,result.evidence);
+  assert.deepEqual(app.saved().result.limitations,result.limitations);
   assert.equal(requests.filter(r=>r.url==='/api/portfolio').length, 1);
   assert.deepEqual(JSON.parse(requests.find(r=>r.url==='/api/portfolio').options.body).questionnaire, makeQuestionnairePayload(completeAnswers()));
   const reload = await open(t, app.saved());
@@ -486,7 +478,7 @@ test('clarification prepares a contextual question and only sends it after an ex
   assert.equal(app.saved().messages[1].content,'Réponse synthétique de clarification.');
 });
 
-test('each position can prepare a precise question while an existing draft is preserved', async t => {
+test('each asset question replaces an existing draft with the selected asset context', async t => {
   const app = await open(t,{page:'portfolio',complete:true,answers:completeAnswers()});
   app.$('.holding-link[data-holding="SPY"]').click();
   assert.equal(app.$('#modal').open,true);
@@ -499,10 +491,20 @@ test('each position can prepare a precise question while an existing draft is pr
   assert.equal(app.$('.send-button').disabled,true);
   app.type('#chat-input','Mon brouillon à conserver');
   app.$('[data-page="portfolio"]').click();
+  app.$('[data-discuss]').click();
+  assert.equal(app.$('#chat-input').value,'Mon brouillon \u00e0 conserver');
+  app.$('[data-page="portfolio"]').click();
   app.$('.holding-link[data-holding="NVDA"]').click();
+  const assetQuestion=app.$('#modal [data-discuss]').dataset.discuss;
+  assert.match(assetQuestion,/NVDA/);
   app.$('#modal [data-discuss]').click();
   assert.equal(app.$('#modal').open,false);
-  assert.equal(app.$('#chat-input').value,'Mon brouillon à conserver');
+  assert.equal(app.$('#chat-input').value,assetQuestion);
+  assert.equal(app.saved().draft,assetQuestion);
+  assert.equal(app.w.document.activeElement.id,'chat-input');
+  assert.deepEqual(app.saved().messages,[]);
+  const reload=await open(t,app.saved());
+  assert.equal(reload.$('#chat-input').value,assetQuestion);
 });
 
 test('an invalid saved result cannot supply a fabricated explanation to the main explanation region', async t => {
@@ -659,4 +661,97 @@ test('une nouvelle demande retire l’ancienne proposition et conserve le portef
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(app.saved().result.portfolio.positions[0].weight, 20);
   assert.equal(app.saved().proposal.portfolio.positions[0].weight, 25);
+
+});
+test('Other requires nonblank context in every applicable question and preserves optional project details', async t => {
+  for (const [id,key] of [['dependents','dependentsOther'],['annualIncome','incomeOther'],['debt','debtOther'],['goal','goalDetails']]) {
+    const step=QUESTIONS.findIndex(q=>q.id===id);
+    const answers={...completeAnswers(),[id]:'other'};
+    const app=await open(t,{answers,step});
+    assert.equal(app.$('#detail-'+key).required,true);
+    assert.equal(isAnswered(QUESTIONS[step],answers),false);
+    assert.equal(validateAnswers({...answers,[key]:'   '}),false);
+    app.next(); assert.equal(app.saved().step,step);
+    app.type('#detail-'+key,'Contexte personnel');
+    assert.equal(validateAnswers(app.saved().answers),true);
+    app.next(); assert.equal(app.saved().step,step+1);
+  }
+  assert.equal(validateAnswers({...completeAnswers(),goal:'project'}),true);
+});
+
+test('allocation explorer groups the actual weights consistently and exposes asset details accessibly', async t => {
+ const app=await open(t,{page:'portfolio',complete:true,answers:completeAnswers()});
+ const rows=()=>[...app.w.document.querySelectorAll('.allocation-item')];
+ assert.equal(rows().length,6);
+ assert.equal(app.$('.allocation-switch button').dataset.allocationMode,'assets');
+ assert.equal(app.$('[data-allocation-mode="assets"]').getAttribute('aria-pressed'),'true');
+ app.$('[data-allocation-mode="groups"]').click();
+ assert.deepEqual(rows().map(r=>r.querySelector('b').textContent),['40 %','40 %','10 %','10 %']);
+ assert.equal(app.w.document.querySelectorAll('.allocation-arc').length,4);
+ assert.deepEqual([...app.w.document.querySelectorAll('.allocation-arc')].map(r=>Number(r.getAttribute('stroke-dasharray').split(' ')[0])),[40,40,10,10]);
+ rows()[0].click();assert.equal(app.$('#allocation-value').textContent,'40');assert.equal(app.$('#allocation-label').textContent,'FNB d\u2019actions');
+ assert.equal(app.w.document.querySelectorAll('.allocation-arc.is-muted').length,3);
+ app.$('[data-allocation-mode="groups"]').click();assert.equal(app.$('#allocation-value').textContent,'100');
+ app.$('[data-allocation-mode="assets"]').click();assert.equal(rows().length,6);
+ assert.equal(app.$('[data-allocation-mode="assets"]').getAttribute('aria-pressed'),'true');
+ const arc=app.$('.allocation-arc');arc.dispatchEvent(new app.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+ assert.equal(app.$('#allocation-label').textContent,'XBB.TO');assert.equal(app.$('#allocation-value').textContent,'25');
+ app.$('[data-allocation-mode="groups"]').click();assert.equal(rows().length,4);assert.equal(app.$('#allocation-value').textContent,'100');
+ assert.equal(app.$('.allocation-footnote'),null); assert.equal(app.$('[data-allocation-reset]'),null);
+ const engine=await open(t,{page:'portfolio',complete:true,answers:completeAnswers(),result:resetResult()});
+ assert.equal(engine.w.document.querySelectorAll('.allocation-arc').length,1);engine.$('.allocation-item').click();assert.equal(engine.$('#allocation-value').textContent,'100');
+});
+
+test('geographic view shows the CSV countries, off-map share, contributors and interactive zoom', async t => {
+ const app=await open(t,{page:'portfolio',complete:true,answers:completeAnswers()});
+ app.$('[data-allocation-mode="geography"]').click();
+ assert.ok(app.$('.geo-world'));
+ const rows=[...app.w.document.querySelectorAll('.geo-row')];
+ assert.deepEqual(rows.map(x=>x.querySelector('b').textContent),['60 %','30 %','10 %']);
+ assert.equal(app.w.document.querySelectorAll('.geo-country').length,176);
+ assert.equal(app.w.document.querySelectorAll('.geo-feature').length,2);
+ assert.equal(app.w.document.querySelectorAll('.geo-contributors button').length,3);
+ const us=app.$('.geo-feature[data-geo-name="États-Unis"]');
+ assert.ok(us);
+ us.dispatchEvent(new app.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+ assert.match(app.$('.geo-detail-heading h3').textContent,/États-Unis/);
+ assert.equal(app.w.document.querySelectorAll('.geo-contributors button').length,2);
+ assert.match(app.$('.geo-method').textContent,/siège social/);
+ app.$('[data-geo-zoom="in"]').click();
+ assert.notEqual(app.$('.geo-world').getAttribute('viewBox'),'0 0 800 400');
+ app.$('[data-geo-zoom="reset"]').click();assert.equal(app.$('.geo-world').getAttribute('viewBox'),'0 0 800 400');
+ const off=rows.find(x=>x.textContent.includes('Sans pays unique'));off.click();
+ assert.match(app.$('.geo-detail').textContent,/GLD/);
+ assert.equal(app.w.document.querySelectorAll('.geo-country.is-selected').length,0);
+ app.$('[data-geo-expand]').click();assert.equal(app.$('#modal').open,true);
+ assert.ok(app.$('#modal .geo-world'));
+ const modalUS=app.$('#modal .geo-feature[data-geo-name="\u00c9tats-Unis"]');modalUS.dispatchEvent(new app.w.MouseEvent('click',{bubbles:true}));
+ assert.equal(app.$('#modal .geo-detail-heading h3').textContent,'\u00c9tats-Unis');
+ app.$('#modal [data-geo-zoom="in"]').click();assert.notEqual(app.$('#modal .geo-world').getAttribute('viewBox'),'0 0 800 400');
+ app.$('#modal [data-action="close-modal"]').click();assert.equal(app.$('#modal').open,false);
+ app.$('[data-allocation-mode="assets"]').click();assert.equal(app.$('.allocation-card .geo-world'),null);assert.equal(app.w.document.querySelectorAll('.allocation-item').length,6);
+});
+
+test('an older classification service cannot masquerade as complete geographic data',async t=>{
+ const app=await open(t,{page:'portfolio',complete:true,answers:completeAnswers()},false,{exposureData:{categories:exposureFixture.categories}});
+ app.$('[data-allocation-mode="geography"]').click();
+ assert.ok(app.$('.geo-warning'));
+ assert.equal(app.w.document.querySelectorAll('.geo-feature').length,0);
+ assert.match(app.$('.geo-row').textContent,/Non renseign/);
+ assert.equal(app.$('.geo-row b').textContent,'100 %');
+});
+
+test('removed family status and withdrawal detail are discarded without replacing valid answers',async t=>{
+ const answers={...completeAnswers(),marital:'partnered',maritalOther:'Old context',withdrawalTiming:'under_1'};
+ const app=await open(t,{answers,step:7,complete:true,page:'portfolio',result:resetResult()});
+ assert.equal(app.saved().complete,false);assert.equal(app.saved().result,null);
+ assert.equal(app.saved().answers.marital,undefined);assert.equal(app.saved().answers.maritalOther,undefined);assert.equal(app.saved().answers.withdrawalTiming,undefined);
+ assert.deepEqual(app.saved().answers,completeAnswers());
+ assert.equal(QUESTIONS.some(q=>q.id==='marital'),false);
+ assert.equal(QUESTIONS.find(q=>q.id==='horizon').details.length,0);
+ assert.equal(validateAnswers({...completeAnswers(),withdrawalTiming:'under_1'}),false);
+ const ready=await open(t,{answers:completeAnswers(),complete:true,page:'portfolio'});
+ assert.doesNotMatch(ready.$('.portfolio-context').textContent,/Retrait envisag/);
+ ready.$('[data-page="assistant"]').click();
+ assert.equal(ready.$('#chat-input').rows,1);
 });
