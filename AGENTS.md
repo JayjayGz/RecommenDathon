@@ -32,6 +32,13 @@ Paths below are relative to this Git repository, which is the inner `RecommenDat
 | Profile schema or questionnaire integration | Router owns contract review | screening, portfolio, compliance; questionnaire belongs to teammates |
 | Architecture, orchestration, full feature | Router owns integration | only affected roles; all roles for a full pipeline |
 
+## Repository locations
+
+- Web UI: `frontend/`; Python: `src/alphaforge/{presentation,application,domain,infrastructure}/`.
+- All CSV inputs: `dataset/`; prices: `prices_daily.csv`. Use the Application repository port and local Infrastructure adapter.
+- Developer entry points: `scripts/`; root `profiles.json` is the retained profile contract.
+- See `README.md` and the migration map in `docs/architecture.md` for commands and current implementation gaps.
+
 ## Shared boundaries
 
 - Preserve Presentation -> Application -> Domain and Application -> Infrastructure. Domain has no I/O; Infrastructure implements Application ports.

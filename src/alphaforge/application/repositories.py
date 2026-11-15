@@ -1,0 +1,9 @@
+"""Storage port used by the local calculation application."""
+from typing import Protocol
+import pandas as pd
+
+
+class PortfolioRepository(Protocol):
+    def load_data(self, data_dir=None) -> tuple[pd.DataFrame, pd.DataFrame]: ...
+    def load_profiles(self, profiles_path=None) -> dict: ...
+    def write_profiles(self, config: dict, out=None) -> None: ...

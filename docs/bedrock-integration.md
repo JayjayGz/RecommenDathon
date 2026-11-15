@@ -10,7 +10,7 @@ This change does not implement a production explanation prompt, Evidence Bundle 
 
 ## Which agents use a model?
 
-The repository currently contains two designs. `docs/architecture.md` and `docs/agent-responsibilities.md` define the deterministic pipeline below. `CLAUDE.md` describes a newer Strands orchestrator, risk analyst, ESG evidence and governance checker. Resolve that difference before wiring runtime orchestration. The shared boto3 connection supports language calls in either approach; Markdown role files do not become deployed agents automatically.
+The canonical target in `docs/architecture.md` and `docs/agent-responsibilities.md` is the deterministic pipeline below. Strands orchestrator, risk analyst, ESG evidence and governance concepts in `CLAUDE.md` are proposals, not implemented runtime agents. The shared boto3 connection supports language calls in either approach; Markdown role files do not become deployed agents automatically.
 
 | Existing pipeline role | Bedrock use |
 | --- | --- |

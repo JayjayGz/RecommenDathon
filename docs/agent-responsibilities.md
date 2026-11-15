@@ -2,7 +2,7 @@
 
 For coding-request routing, see the repository root `AGENTS.md` and [file-based workflow](agents-workflow.md). Those development roles guide implementation of the application agents below. The workflow also specifies one shared retry budget, a checked template fallback and structural-failure routing, clarifying the retry descriptions below.
 
-Agents live in the Application Layer. Each has one job, a typed input and output, and calls Domain functions for any calculation. The LLM (Bedrock) is used only for language tasks: interpreting the investor and writing the explanation. It never does arithmetic.
+This document describes the target runtime pipeline; see `architecture.md` for implemented modules and remaining gaps. Agents live in the Application Layer. Each has one job, a typed input and output, and calls Domain functions for any calculation. The LLM (Bedrock) is used only for language tasks: interpreting the investor and writing the explanation. It never does arithmetic.
 
 ## Ownership
 
@@ -34,7 +34,7 @@ Only the Explanation Agent needs the LLM in this pipeline. Everything else is de
 3. A validator (plain code) checks that every cited ID exists, and that every number in the text matches a bundle value after rounding. Any unmatched number fails validation.
 4. On repairable failure, the orchestrator retries the Explanation Agent with structured errors, at most 2 times total across evidence and wording checks. After that it falls back once to a template-based explanation built directly from validated evidence. The fallback must pass the same Compliance Gate; otherwise the run returns an explicit error. Missing or invalid calculated evidence stops the run rather than triggering prose repair.
 
-Evidence IDs depend on the CSVs, which are still to be provided. The bundle format stays the same when the data changes.
+Evidence IDs will depend on the actual input CSVs listed in `dataset/README.md`. Evidence generation remains planned; the bundle format should stay the same when data changes.
 
 ## Trade-offs
 

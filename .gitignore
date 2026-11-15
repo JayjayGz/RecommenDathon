@@ -1,5 +1,8 @@
 .venv/
-alphaforge_starter/*.csv
-data/
+*.csv
 .env
 __pycache__/
+.pytest_cache/
+*.egg-info/
+
+.pytest-tmp*/

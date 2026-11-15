@@ -4,7 +4,7 @@ Une interface en français pour le Datathon 2026 : questionnaire investisseur, a
 
 ## Démarrer
 
-Avec Node.js 24 ou plus récent, double-cliquez sur `DEMARRER.cmd`. Ouvrez **http://localhost:4173**. Gardez la fenêtre du serveur ouverte pendant l’utilisation.
+Avec Node.js 24 ou plus récent, lancez le serveur depuis `frontend/` avec la commande ci-dessous. Ouvrez **http://localhost:4173** et gardez le serveur ouvert pendant l’utilisation.
 
 Depuis PowerShell, dans ce dossier :
 
@@ -41,13 +41,12 @@ Le contrat exact figure dans [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.
 ## Structure
 
 ```text
-plateforme/
+frontend/
   index.html             Point d’entrée
   src/                   Interface, styles et contrats du questionnaire
   assets/                Images et polices locales
   server.mjs             Serveur HTTP et adaptateurs optionnels
   docs/                  Intégration et sources de conception
-  DEMARRER.cmd           Lanceur Windows
 ```
 
 ## Limite de raccordement au profil investisseur
@@ -55,3 +54,5 @@ plateforme/
 Le schéma existant `../docs/investor-profile-schema.json` attend notamment `risk_tolerance` parmi quatre valeurs et `investment_horizon_years` comme entier. Le questionnaire contient cinq choix de risque et des intervalles de durée. **Aucune correspondance n’a été inventée.** Le site transmet les réponses brutes, versionnées `rendements-seuls-v1`. L’équipe questionnaire/profil devra définir et valider l’adaptateur vers `InvestorProfile` avant toute recommandation réelle.
 
 Simulation et prototype de présentation. Aucun conseil en placement et aucun ordre de transaction.
+
+Le code Python est dans `../src/alphaforge/` ; les CSV sont dans `../dataset/`. Le serveur web ne charge pas ces CSV. Un backend doit adapter le questionnaire au contrat Python puis produire le contrat HTTP ci-dessus. Voir [l’architecture](../docs/architecture.md).

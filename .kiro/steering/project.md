@@ -1,3 +1,7 @@
+# Current layout and precedence
+
+Read `AGENTS.md`, `README.md` and `docs/architecture.md` first. The sections below retain team product concepts and pending decisions; they do not establish implemented behavior. CSVs live in `dataset/`, with `prices_daily.csv` as prices. The supplied history lacks 13 legacy profile tickers (see `docs/DATA.md`). Full evidence/compliance/API orchestration and questionnaire mapping remain pending. Python code lives in `src/alphaforge/`; launch tools through `scripts/`.
+
 # Project conventions (AlphaForge AI, PolyFinances Datathon 2026)
 
 ## AWS and models
@@ -7,12 +11,12 @@
 - Default model for testing: global.amazon.nova-2-lite-v1:0
 - Model for explanations and agent reasoning: global.anthropic.claude-sonnet-5 (no temperature or topP; maxTokens at least 1000).
 - JSON extraction: global.anthropic.claude-haiku-4-5-20251001-v1:0 with structured outputs.
-- Agents use Strands Agents (strands-agents). Set limits={"turns": N} on every agent.
+- Strands roles are a proposed language orchestration option, not an implemented runtime. Follow AGENTS.md and docs/architecture.md; numerical stages stay deterministic. If a Strands loop is later approved, bound its turns.
 - Create Bedrock clients with botocore Config(retries={"max_attempts": 5, "mode": "adaptive"}).
 - Never put AWS credentials, API keys or .env files in code or Git.
 
 ## Data
-- Starter dataset lives in data/ (not committed; Yahoo Finance terms). Commit the scripts that rebuild it.
+- Dataset lives in dataset/ (not committed; Yahoo Finance terms). Commit the scripts that rebuild it.
 - Use adj_close for returns. Prices are already split-adjusted; never reapply splits.
 - Prices are in each asset's listing currency: .TO tickers are CAD, everything else USD.
 - Convert USD to CAD with the Bank of Canada rate from fx_usdcad_daily.csv, using pandas merge_asof(direction="backward") (last rate on or before each date).

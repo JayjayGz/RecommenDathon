@@ -1,7 +1,7 @@
 """Per-ticker risk measures. Kenny writes the body; this documents the contract agents call."""
 
 
-def risk_measures(ticker, start=None, end=None, data_dir="alphaforge_starter"):
+def risk_measures(ticker, start=None, end=None, data_dir="dataset"):
     """Risk and return profile for a single ticker, in CAD.
 
     Returns a dict with:
