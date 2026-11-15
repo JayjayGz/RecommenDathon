@@ -329,9 +329,10 @@
         "User explicitly selected Questionnaire_client_Recommand_20261115_103525.docx as the only source on 2026-11-15.",
         "Source SHA-256 and actual extracted questions: plateforme/tests/fixtures/questionnaire-word.json; source review: plateforme/docs/QUESTIONNAIRE_WORD.md.",
         "Old eight-question tests failed against the new order; replacement tests replay the same stable-DOM cases plus numeric fields, all-assets choice and HTTP rejection cases.",
-        "Originally L-005 on the questionnaire branch; ID changed to L-013 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt."
+        "Originally L-005 on the questionnaire branch; ID changed to L-013 to preserve both distinct lessons after resolving a pre-existing merge collision. Original conflict saved in memory/lessons-before-website-merge.txt.",
+        "2026-11-15: user explicitly removed the separated/divorced/widowed option and target amount. The original Word snapshot remains intact; runtime, importer, JSON template and tests apply explicit user overrides under questionnaire-word-16-v4."
       ],
-      "prevention": "Read the actual supplied Word, preserve its titles/options/follow-ups, derive navigation from question count, use semantic IDs in summaries, version raw transport and local storage, and invalidate dependent results.",
+      "prevention": "Read the actual supplied Word, preserve its titles/options/follow-ups, derive navigation from question count, use semantic IDs in summaries, version raw transport and local storage, and invalidate dependent results. Apply later explicit user corrections as documented overrides without rewriting the original source fixture; clean obsolete saved fields and invalidate dependent results, including when only an optional field was removed.",
       "regression": "Compare all source questions and options with the source snapshot; complete all sixteen steps including numeric zero and optional notes; reject the old version and invalid hidden fields through HTTP.",
       "status": "verified",
       "verification": [
@@ -339,6 +340,11 @@
           "command": "cd plateforme; npm.cmd test",
           "result": "15 passed, 0 failed, including full Word questionnaire traversal and valid/invalid HTTP payloads.",
           "scope": "DOM, typed response and API checks only; Computer Use reported a user Escape stop, so no browser visual verification."
+        },
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "25 passed, 0 failed, including removed choices/amount, compatible saved answers and HTTP rejection of v3 and obsolete fields.",
+          "scope": "DOM and API contract checks. Native Chrome screenshot separately inspected the revised assistant layout; no business profile mapping or external agent call."
         }
       ]
     },
@@ -656,7 +662,8 @@
         "Initial git status: conflicts in AGENTS.md, orchestrator.py, memory/lessons.json and deleted-by-us investor workflow, tests and questionnaire workflow documentation.",
         "Feature commit 6a6783e contains the missing adapters, request contracts, matching, macro, Lambda, evidence and frontend files; restored its dependencies while retaining the stashed asset gate.",
         "Merged lesson records by trigger, restoring original L-011 identity and preserving L-020 through L-022; the crypto CSV hash remains 27f8982c5589b481280253cedaa105c30b61b3e73864972cb0a84e7493e9a2ea.",
-        "Rebase of debug commit 69b418a onto e7ec78f produced six conflicts and duplicated questionnaire preparation outside the marked import conflict. The duplicate reset effective/starting_weights and called prepare_investor with the obsolete two-argument signature."
+        "Rebase of debug commit 69b418a onto e7ec78f produced six conflicts and duplicated questionnaire preparation outside the marked import conflict. The duplicate reset effective/starting_weights and called prepare_investor with the obsolete two-argument signature.",
+        "Current merge: combined immediate chat with upstream 130-second timeout, portfolio CSS checks with private-route rejection, and preserved both backend and website lessons by assigning website records L-029 through L-031. All 35 website tests passed. Backend v2/UI v4 incompatibility documented without changing financial mapping."
       ],
       "prevention": "Compare the stash base, target branch and required imports before resolving conflicts. Restore the coherent feature dependency set, preserve both distinct lesson histories under unique IDs, validate imports and tests, and stage every required file when marking the resolution complete. Inspect automatically merged code outside conflict markers for duplicate preparation, resets and outdated call signatures; accepting conflict blocks alone is insufficient.",
       "regression": "Run backend regressions, frontend HTTP and syntax checks, structural lesson checks, then replay the supported French event with local CSVs and an in-memory audit. Confirm no conflict markers or unmerged entries and preserve the crypto normalization. Verify that a real supported French questionnaire reaches exactly one VALIDATE_REQUESTED_ASSETS and one MATCH_PROFILE state before a recommendation.",
@@ -738,7 +745,12 @@
     },
     {
       "id": "L-025",
-      "roles": ["evidence", "explanation", "infrastructure", "compliance"],
+      "roles": [
+        "evidence",
+        "explanation",
+        "infrastructure",
+        "compliance"
+      ],
       "trigger": "Adding review findings or optional-alternative claims to the bounded frontend explanation",
       "boundary": "Does not authorize omitting required facts, truncating limitations, raising transport limits, changing weights or relaxing constraints",
       "defect": "New portfolio-review claims pushed the deterministic explanation over the existing 10000-character frontend limit for multiple reference styles, returning FRONTEND_RESPONSE_TOO_LARGE.",
@@ -766,7 +778,10 @@
     },
     {
       "id": "L-026",
-      "roles": ["infrastructure", "compliance"],
+      "roles": [
+        "infrastructure",
+        "compliance"
+      ],
       "trigger": "Starting the local Bedrock-backed workflow with an existing AWS CLI login profile",
       "boundary": "Does not authorize logging secrets, replacing the credential chain with invented credentials, treating configuration as live access, or assuming a model response passed evidence checks",
       "defect": "The local HTTP handler returned WORKFLOW_CONFIGURATION_UNAVAILABLE even with a model, bearer token and supported region configured. A safe initialization diagnostic identified MissingDependencyException.",
@@ -795,7 +810,9 @@
     },
     {
       "id": "L-027",
-      "roles": ["infrastructure"],
+      "roles": [
+        "infrastructure"
+      ],
       "trigger": "Testing HTTP header rejection before body receipt on Windows",
       "boundary": "Does not authorize weakening body-size or origin checks, ignoring connection errors in legitimate complete-request tests, or reading unbounded bodies",
       "defect": "The first complete launcher regression run failed the oversized-request fixture with ConnectionAbortedError WinError 10053 instead of receiving the expected 413; 293 other tests passed.",
@@ -822,7 +839,9 @@
     },
     {
       "id": "L-028",
-      "roles": ["infrastructure"],
+      "roles": [
+        "infrastructure"
+      ],
       "trigger": "Launching or stopping the local application when a previous instance may still own a port, especially through a Windows virtual-environment Python wrapper",
       "boundary": "Does not authorize stopping unrelated listeners, changing credentials, or treating a healthy configuration endpoint as proof of live model access",
       "defect": "The user launched a second instance and received a website port 4173 conflict after backend startup. Both existing endpoints were still healthy. The original launcher used child.kill(), which does not guarantee termination of a Windows Python wrapper's descendants.",
@@ -845,6 +864,85 @@
           "command": "node --check scripts/start_local.mjs; git diff --check; GET /api/config on 4173 and /health on 8000",
           "result": "Syntax and whitespace checks passed; both existing services returned healthy configured responses.",
           "scope": "The already-running application remains available; configuration and liveness checks do not invoke the model."
+        }
+      ]
+    },
+    {
+      "id": "L-029",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Adding or changing the global website profile reset or its persisted state",
+      "boundary": "Website state only; does not delete financial datasets or unrelated localStorage keys",
+      "defect": "The user requested a reset button on every page; the existing reset was only reachable through the privacy dialog.",
+      "cause": "The reset action existed but was not exposed by the shared header, and legacy application storage keys were not removed.",
+      "evidence": [
+        "User correction on 2026-11-15: a reset on all pages must restart the profile from zero.",
+        "plateforme/src/app.js: shared header reset, invalidateConversation, application-prefixed storage cleanup and first-question navigation.",
+        "plateforme/tests/word-questionnaire.test.mjs: three-page reset, legacy storage, reload, valid neighboring state and in-flight response cases."
+      ],
+      "prevention": "Expose the reset through the common header. Clear all profile-derived UI state, abort pending requests and ignore late responses, remove only this application's current/legacy keys, and persist a blank first-step state.",
+      "regression": "Reset from questionnaire, portfolio and assistant; reload; confirm empty answers/draft/messages/results and first question. Preserve unrelated localStorage and compatible normal reloads; resolve pending chat/portfolio responses after reset and confirm old state is not restored.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "25 passed, 0 failed, including global reset, reload and aborted in-flight chat/portfolio cases.",
+          "scope": "Actual UI handlers in jsdom with deterministic synthetic fixtures. The user's real browser profile was preserved during visual inspection; reset was not clicked there."
+        }
+      ]
+    },
+    {
+      "id": "L-030",
+      "roles": [
+        "explanation",
+        "evidence",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Changing the portfolio result screen, explanation visibility or contextual clarification",
+      "boundary": "Website presentation and existing raw result transport only; never fabricate asset rationales, infer business risk mappings or treat shape validation as source certification",
+      "defect": "The user identified the explanation of investment choices as the project's most important feature; the result screen placed a tall profile sidebar beside holdings and rendered the real explanation only below holdings and the conversation callout.",
+      "cause": "portfolio() rendered resultEvidence after the complete portfolio grid and refinement callout, and no explanation region appeared for the unconnected demonstration.",
+      "evidence": [
+        "User request and screenshot on 2026-11-15: a clear zone for the agent to explain and clarify its choices is the most important feature.",
+        "plateforme/src/app.js: decisionStudio uses accepted result.explanation, evidence, limitations and runId beside allocation; previous resultEvidence placement is replaced.",
+        "plateforme/docs/PORTFOLIO_EXPLANATION.md records the previous profile-card assertion failure and the native Chrome finding that Ctrl+End was intercepted by the new tab handler. The assertion targets the new profile summary; modified browser shortcuts are no longer intercepted."
+      ],
+      "prevention": "Make the explanation a primary region near the allocation. Render only accepted current-result prose, evidence and limitations, and mark demo absence explicitly. Clarification should prepare a contextual draft without automatic submission or overwriting an existing draft. Keep keyboard tab behavior accessible without capturing modified browser shortcuts.",
+      "regression": "Replay accepted response and reload, rejected saved compliance output, demo no-explanation state, safe text/link rendering, tab keyboard navigation including Ctrl+End, contextual clarification submission and preservation of an existing draft. Keep profile edits/reset invalidating the result.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "30 passed, 0 failed, including actual response rendering under HTTP mocks, rejected saved output, keyboard shortcuts and contextual clarification.",
+          "scope": "Deterministic DOM/API/style tests with synthetic fixtures. Native Chrome separately displayed the demo allocation, explanation region and tab content at the existing desktop window size; no real agent, numerical pipeline or mobile screenshot was tested."
+        }
+      ]
+    },
+    {
+      "id": "L-031",
+      "roles": [
+        "infrastructure"
+      ],
+      "trigger": "Changing chat submission, delivery feedback or retries in the website conversation",
+      "boundary": "Browser delivery state and existing HTTP chat transport only; does not authorize automatic resend, claim exactly-once backend processing or alter financial calculations",
+      "defect": "The user reported that their submitted message appeared only when the agent replied.",
+      "cause": "sendMessage appended the user message and assistant response together after awaiting a successful HTTP response.",
+      "evidence": [
+        "User correction on 2026-11-15 requested immediate display in step 3.",
+        "Before the repair, the delayed-response test in plateforme/tests/word-questionnaire.test.mjs failed at the immediate bubble count: actual 1, expected 2.",
+        "The initial test command without --test-isolation=none hit spawn EPERM; rerunning with the existing in-process mode reproduced the actual delayed-display defect.",
+        "plateforme/src/app.js now persists and renders the user bubble before awaiting HTTP; completion adds only the assistant reply. Pending/failed delivery metadata never enters the transport conversation."
+      ],
+      "prevention": "Display and persist the submitted user message immediately, clear the composer for a new submission, and show pending status. On failure keep the bubble recoverable, retry it in place and preserve a different draft. Strip local delivery metadata and exclude unresolved messages from the HTTP history; never send the current message twice as both message and conversation. On reload convert interrupted pending status to manual retry, without automatic resubmission.",
+      "regression": "Use a deferred response to assert the user bubble before resolution, a single request on double-submit and no duplicate user bubble after success. Replay HTTP/network/timeout/invalid-response failures, retry with another draft, interrupted reload without resend, and existing reset/late-response guards.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
+          "result": "35 passed, 0 failed, including deferred chat response, retry in place, reload recovery, failure cases and concise portfolio copy.",
+          "scope": "Actual UI handlers under deterministic HTTP mocks and local API/static checks; no real agent call or live browser chat submission."
         }
       ]
     }
