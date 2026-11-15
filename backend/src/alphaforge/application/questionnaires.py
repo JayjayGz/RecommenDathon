@@ -98,6 +98,7 @@ def normalize_french(form):
         "reaction": choice("reaction_baisse", ["worried", "hesitant", "concerned", "calm"]),
         "income": choice("stabilite_revenus", ["regular", "variable", "fragile", "unknown"]),
         "horizon": choice("horizon", ["1_2", "5", "10", "15_plus"]),
+        "knowledge": choice("connaissances", ["beginner", "basic", "good", "advanced"]),
         "exclusions": choice("exclusions", ["none", "limits", "discussion"]),
         "sectors": [sector_codes[int(s.rsplit("_", 1)[1]) - 1] for s in (values["secteurs"] or [])],
         "assets": assets,

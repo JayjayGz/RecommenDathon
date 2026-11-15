@@ -1,4 +1,5 @@
 """French investor view of checked results; detailed evidence stays in the audit."""
+from .french import SECTORS
 
 DISCLAIMER_FR = "Simulation éducative, sans conseil en placement. Les résultats passés ne prédisent pas les résultats futurs."
 
@@ -6,7 +7,7 @@ PUBLIC_LIMITATIONS = [
     "L’analyse ne prévoit ni les rendements futurs ni les pertes possibles. L’historique disponible peut sous-estimer certains risques et ne couvre pas tous les actifs du marché.",
     "Elle ne permet pas de confirmer que ce portefeuille convient à votre situation financière complète, ni de mesurer votre capacité réelle à supporter une perte.",
     "Les frais, la fiscalité, la facilité de revente et la situation financière des entreprises ne sont pas évalués.",
-    "Le détail des placements détenus dans les fonds et leurs chevauchements n’est pas disponible. Les exclusions éthiques ou sectorielles ne peuvent donc pas être garanties.",
+    "Les répartitions disponibles restent partielles et datées. Le détail des titres des fonds et leurs chevauchements n’est pas établi ; les exclusions éthiques ou sectorielles ne peuvent pas être garanties.",
 ]
 
 
@@ -69,6 +70,23 @@ def investor_summary(evaluation, selected, answers):
         paragraphs.append("Points à clarifier : " + " ".join(observations))
     elif not change_review:
         paragraphs.append("Les réponses examinées ne font pas ressortir de contradiction explicite dans les combinaisons vérifiées. Cela ne valide pas à lui seul votre capacité à prendre ce risque.")
+    mapping = evaluation.get("profile_match", {}).get("questionnaire_mapping")
+    if mapping:
+        paragraphs.append("Le profil de référence tient compte de votre réaction aux pertes, de vos connaissances, de votre horizon et de la stabilité de vos revenus, en plus de la tolérance au risque déclarée. Ce classement ne remplace pas une évaluation financière complète.")
+    exposures = evaluation.get("portfolio_analysis", {}).get("exposures")
+    if exposures:
+        sectors = exposures["dimensions"]["sectors"]
+        if sectors["covered_pct"]:
+            paragraphs.append(f"Les répartitions sectorielles disponibles couvrent {number(sectors['covered_pct'])} % du portefeuille. La part mesurée dans vos secteurs d’intérêt représente {number(exposures['preferred_sector_weight_pct'])} % du portefeuille ; la part non documentée ne vaut pas zéro.")
+            for insight in exposures["insights"]:
+                if insight["kind"] == "largest_measured_sector":
+                    paragraphs.append(f"Le principal secteur d’actions mesuré est {SECTORS.get(insight['sector'], insight['sector'])} : {number(insight['weight_pct'])} % du portefeuille, en incluant les fonds dont la répartition est disponible.")
+        else:
+            paragraphs.append("Les répartitions sectorielles ne sont pas disponibles à la date de l’analyse ; aucune exposition manquante n’est supposée.")
+        potential = exposures["potential_assets"][:2]
+        if potential:
+            choices = "; ".join(f"{p['ticker']} ({SECTORS.get(p['sector'], p['sector'])}) : {p['description_fr']}" for p in potential)
+            paragraphs.append("Pistes à étudier selon vos intérêts : " + choices + " Ces pistes ne sont ni pondérées ni simulées, peuvent recouper des fonds déjà détenus et ne sont pas appliquées.")
     suggestions = evaluation.get("portfolio_analysis", {}).get("suggestions", [])
     if suggestions:
         changes = suggestions[0]["changes"]

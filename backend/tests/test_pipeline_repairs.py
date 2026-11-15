@@ -33,6 +33,8 @@ def test_every_browser_choice_is_accepted_without_missing_answers(browser_contra
 
 def test_word_crosswalk_preserves_details_and_normalizes_interests(browser_contracts):
     form = deepcopy(browser_contracts["base"])
+    # Le montant visé appartient au contrat historique, et non au formulaire v4.
+    form["version"] = "questionnaire-word-16-v2"
     form["answers"].update(marital="other", maritalOther="Fictional context", dependents="other",
         dependentsOther="Fictional dependant", supportMode="shared", annualIncome="other", incomeOther="Fictional income",
         debt="other", debtOther="Fictional debt", mortgageAmount=0, goal="project", goalDetails="Fictional goal",
@@ -83,7 +85,7 @@ def test_canadian_tickers_are_not_confused_with_target_weight_instructions(inves
     snapshot = investor_source.load(investor_request().as_of, include_universe=True)
     assert resolve_message(f"Add {ticker} 1%", snapshot.assets) == {"ticker": ticker, "add_pct": 1}
     assert resolve_message(f"Add {ticker.lower()} 1%.", snapshot.assets) == {"ticker": ticker, "add_pct": 1}
-    with pytest.raises(InvestorInputError, match="one explicit addition"):
+    with pytest.raises(InvestorInputError, match="Précisez une seule modification"):
         resolve_message(f"Set {ticker} to 10%", snapshot.assets)
 
 

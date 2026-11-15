@@ -43,7 +43,7 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 1. The questionnaire (teammates) produces an `InvestorProfile`.
 2. The orchestrator runs the Data, Screening, Risk, Portfolio and Backtest agents. These are deterministic Python and do not call the LLM.
 3. The Domain Layer collects every computed number into an **Evidence Bundle**.
-4. The Explanation Agent writes the rationale and trade-offs from the bundle only, citing evidence IDs.
+4. The explanation stage orders verified claims from the bundle only, citing evidence IDs. Investor-facing prose is rendered in French. Follow-up language is normalized before numerical stages, with an optional bounded semantic call through the same LLM port; see [French language support](french-language.md).
 5. The **Compliance Gate** validates evidence, the disclaimer, limitations, wording and constraints. Repairable explanation failures share at most 2 retries, followed by one deterministic template fallback checked by the same gate. Structural failures or a failed fallback return an explicit error. See `agents-workflow.md` for the bounded sequence.
 6. The result goes to the UI together with the limitations. The whole run is written to S3.
 

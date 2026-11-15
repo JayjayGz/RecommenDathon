@@ -101,50 +101,73 @@ def match_profile(answers, assessment, requirements, config, assets):
             ]}
 
 
-def resolve_message(message, assets, conversation=()):
-    """Resolve exact dataset names/tickers and one explicit whole-point edit.
+def resolve_message(message, assets, conversation=(), interpret=None):
+    """Normalize one explicit edit into the language-independent stage contract.
 
-    Never guess a ticker or amount. The latest user message may provide the
-    asset for a short amount-only clarification; assistant claims are ignored.
+    Optional semantic interpretation can select an operation only; Python owns
+    identity, amounts, units, ambiguity checks and all financial validation.
     """
-    def mentions(text):
-        # Sentence punctuation is not part of a ticker. Internal dots stay in
-        # place so an unknown NVDA.OTHER cannot resolve to the known NVDA.
-        text = re.sub(r"[.!?]+(?=\s|$)", "", text)
-        found = set()
-        for ticker, asset in assets.items():
-            for alias in (ticker, asset["name"]):
-                if re.search(r"(?<![\w.^=-])" + re.escape(alias) + r"(?![\w.^=-])", text, re.IGNORECASE):
-                    found.add(ticker)
-        return found
+    from .request_language import asset_mentions, ambiguous, fold, intent, quantities
 
-    if re.search(r"\b(and|et|not|pas|without|sans|target|total)\b|don't|(?<![\w.^=-])to\s+\d|\bà\s+\d", message, re.IGNORECASE):
-        raise InvestorInputError("AMBIGUOUS_PERSONALIZATION_REQUEST",
-            "I can interpret one explicit addition, reduction or exclusion at a time. Please use 'add NVDA 5%' for an additional five percentage points, or provide structured changes. I will not guess a target weight or a negated instruction.")
-    found = mentions(message)
-    if not found and re.fullmatch(r"\s*\d{1,3}\s*%\s*[.!]?\s*", message):
-        for item in reversed(conversation):
-            if item["role"] == "user":
-                found = mentions(item["content"])
-                break
+    def unclear():
+        return InvestorInputError("AMBIGUOUS_PERSONALIZATION_REQUEST",
+            "Précisez une seule modification : ajout, réduction ou exclusion. "
+            "Exemple de syntaxe : ajouter TD.TO de 5 points de pourcentage. "
+            "Un poids cible, une négation ou une condition nécessite une clarification.")
+
+    if ambiguous(message):
+        raise unclear()
+    found = asset_mentions(message, assets)
+    amounts = quantities(message)
+    text = fold(message)
+    action = intent(message)
+    # Only a quantity-only reply may borrow identity AND direction from the last
+    # user turn. Assistant/model text never establishes an investment instruction.
+    quantity_only = len(amounts) == 1 and not (
+        text[:amounts[0][0].start()] + text[amounts[0][0].end():]).strip(" .!?")
+    if not found and quantity_only:
+        last = next((m["content"] for m in reversed(conversation) if m["role"] == "user"), None)
+        if last is not None:
+            if ambiguous(last) or intent(last) in {"conflict", "exclude"}:
+                raise unclear()
+            found = asset_mentions(last, assets)
+            action = intent(last) or "add"
     if not found:
         raise InvestorInputError("ASSET_NOT_IN_UNIVERSE",
-            "I could not resolve an exact asset name or ticker from our dataset. I cannot assess assets outside that universe; please provide its dataset ticker.")
-    if len(found) != 1:
-        raise InvestorInputError("AMBIGUOUS_ASSET_REQUEST", "Please request one asset at a time, using its exact ticker.",
-                                 {"tickers": sorted(found)})
+            "Indiquez le symbole exact ou le nom complet d’un actif du catalogue. Aucun actif inconnu ne sera ajouté.")
+    # Mask names and quantities so 'et un' and an official name containing 'and'
+    # do not masquerade as instructions for a second asset.
+    masked = text
+    for ticker in found:
+        for alias in (ticker, assets[ticker]["name"]):
+            masked = masked.replace(fold(alias), " ")
+    for match, _ in quantities(masked)[::-1]:
+        masked = masked[:match.start()] + " " + masked[match.end():]
+    if len(found) != 1 or re.search(r"\b(?:et|and|ou|or|puis)\b", masked):
+        raise unclear()
     ticker = next(iter(found))
     if ticker not in investible_universe(assets):
-        raise InvestorInputError("UNSUPPORTED_ASSET_CLASS", "This dataset entry is a reference series, not a supported portfolio holding.",
-                                 {"ticker": ticker})
-    if re.search(r"\b(exclude|remove|exclure|retirer)\b", message, re.IGNORECASE):
+        raise InvestorInputError("UNSUPPORTED_ASSET_CLASS",
+            "Cet élément du catalogue est une série de référence et ne peut pas être détenu dans ce portefeuille.",
+            {"ticker": ticker})
+    if action == "conflict":
+        raise unclear()
+    if action == "exclude":
+        if amounts:
+            raise unclear()
         return {"exclude": ticker}
-    amounts = re.findall(r"(?<![\d.,-])(\d+(?:[.,]\d+)?)\s*%", message)
-    if len(amounts) != 1 or not amounts[0].isdigit() or not 1 <= int(amounts[0]) <= 100:
+    if (len(amounts) != 1 or not str(amounts[0][1]).isdigit()
+            or len(str(amounts[0][1])) > 3 or not 1 <= int(amounts[0][1]) <= 100):
         raise InvestorInputError("ALLOCATION_AMOUNT_REQUIRED",
-            f"I found {assets[ticker]['name']} ({ticker}) in the asset universe. Specify a whole percentage-point addition, for example: add {ticker} 5%. This is an example of syntax, not a recommended weight.",
-            {"ticker": ticker, "requires": "add_pct"})
-    amount = int(amounts[0])
-    if re.search(r"\b(sell|reduce|decrease|vendre|reduire|réduire)\b", message, re.IGNORECASE):
-        amount = -amount
-    return {"ticker": ticker, "add_pct": amount}
+            "Précisez une variation entière de 1 à 100 points de pourcentage. Aucun montant ne sera supposé.",
+            {"ticker": ticker, "requires": "add_pct", "operation": action})
+    # A bare ticker plus quantity remains supported. Other unrecognized prose
+    # requires semantic interpretation, rather than silently defaulting to a buy.
+    if action is None and not masked.strip(" .!?:,;"):
+        action = "add"
+    if action is None and interpret is not None:
+        action = interpret(message, ticker)
+    if action not in {"add", "reduce"}:
+        raise unclear()
+    amount = int(amounts[0][1])
+    return {"ticker": ticker, "add_pct": -amount if action == "reduce" else amount}

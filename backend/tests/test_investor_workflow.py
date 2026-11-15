@@ -46,6 +46,7 @@ def french_form(blank=False):
 def investor_source(source):
     # Real metadata provides names/classes; prices remain explicitly fictional.
     source.universe_path.write_bytes((ROOT / "dataset/assets_universe.csv").read_bytes())
+    source.exposures_path.write_bytes((ROOT / "dataset/exposures_profile_tickers.csv").read_bytes())
     source.macro_path.write_text("date,series_id,value,unit,frequency,label,source\n"
         "2025-01-01,TEST_POLICY,2.5,percent,monthly,Fictional policy rate,Synthetic fixture\n"
         "2025-02-01,TEST_POLICY,2.0,percent,monthly,Fictional policy rate,Synthetic fixture\n", encoding="utf-8")
@@ -287,7 +288,7 @@ def test_explicit_weight_limit_applies_to_new_addition_and_alternative(investor_
     outcome, _ = run(investor_source, investor_request(message="Add NVDA 50%", requirements={"max_asset_weight_pct": 50}))
     assert outcome.status == "INVALID_REQUEST"  # funding pool is only 30%, not an evaluable allocation
     assert "portfolio" not in outcome.payload
-    assert "Cannot fund" in outcome.payload["message"]
+    assert "La modification demandée ne peut pas être évaluée" in outcome.payload["message"]
 
 
 def test_missing_history_names_actual_holdings_without_switching_profiles(investor_source):

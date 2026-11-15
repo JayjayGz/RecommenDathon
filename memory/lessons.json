@@ -981,6 +981,134 @@
           "scope": "Données CSV du projet, proxy HTTP, moteur, contrat d’interface et reconstruction des preuves enregistrées ; aucun appel Bedrock réel."
         }
       ]
+    },
+    {
+      "id": "L-032",
+      "roles": ["data", "screening", "portfolio", "infrastructure", "evidence", "explanation", "compliance"],
+      "trigger": "Utiliser le nouveau mapping du questionnaire et le catalogue d’exposition fourni pour analyser le portefeuille",
+      "boundary": "Le score de référence fourni ne valide pas la capacité financière complète ; les métadonnées datées ne servent pas à recalculer des rendements passés ni à inventer des données manquantes",
+      "defect": "Le nouveau profile_mapping.py n’était pas branché au formulaire ; les connaissances restaient dans le contexte brut et la revue n’utilisait pas exposures_profile_tickers.csv. Le parcours réel a également révélé un backend limité à Word v2 face au site v4.",
+      "cause": "La préparation utilisait uniquement l’ancien rapprochement par tolérance et recouvrement des métadonnées. Aucun port ne chargeait le catalogue et le normaliseur Word reconnaissait une seule version.",
+      "evidence": [
+        "Demande utilisateur : utiliser le nouveau profile_mapping et les informations d’exposition des actifs pour proposer des pistes cohérentes avec le portefeuille et le questionnaire.",
+        "Fichier réel : dataset/exposures_profile_tickers.csv, 82 lignes ; présence de secteurs GICS, catégories obligataires, répartitions absentes et bases géographiques différentes.",
+        "Premier parcours connecté : 27 contrôles réussis et un échec sur questionnaire-word-16-v4. Le backend accepte désormais v4 et conserve explicitement v2.",
+        "Une ancienne régression attendait un profil élevé malgré une réaction inquiète et des connaissances débutantes : l’attendu a été corrigé pour vérifier le nouveau score fourni. Une autre injectait un montant visé supprimé en v4 ; elle vérifie désormais sa conservation dans le contrat v2, tandis qu’une régression distincte vérifie son refus en v4."
+      ],
+      "prevention": "Normaliser les connaissances et utiliser le module fourni avec sa provenance et les dérogations explicites. Charger et hacher le catalogue via le port de stockage. Pondérer les répartitions disponibles seulement à leur date d’analyse, séparer classifications et bases géographiques, conserver inconnues et arrondis sources. Distinguer pistes qualitatives sans poids et alternatives simulées ; reconstruire les faits et rejets au contrôle de sortie.",
+      "regression": "Rejouer les formulaires v4, v2 et français, le passage prudent/dynamique selon les connaissances, une pondération action plus fonds, les données futures ou manquantes, le chargement S3 fermé, les exclusions, un avis falsifié et une alternative qui dégrade les secteurs choisis. Vérifier les limites de réponse pour les 15 profils avec le catalogue connu et futur.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/expositions-validation-finale",
+          "result": "335 tests réussis, 2 ignorés, 2 échecs attendus ; 17 sous-tests réussis.",
+          "scope": "Suite backend locale après les corrections du mapping, des versions et du catalogue ; aucun appel AWS réel."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_macro_context.py backend/tests/test_exposures.py backend/tests/test_pipeline_repairs.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/expositions-profils-et-contrats",
+          "result": "53 tests réussis, y compris le contrôle étendu aux 15 profils avec expositions connues ou futures.",
+          "scope": "Pondérations et contrats sur prix fictifs, limites du transport, normalisation par le véritable validateur du site ; aucune performance réelle revendiquée."
+        },
+        {
+          "command": "node --test --test-reporter=dot tests/change-review.test.mjs tests/exposures.test.mjs tests/word-questionnaire.test.mjs tests/server-questionnaire.test.mjs",
+          "result": "42 tests réussis, aucun échec.",
+          "scope": "Contrats d’exposition, questionnaire, DOM jsdom, confirmation et HTTP local ; pas de test graphique."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "30 contrôles réussis, aucun échec ; 14 exécutions auditées, empreintes des sources vérifiées.",
+          "scope": "Proxy local, véritable formulaire v4, nouveau mapping, CSV du projet, expositions transmises à l’interface et preuves reconstruites depuis le disque. Aucun déploiement ni appel Bedrock réel."
+        }
+      ]
+    },
+    {
+      "id": "L-033",
+      "roles": [
+        "explanation",
+        "screening",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Interpreting French investor messages or rendering investor-facing follow-up output",
+      "boundary": "Does not translate machine contracts, change allocation policy, infer financial capacity, authorize live model tests or translate the legacy technical API",
+      "defect": "French input used a small regex parser; investor-facing error paths still emitted English. During implementation, 18 assertions failed because a PowerShell stdin write replaced French accents with question marks. A later semantic integration fixture attempted to reduce an unheld asset and correctly returned INVALID_REQUEST.",
+      "cause": "Language handling was scattered across input parsing and output templates. The first edit passed Unicode through a shell pipe with a non-UTF-8 encoding; the semantic test initially chose a holding absent from the matched starting portfolio.",
+      "evidence": [
+        "User requested shared robust French input and French output for all runtime stages.",
+        "backend/tests/test_request_language.py covers normalization, language equivalence, ambiguity, number tails, semantic validation and full orchestrator integration.",
+        "Initial targeted run: 18 failed, 113 passed; failures were corrupted French error text. After direct UTF-8 patch: 79 passed.",
+        "Initial semantic integration replay: 1 failed, 63 passed; after choosing a held SPY position: 64 passed. No allocation check was relaxed."
+      ],
+      "prevention": "Normalize once into typed edits. Preserve symbols, integer amounts, units, direction and negation. Use at most one audited semantic call for unrecognized explicit phrasing, validate its JSON and supporting quote, and ask in French on uncertainty or model failure. Keep calculations and release gates deterministic. Edit accented text with a Unicode-safe mechanism and assert rendered French text.",
+      "regression": "Replay a French addition and reduction, an amount-only reduction follow-up, negation, target weight, an unknown dotted symbol, invalid model output, outage/deadline handling and a model-interpreted request through the real engine. Check missing-amount reductions ask for a reduction rather than an addition.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/french-language-final-suite",
+          "result": "389 passed, 2 skipped, 2 xfailed, 17 subtests passed.",
+          "scope": "Offline backend suite, including semantic integration and real engine checks. The subsequently added oversized-number and four raw model-response cases were replayed in the focused suite."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_request_language.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/french-language-model-boundaries",
+          "result": "58 passed.",
+          "scope": "Final French input, clarification, output and semantic boundary cases; fake LLM only, no live Bedrock invocation."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
+          "result": "30 passed, 0 failed; 14 audited runs; source CSV unchanged.",
+          "scope": "Local HTTP proxy, handler, CSV pipeline, frontend response contracts and audit reconstruction. Not a browser UI test."
+        }
+      ]
+    },
+    {
+      "id": "L-034",
+      "roles": [
+        "infrastructure",
+        "explanation"
+      ],
+      "trigger": "Resolving a frontend stash/merge conflict involving portfolio explanations, chat delivery or the questionnaire test harness",
+      "boundary": "Does not authorize discarding either side wholesale, changing questionnaire scoring, publishing, committing or dropping a stash",
+      "defect": "A stash application left five conflict blocks in plateforme/src/app.js and four in plateforme/tests/word-questionnaire.test.mjs. The merged explanation region still referenced sourceMarkup after the stashed change removed that renderer.",
+      "cause": "Upstream introduced a main explanation region, chat delivery/retry state and an options-based DOM harness while stashed work changed French evidence presentation and explicit portfolio-change confirmation.",
+      "evidence": [
+        "Original conflict copies preserved under .local-runs/merge-resolution/before/plateforme/. Git index base/upstream/stashed snapshots also retained under .local-runs/merge-recovery/conflicts/.",
+        "Observed git ls-files -u listed exactly the two requested files before resolution.",
+        "Retained upstream layout, contextual questions, retry/delivery state and test harness; retained non-conflicting stash edits for French summaries and canRetainProposal checks. Internal source tabs were removed according to L-029; evidence remains stored and tested.",
+        "node --check passed for both resolved files; targeted DOM/confirmation tests passed 39/39; all four frontend test files passed 42/42 on Node 22.17.1.",
+        "Repeat conflict after commit f231a1d (Better response): index stage 2 now contains the prior resolution (app bfbe270; tests 9a3d013), while stage 3 retains the original stash blobs (app 2693b5a; tests 68c0eb9). Fresh conflicted work copies were backed up under .local-runs/merge-resolution/repeat-*/ before resolving five and four blocks again.",
+        "A further user-requested replay found identical stage-2 and stage-3 objects and the same five/four conflict blocks. Current files were backed up in a fresh repeat folder; stripping the reviewed conflict alternatives reproduced the committed resolution exactly after newline normalization.",
+        "Final requested recurrence again had exactly the same six index blobs. Fresh backups under .local-runs/merge-resolution/final-*/ preserve the conflict input; the resolved text matches the committed stage-2 text after newline normalization."
+      ],
+      "prevention": "Compare all conflict stages and preserve non-conflicting edits. Check consumers of removed helpers, not only syntax. Reconcile tests with the selected harness contract and documented public-output boundaries. Verify delayed/retried chat, explicit confirmation and hidden internal evidence before staging only the resolved files. When conflict markers recur, compare current stage object identities with the previously verified resolution and the latest commit. A retained stash can conflict again when reapplied; do not drop it without authorization or assume the previous successful resolution applies to new inputs.",
+      "regression": "Run every plateforme/tests/*.test.mjs via node --test, covering DOM keyboard tabs, escaped explanations/limits, no displayed evidence catalog, immediate chat delivery, retry draft preservation, questionnaire state and portfolio confirmation. Check git ls-files -u and conflict markers are empty after scoped git add.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "node --test tests/word-questionnaire.test.mjs tests/change-review.test.mjs",
+          "result": "39 passed, 0 failed.",
+          "scope": "Offline DOM, saved state, request handling and explicit confirmation; no graphical browser or live backend/model."
+        },
+        {
+          "command": "$testPaths = @(rg --files tests -g '*.test.mjs'); & node --test --test-reporter=dot $testPaths",
+          "result": "42 passed, exit code 0.",
+          "scope": "All four frontend test files under Node 22.17.1; used node directly because npm test requests a Node 24-only isolation option."
+        },
+        {
+          "command": "$testPaths = @(rg --files tests -g '*.test.mjs'); & node --test --test-reporter=spec $testPaths",
+          "result": "Repeated conflict resolution: 42 passed, 0 failed; both node --check commands passed; git ls-files -u empty after scoped git add.",
+          "scope": "Fresh inputs with stage-2 committed resolution and original stage-3 stash versions. Resolved text matches stage 2 after newline normalization; both paths match HEAD after staging. No commit, reset, stash deletion or unrelated file overwrite."
+        },
+        {
+          "command": "node --test --test-reporter=spec <all four plateforme/tests/*.test.mjs>; node --check <both resolved files>; git ls-files -u",
+          "result": "Further replay: 42 passed, 0 failed; both syntax checks passed; zero unmerged entries and zero conflict markers after scoped staging.",
+          "scope": "The identical conflict inputs were revalidated. Existing committed resolution preserved; no stash or Git history changes."
+        },
+        {
+          "command": "$testPaths = @(rg --files tests -g '*.test.mjs'); & node --test --test-reporter=spec $testPaths",
+          "result": "Final requested replay: 42 passed, 0 failed. Both files passed node --check. No unmerged index entries or file conflict markers remained after scoped git add.",
+          "scope": "Offline frontend verification of the same repeated conflict; no commits or stash deletion."
+        }
+      ]
     }
   ]
 }

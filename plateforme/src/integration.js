@@ -12,9 +12,38 @@ const checked = value => object(value) && value.status === 'PASS' && value.passe
   && object(value.checks) && Object.keys(value.checks).length > 0 && Object.keys(value.checks).length <= 30
   && Object.values(value.checks).every(c => object(c) && c.passes === true);
 
+export function validateExposureReview(exposures) {
+  if (!object(exposures) || exposures.method !== 'weighted_catalog_exposures_v1'
+      || !object(exposures.dimensions) || !finite(exposures.preferred_sector_weight_pct)
+      || exposures.preferred_sector_weight_pct < 0 || exposures.preferred_sector_weight_pct > 100
+      || !Array.isArray(exposures.preferred_sectors) || exposures.preferred_sectors.length > 15
+      || !exposures.preferred_sectors.every(v => text(v, 200))
+      || !Array.isArray(exposures.insights) || exposures.insights.length > 5
+      || !Array.isArray(exposures.limitations) || exposures.limitations.length > 10
+      || !exposures.limitations.every(v => text(v, 2000))) return false;
+  for (const dimension of ['sectors', 'geography', 'asset_classes']) {
+    const item = exposures.dimensions[dimension];
+    if (!object(item) || !finite(item.covered_pct) || !finite(item.unclassified_pct)
+        || item.covered_pct < 0 || item.unclassified_pct < 0
+        || Math.abs(item.covered_pct + item.unclassified_pct - 100) > 1e-5
+        || !Array.isArray(item.groups) || item.groups.length > 40
+        || !Array.isArray(item.missing_tickers) || item.missing_tickers.length > 40
+        || !item.missing_tickers.every(v => text(v, 30))) return false;
+    if (!item.groups.every(g => object(g) && text(g.basis, 1000) && percentages(g.weights_pct)
+        && Array.isArray(g.tickers) && g.tickers.length <= 40 && g.tickers.every(v => text(v, 30)))) return false;
+    if (Math.abs(item.groups.reduce((sum, g) => sum + total(g.weights_pct), 0) - item.covered_pct) > 1e-4) return false;
+  }
+  return Array.isArray(exposures.potential_assets) && exposures.potential_assets.length <= 3
+    && exposures.potential_assets.every(p => object(p) && text(p.ticker, 30) && text(p.sector, 200)
+      && text(p.description_fr, 2000) && finite(p.current_measured_sector_pct)
+      && p.current_measured_sector_pct >= 0 && p.current_measured_sector_pct <= 100
+      && p.applied === false && p.status === 'to_study');
+}
+
 export function validateAnalysis(analysis, evidence) {
   if (!object(analysis) || JSON.stringify(analysis).length > 25000 || analysis.method !== 'portfolio_review_v1'
       || typeof analysis.manifest_hash !== 'string' || !/^[a-f0-9]{64}$/.test(analysis.manifest_hash)) return false;
+  if (analysis.exposures !== undefined && !validateExposureReview(analysis.exposures)) return false;
   const r = analysis.review;
   const ids = new Set(evidence.map(e => e.id));
   const cited = values => Array.isArray(values) && values.length > 0 && values.length <= 20 && values.every(id => ids.has(id));
@@ -48,6 +77,13 @@ export function validateAnalysis(analysis, evidence) {
         || !Array.isArray(candidate.changes) || candidate.changes.length !== 2
         || !candidate.changes.every(c => object(c) && text(c.ticker, 30) && Number.isInteger(c.add_pct) && Math.abs(c.add_pct) <= 5)) return false;
     const comparison = candidate.comparison;
+    if (candidate.exposure_comparison !== undefined) {
+      if (!object(candidate.exposure_comparison) || !['preferred_sector_weight_pct', 'sector_covered_pct'].every(key => {
+        const item = candidate.exposure_comparison[key];
+        return object(item) && finite(item.before) && finite(item.after)
+          && item.before >= 0 && item.after <= 100 && item.after >= item.before - 1e-6;
+      })) return false;
+    }
     if (!object(comparison) || !['holding_hhi','annual_growth_pct','volatility_pct','max_drawdown_pct'].every(k =>
       object(comparison[k]) && finite(comparison[k].before) && finite(comparison[k].after))) return false;
     return comparison.holding_hhi.after < comparison.holding_hhi.before

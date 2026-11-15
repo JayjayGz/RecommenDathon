@@ -75,10 +75,18 @@ class RecommendationOrchestrator:
             effective, starting_weights, constraints, match = request, None, None, None
             if investor:
                 transition("VALIDATE_REQUESTED_ASSETS")
-                changes = validate_requested_assets(request, snapshot.assets)
+                from .request_interpretation import semantic_interpreter
+                changes = validate_requested_assets(request, snapshot.assets,
+                    interpret=semantic_interpreter(self.llm, calls, remaining_ms))
                 transition("MATCH_PROFILE")
                 effective, profile, starting_weights, constraints, match = prepare_investor(request, snapshot, changes)
                 artifacts["profile"] = {"request": request.to_dict(), "reference_profile": profile, "match": match}
+                transition("LOAD_ASSET_EXPOSURES")
+                exposures, exposure_reference = self.source.load_exposures(request.as_of)
+                snapshot.manifest["inputs"]["exposures"] = exposure_reference
+                if any(row["asset_class"] != snapshot.assets[ticker]["asset_class"]
+                       for ticker, row in exposures.items() if ticker in snapshot.assets):
+                    raise DataUnavailable("EXPOSURE_ASSET_CLASS_MISMATCH")
             engine = PortfolioEngine(snapshot)
             try:
                 profile = engine.get_profile(effective.profile_id)
@@ -109,6 +117,7 @@ class RecommendationOrchestrator:
                                          remaining_ms=remaining_ms, **extra)
             if investor:
                 evaluation.update(profile_match=match, asset_metadata=snapshot.assets,
+                                  asset_exposures=exposures, questionnaire_answers=request.normalized_answers()[0],
                                   constraints=constraints,
                                   allowed_tickers=sorted(investible_universe(snapshot.assets) & set(snapshot.prices.ticker)),
                                   requested_changes=[c.to_dict() for c in effective.changes],
@@ -121,11 +130,9 @@ class RecommendationOrchestrator:
                 payload = {"error": {"code": code}}
                 if investor:
                     if status == "INVALID_REQUEST":
-                        reasons = evaluation["as_requested"]["validation"].get("errors", [])
-                        payload["message"] = "The requested change cannot be evaluated. " + "; ".join(
-                            item["message"] for item in reasons)
+                        payload["message"] = "La modification demandée ne peut pas être évaluée avec les poids et contraintes actuels. Précisez une autre variation à simuler. Aucune modification n’a été appliquée."
                     else:
-                        payload["message"] = "Usable common price history is unavailable. No portfolio has been validated."
+                        payload["message"] = "L’historique commun de prix est insuffisant. Aucun portefeuille n’a été validé."
                 return finish(status, payload)
             # A capped alternative is eligible only if it actually passes every implemented check.
             selected = next((branch for branch in ("as_requested", "adjusted")
@@ -211,12 +218,13 @@ class RecommendationOrchestrator:
                     public["recommendation"] = frontend_recommendation(run_id, public, match, snapshot.assets)
             return finish(status, public)
         except InvestorInputError as error:
+            from .french import input_message
             artifacts["decisions"] = {"status": "MISSING_INFO", "code": error.code, "details": error.details}
-            return finish("MISSING_INFO", {"error": {"code": error.code, **error.details}, "message": str(error)})
+            return finish("MISSING_INFO", {"error": {"code": error.code, **error.details}, "message": input_message(error)})
         except DataUnavailable as error:
             payload = {"error": {"code": error.code}}
             if isinstance(request, InvestorRequest):
-                payload["message"] = f"Dataset inputs are missing or unusable ({error.code}). No portfolio has been validated."
+                payload["message"] = "Les données nécessaires à l’analyse sont absentes ou inutilisables. Aucune proposition n’a été validée."
             return finish("MISSING_INFO", payload)
         except TimeoutError:
             return finish("TIMEOUT", {"error": {"code": "WORKFLOW_DEADLINE"}})

@@ -6,7 +6,7 @@ import re
 
 from .contracts import RecommendationRequest, RequestError
 from .questionnaires import normalize_french
-from .word_questionnaire import WORD_VERSION, normalize_word
+from .word_questionnaire import WORD_VERSIONS, normalize_word
 
 QUESTIONNAIRE_VERSION = "rendements-seuls-v1"
 OPTIONS = {
@@ -20,6 +20,7 @@ OPTIONS = {
     "exclusions": {"none", "limits", "discussion"},
 }
 DETAILS = {"otherSector", "cryptoDetails", "exclusionDetails"}
+OPTIONAL_CHOICES = {"knowledge": {"beginner", "basic", "good", "advanced"}}
 TICKER = re.compile(r"[A-Z0-9.^=-]{1,24}")
 
 
@@ -51,7 +52,7 @@ class InvestorRequest:
         if not isinstance(questionnaire, dict):
             raise RequestError("Expected a questionnaire object")
         french = "questions" in questionnaire
-        word = questionnaire.get("version") == WORD_VERSION
+        word = questionnaire.get("version") in WORD_VERSIONS
         if french:
             normalize_french(questionnaire)
             answers = None
@@ -62,7 +63,7 @@ class InvestorRequest:
             raise RequestError("Unsupported questionnaire version")
         else:
             answers = questionnaire["answers"]
-        if not (french or word) and (not isinstance(answers, dict) or set(OPTIONS) - set(answers) or set(answers) - (set(OPTIONS) | DETAILS)):
+        if not (french or word) and (not isinstance(answers, dict) or set(OPTIONS) - set(answers) or set(answers) - (set(OPTIONS) | DETAILS | set(OPTIONAL_CHOICES))):
             raise RequestError("Expected all eight questionnaire answers")
         for key, options in ([] if french or word else OPTIONS.items()):
             answer = answers[key]
@@ -75,6 +76,10 @@ class InvestorRequest:
                 raise RequestError("Invalid questionnaire answer")
         if not (french or word) and any(not isinstance(answers[k], str) or len(answers[k]) > 1000 for k in DETAILS & set(answers)):
             raise RequestError("Invalid questionnaire details")
+        if not (french or word):
+            for key, options in OPTIONAL_CHOICES.items():
+                if key in answers and (not isinstance(answers[key], str) or answers[key] not in options):
+                    raise RequestError("Réponse complémentaire du questionnaire invalide")
         assessment = value.get("assessment", {})
         if (not isinstance(assessment, dict) or set(assessment) - {"risk_band", "preferred_style"}
                 or ("risk_band" in assessment and (not isinstance(assessment["risk_band"], str)
@@ -132,7 +137,7 @@ class InvestorRequest:
                 "changes": [c.to_dict() for c in self.changes], "conversation": list(self.conversation)}
 
     def normalized_answers(self):
-        if self.questionnaire.get("version") == WORD_VERSION:
+        if self.questionnaire.get("version") in WORD_VERSIONS:
             return normalize_word(self.questionnaire)
         if "questions" in self.questionnaire:
             return normalize_french(self.questionnaire)

@@ -4,7 +4,8 @@ import math
 from .contracts import RequestError
 from .questionnaires import normalize_french
 
-WORD_VERSION = "questionnaire-word-16-v2"
+WORD_VERSION = "questionnaire-word-16-v4"
+WORD_VERSIONS = (WORD_VERSION, "questionnaire-word-16-v2")
 # Option order is the same as the supplied French questionnaire, not a risk score.
 CHOICES = {
     "marital": ("situation_conjugale", ("single", "partnered", "separated", "other")),
@@ -51,10 +52,14 @@ def _text(value):
 
 
 def normalize_word(questionnaire):
-    if (set(questionnaire) != {"version", "answers"} or questionnaire["version"] != WORD_VERSION
+    if (set(questionnaire) != {"version", "answers"} or questionnaire["version"] not in WORD_VERSIONS
             or not isinstance(questionnaire["answers"], dict)):
         raise RequestError("Invalid Word questionnaire contract")
     answers = questionnaire["answers"]
+    if questionnaire["version"] == WORD_VERSION and (
+            answers.get("marital") == "separated" or answers.get("exclusions") == "discussion"
+            or "targetAmount" in answers):
+        raise RequestError("Cette réponse a été retirée du questionnaire actuel")
     if set(answers) - (set(CHOICES) | set(DETAILS) | {"emergencyFund", "notes", "noNotes"}):
         raise RequestError("Unknown Word questionnaire fields")
     rows = {}

@@ -118,6 +118,11 @@ console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePa
     check("Browser-native questionnaire reaches recommendation", status == 200 and frontend_valid(response),
           http_status=status, proxy_error=response.get("code"), backend_reason=reason,
           questionnaire_version=native["payload"]["version"])
+    if status == 200 and frontend_valid(response):
+        native_audit = json.loads((AUDIT / response["runId"] / "decisions.json").read_text())
+        check("Le questionnaire du site utilise le nouveau mapping",
+              native_audit["profile_match"]["risk_mapping_source"] == "capacity_tolerance_style_v1"
+              and native_audit["profile_match"]["questionnaire_mapping"]["risk_level"] == 1)
 
     event = json.loads((ROOT / "backend/events/questionnaire-fr.json").read_text())
     form = event["request"]["questionnaire"]
@@ -126,6 +131,11 @@ console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePa
     (OUTPUT / "initial-response.json").write_text(json.dumps(initial, indent=2), encoding="utf-8")
     if status == 200 and frontend_valid(initial):
         analysis = initial.get("analysis", {})
+        exposures = analysis.get("exposures", {})
+        check("Les expositions du catalogue et les pistes traversent le proxy",
+              exposures.get("method") == "weighted_catalog_exposures_v1"
+              and exposures.get("dimensions", {}).get("sectors", {}).get("covered_pct", 0) > 0
+              and all(p["applied"] is False and p["status"] == "to_study" for p in exposures.get("potential_assets", [])))
         review = analysis.get("review", {})
         check("Structured review survives frontend proxy", analysis.get("method") == "portfolio_review_v1"
             and review.get("sectors", {}).get("scope") == "direct_stocks_only"

@@ -42,6 +42,10 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             f"in the {match['risk_band']} band using {mapping_description}.", "profiles.json")
         for index, reason in enumerate(match["reasons"]):
             add(f"profile_match.reason.{index}", reason, "matching_reason", reason, match["method"])
+        if "questionnaire_mapping" in match:
+            add("profile_match.questionnaire_mapping", match["questionnaire_mapping"], "mapping_scores",
+                "La correspondance utilise le minimum des scores de capacité et de tolérance du questionnaire ; ce classement de référence ne constitue pas une évaluation financière complète.",
+                "domain.profile_mapping/capacity_tolerance_style_v1")
         overlap = match["selected_overlap"]
         add("profile_match.overlap", {"preferences": match["preference_inputs"], **overlap}, "matching_weights",
             f"The selected template has {overlap['asset_class_weight'] * 100:g}% in the requested asset classes "
@@ -153,6 +157,10 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
     analysis = evaluation.get("portfolio_analysis")
     if analysis:
         review = analysis["review"]
+        if "exposures" in analysis:
+            add("review.exposures", analysis["exposures"], "weighted_catalog_exposures",
+                "Les expositions et pistes d’actifs proviennent des répartitions datées du catalogue, pondérées par le portefeuille. Les données inconnues restent explicites et les pistes ne sont ni pondérées ni appliquées.",
+                "exposures_profile_tickers.csv/evaluated_weights")
         split = lambda values: ", ".join(f"{k}: {v:g}%" for k, v in sorted(values.items())) or "none"
         selection = review["selection"]
         add("review.selection", selection, "reference_allocation_rules",
@@ -165,8 +173,8 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             "assets_universe.csv/evaluated_weights")
         sectors = review["sectors"]
         add("review.sectors", sectors, "direct_stock_sector_percent",
-            f"Direct-stock sectors: {split(sectors['weights_pct'])}; {sectors['unclassified_pct']:g}% has no underlying sector breakdown. "
-            "ETF labels are not a sector look-through.", "assets_universe.csv/evaluated_weights")
+            f"Secteurs des actions directes : {split(sectors['weights_pct'])} ; {sectors['unclassified_pct']:g}% n’est pas attribué à une action directe. "
+            "Les répartitions de fonds disponibles sont analysées séparément dans les expositions du catalogue.", "assets_universe.csv/evaluated_weights")
         d = review["diversification"]
         add("review.diversification", d, "listed_position_concentration",
             f"There are {d['holding_count']} listed holdings; largest is {d['largest_ticker']} at {d['largest_weight_pct']:g}%. "
@@ -197,6 +205,8 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         limitations += evaluation["macro_context"]["limitations"]
     if analysis:
         limitations += analysis["review"]["limitations"]
+        if "exposures" in analysis:
+            limitations += analysis["exposures"]["limitations"]
     return {"run_id": run_id, "manifest_hash": manifest_hash, "entries": entries,
             "limitations": limitations, "disclaimer": DISCLAIMER}
 

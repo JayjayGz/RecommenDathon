@@ -1,5 +1,11 @@
 # Investor-facing explanation
 
+Le mapping amont et les faits d’exposition sont désormais décrits dans
+[Expositions et questionnaire](expositions-et-questionnaire.md). Le résumé
+présente la couverture sectorielle connue, les descriptions sourcées et les
+pistes non appliquées ; il conserve la distinction entre score de référence,
+admissibilité numérique et avis préalable à une modification.
+
 ## Analyse des modifications après le questionnaire
 
 Toute modification reçoit un avis préalable relié aux réponses du questionnaire :
