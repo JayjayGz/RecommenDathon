@@ -1,6 +1,6 @@
 """Input snapshot port: calculations and audit must reference identical bytes."""
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 import pandas as pd
 from alphaforge.domain.market_data import observation_convention
@@ -18,6 +18,7 @@ class InputSnapshot:
     fx: pd.DataFrame
     profiles: dict
     manifest: dict
+    assets: dict = field(default_factory=dict)
 
     def load_data(self, data_dir=None):
         return self.prices.copy(deep=True), self.fx.copy(deep=True)
@@ -47,4 +48,5 @@ class InputSnapshot:
 
 
 class SnapshotSource(Protocol):
-    def load(self, as_of) -> InputSnapshot: ...
+    def load(self, as_of, include_universe=False) -> InputSnapshot: ...
+    def load_macro(self, as_of) -> tuple[pd.DataFrame, dict]: ...

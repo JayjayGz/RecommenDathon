@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { QUESTIONNAIRE_VERSION, validateAnswers, validatePortfolio } from './src/data.js';
 import { validateRecommendation } from './src/integration.js';
+import { isFrenchQuestionnaire } from './src/questionnaire-contract.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const HOST = '127.0.0.1';
@@ -16,6 +17,7 @@ const object = value => value !== null && typeof value === 'object' && !Array.is
 const textValue = (value, max = 160) => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 
 function validQuestionnaire(input) {
+  if (isFrenchQuestionnaire(input)) return true;
   if (!object(input) || input.version !== QUESTIONNAIRE_VERSION || !object(input.answers)) return false;
   return validateAnswers(input.answers);
 }
@@ -68,7 +70,6 @@ async function upstreamJson(endpointValue, token, body, prefix) {
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
     const upstream = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(30000), redirect: 'error' });
-    if (!upstream.ok) { await upstream.body?.cancel(); throw failure(502, 'UPSTREAM_ERROR', 'Le service a retourné une erreur. Réessayez plus tard.'); }
     const responseChunks = [];
     let responseSize = 0;
     for await (const chunk of upstream.body || []) {
@@ -79,6 +80,10 @@ async function upstreamJson(endpointValue, token, body, prefix) {
     const text = Buffer.concat(responseChunks).toString('utf8');
     let result;
     try { result = JSON.parse(text); } catch { throw failure(502, 'INVALID_RESPONSE', 'Le service doit répondre en JSON.'); }
+    if (!upstream.ok) {
+      const message = textValue(result?.message, 2000) ? result.message : 'Le service a retourné une erreur. Réessayez plus tard.';
+      throw failure([400, 422].includes(upstream.status) ? upstream.status : 502, 'UPSTREAM_ERROR', message);
+    }
     return result;
   } catch (error) {
     if (error.status) throw error;
@@ -95,9 +100,14 @@ async function chat(req, res) {
 }
 
 async function portfolio(req, res) {
-  const body = await readJson(req);
-  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les réponses valides à la version actuelle du questionnaire sont requises.' });
-  const result = await upstreamJson(PORTFOLIO_URL, process.env.PORTFOLIO_API_TOKEN, { questionnaire: body.questionnaire }, 'PORTFOLIO');
+  let body = await readJson(req);
+  if (isFrenchQuestionnaire(body)) body = { questionnaire: body };
+  if (!object(body) || !validQuestionnaire(body.questionnaire)) return json(res, 400, { code: 'INVALID_REQUEST', message: 'Les huit réponses versionnées au questionnaire sont requises.' });
+  const payload = { questionnaire: body.questionnaire };
+  for (const key of ['assessment', 'requirements', 'as_of', 'changes']) {
+    if (body[key] !== undefined) payload[key] = body[key];
+  }
+  const result = await upstreamJson(PORTFOLIO_URL, process.env.PORTFOLIO_API_TOKEN, payload, 'PORTFOLIO');
   if (!validateRecommendation(result)) return json(res, 502, { code: 'PORTFOLIO_INVALID_RESPONSE', message: 'Le résultat du moteur de portefeuille ne respecte pas le contrat attendu.' });
   return json(res, 200, recommendationFields(result));
 }

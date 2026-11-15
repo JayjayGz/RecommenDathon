@@ -8,7 +8,8 @@ This document describes the target runtime pipeline; see `architecture.md` for i
 
 | Part | Owner | Notes |
 | --- | --- | --- |
-| Interactive questionnaire, risk-level assessment, profile matching | Teammates | Produces an `InvestorProfile` (contract: `investor-profile-schema.json`). Agree on any schema changes with this group. |
+| Questionnaire UI and validated financial-risk-capacity assessment | Teammates | The broader normalized contract remains `investor-profile-schema.json`. |
+| Backend reference-template matching and personalization | This repo, at the user's request | See `questionnaire-workflow.md` for actual raw JSON contracts, approved risk mapping and limitations. |
 | Recommendation pipeline, evidence, trade-offs, limitations, compliance gate, audit trail | This repo | Described below. |
 
 Personas will be added later as predefined `InvestorProfile` examples. They are plain input files, so the pipeline needs no change.

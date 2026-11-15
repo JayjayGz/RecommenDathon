@@ -74,10 +74,13 @@ def _category_cap(ticker, band, crypto_allowed):
     return None  # filled in by caller with the band's single-stock limit
 
 
-def apply_proposal(profile, changes, enforce_caps, config, valid_tickers):
+def apply_proposal(profile, changes, enforce_caps, config, valid_tickers, constraints=None):
     """Shared logic for apply_changes() and evaluate()'s as-requested/adjusted passes."""
     band, crypto_allowed = profile["band"], profile["crypto_allowed"]
     stock_cap = config["band_limits"][band]["max_single_stock_pct"]
+    constraints = constraints or {}
+    crypto_tickers = set(constraints.get("crypto_tickers", CRYPTO))
+    etfs = set(constraints.get("etf_tickers", ETFS))
     _check_changes(changes, valid_tickers)
     _check_weights(profile["weights"])
 
@@ -105,22 +108,28 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers):
         if not enforce_caps:
             delta = requested
         else:
-            if ticker in CRYPTO and not crypto_allowed:
+            if ticker in crypto_tickers and not crypto_allowed:
                 notes.append(f"{ticker}: crypto not allowed for this profile, applied 0%")
                 delta = 0
             else:
                 cap = _category_cap(ticker, band, crypto_allowed)
-                if ticker in CRYPTO:
-                    other = sum(w.get(t, 0) for t in CRYPTO if t != ticker)
-                    cap = max(cap - other, 0)  # combined cap across both crypto tickers
-                elif cap is None and ticker not in ETFS:
+                if ticker in crypto_tickers:
+                    other = sum(w.get(t, 0) for t in crypto_tickers if t != ticker)
+                    cap = max(min(EXTRA_CAPS[band]["crypto"], constraints.get("max_crypto_weight_pct", 100)) - other, 0)
+                elif cap is None and ticker not in etfs:
                     cap = stock_cap
+                personalized_cap_binding = ("max_asset_weight_pct" in constraints and
+                    (cap is None or constraints["max_asset_weight_pct"] < cap))
+                if "max_asset_weight_pct" in constraints:
+                    cap = min(cap if cap is not None else 100, constraints["max_asset_weight_pct"])
                 desired = current + requested
                 applied = min(desired, cap) if (requested > 0 and cap is not None) else max(desired, 0)
                 delta = applied - current
                 if requested > 0 and cap is not None and applied < desired:
-                    label = "combined crypto cap" if ticker in CRYPTO else \
+                    label = "combined crypto cap" if ticker in crypto_tickers else \
                              "gold cap" if ticker == "GLD" else "single-stock cap"
+                    if personalized_cap_binding:
+                        label = "personalized per-asset cap"
                     notes.append(f"{ticker}: requested {requested:g}%, applied {delta:g}% "
                                  f"({band} band {label})")
 
@@ -145,8 +154,11 @@ def apply_proposal(profile, changes, enforce_caps, config, valid_tickers):
     return weights, notes
 
 
-def assess(weights, band, limits, metrics, df, rebalance, crypto_allowed):
-    single_stock_pct = max([weights[t] * 100 for t in weights if t not in ETFS and t not in CRYPTO],
+def assess(weights, band, limits, metrics, df, rebalance, crypto_allowed, constraints=None):
+    constraints = constraints or {}
+    etfs = set(constraints.get("etf_tickers", ETFS))
+    crypto_tickers = set(constraints.get("crypto_tickers", CRYPTO))
+    single_stock_pct = max([weights[t] * 100 for t in weights if t not in etfs and t not in crypto_tickers],
                             default=0.0)
     checks = {
         "max_volatility_pct": {"limit": limits["max_volatility_pct"], "value": metrics["volatility_pct"],
@@ -156,7 +168,7 @@ def assess(weights, band, limits, metrics, df, rebalance, crypto_allowed):
         "max_single_stock_pct": {"limit": limits["max_single_stock_pct"], "value": round(single_stock_pct, 1),
                                   "passes": single_stock_pct <= limits["max_single_stock_pct"]},
     }
-    crypto_pct = sum(weights.get(t, 0) for t in CRYPTO) * 100
+    crypto_pct = sum(weights.get(t, 0) for t in crypto_tickers) * 100
     gold_pct = weights.get("GLD", 0) * 100
     checks["max_crypto_pct"] = {"limit": EXTRA_CAPS[band]["crypto"], "value": crypto_pct,
                                 "passes": crypto_pct <= EXTRA_CAPS[band]["crypto"] + TOLERANCE}
@@ -167,6 +179,15 @@ def assess(weights, band, limits, metrics, df, rebalance, crypto_allowed):
     missing_permission = crypto_pct > 0 and crypto_allowed is None
     if missing_permission:
         checks["crypto_allowed"]["passes"] = None
+    if constraints:
+        checks["excluded_tickers"] = {"limit": 0,
+            "value": sum(weights.get(t, 0) for t in constraints.get("excluded_tickers", [])) * 100,
+            "passes": all(weights.get(t, 0) <= TOLERANCE for t in constraints.get("excluded_tickers", []))}
+        for key, value in (("max_asset_weight_pct", max(weights.values()) * 100),
+                           ("max_crypto_weight_pct", crypto_pct)):
+            if key in constraints:
+                checks[key] = {"limit": constraints[key], "value": value,
+                               "passes": value <= constraints[key] + TOLERANCE}
     for check in checks.values():
         if check["passes"] is not None:
             check["passes"] = bool(check["passes"])

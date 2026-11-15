@@ -77,3 +77,7 @@ Development instructions start at [AGENTS.md](AGENTS.md). The agreed determinist
 The [Lambda setup guide](docs/lambda-setup.md) covers container packaging and deployment.
 Configure the existing input/audit buckets and reviewed runtime policy to enable
 the proposal workflow; health checks work without that configuration.
+
+### Questionnaire matching and personalization
+
+The backend now accepts the supplied French questionnaire, matches an existing reference profile using the approved risk-band map and sourced preference metadata, and evaluates personalized additions against that profile. Read [the workflow and API contracts](docs/questionnaire-workflow.md). New requests require `assets_universe.csv` alongside the existing snapshot inputs, plus `macro_rates.csv` only for evaluated bond assets; missing reference price history still blocks portfolio release. No live deployment is implied.
