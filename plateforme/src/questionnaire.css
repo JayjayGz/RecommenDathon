@@ -1,13 +1,16 @@
+.investment-notice { margin: 18px 0 24px; padding: 16px 20px; border: 1px solid #d8d1c5; border-left: 4px solid var(--ink); border-radius: 10px; background: #ede8de; color: var(--ink); font-size: 14.42px; line-height: 1.65; }
+.investment-notice > strong { display: block; font-size: 15.45px; margin-bottom: 6px; }
+.investment-notice p { margin: 0; }
 .question-illustration { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; justify-content: space-between; min-height: 650px; padding: 36px; border: 1px solid #ded8ce; border-radius: 24px; background: #eeebe4; color: #222; }
-.illustration-kicker { font-size: 10px; letter-spacing: 1.7px; font-weight: 600; color: #666057; }
+.illustration-kicker { font-size: 10.3px; letter-spacing: 1.7px; font-weight: 600; color: #666057; }
 .question-illustration > svg { width: 100%; max-width: 365px; margin: 26px auto 18px; }
-.question-illustration h2 { font: 400 42px/1.1 var(--serif); letter-spacing: -1.4px; max-width: 380px; }
-.question-illustration p { font-size: 14px; line-height: 1.65; margin-top: 16px; color: #5b554c; }
-.question-illustration > small { font-size: 10px; color: #756d60; margin-top: 28px; }
+.question-illustration h2 { font: 400 43.26px/1.1 var(--serif); letter-spacing: -1.4px; max-width: 380px; }
+.question-illustration p { font-size: 14.42px; line-height: 1.65; margin-top: 16px; color: #5b554c; }
+.question-illustration > small { font-size: 10.3px; color: #756d60; margin-top: 28px; }
 .amount-field { margin: 22px 0; }
-.amount-field > label { display: block; margin-bottom: 10px; font-size: 13px; }
+.amount-field > label { display: block; margin-bottom: 10px; font-size: 13.39px; }
 .amount-field > div { display: flex; align-items: center; gap: 14px; }
-.amount-field input { padding: 16px; width: min(100%, 300px); font-size: 22px; }
+.amount-field input { padding: 16px; width: min(100%, 300px); font-size: 22.66px; }
 .amount-field span { white-space: nowrap; }
 /* Garder le clavier numérique et la validation, sans les flèches du navigateur. */
 #question-form input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
@@ -15,51 +18,73 @@
 #question-form input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 #question-form input::placeholder,
 #question-form textarea::placeholder { color: #96918a; opacity: 1; }
-.detail-field legend { font-size: 12px; line-height: 1.65; margin-bottom: 8px; }
-.supplement-option { display: flex !important; align-items: flex-start; gap: 10px; margin: 8px 0 !important; padding: 8px 0; font-size: 12px; cursor: pointer; line-height: 1.6; }
+.detail-field legend { font-size: 12.36px; line-height: 1.65; margin-bottom: 8px; }
+.supplement-option { display: flex !important; align-items: flex-start; gap: 10px; margin: 8px 0 !important; padding: 8px 0; font-size: 12.36px; cursor: pointer; line-height: 1.6; }
 .supplement-option input { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 2px; accent-color: #1c1c1c; }
-.detail-field > small { display: block; font-size: 10px; color: #686055; margin-top: 6px; }
+.detail-field > small { display: block; font-size: 10.3px; color: #686055; margin-top: 6px; }
 .detail-field input:disabled, .detail-field textarea:disabled { background: #eeebe4; }
 .question-help, .profile-review strong { white-space: pre-line; }
 .scenario-page { grid-template-columns: minmax(0,1fr); }
-.scenario-page .question-column > h1 { font-size: clamp(58px, 5vw, 80px); }
+.scenario-page .question-column > h1 { font-size: clamp(59.74px, 5.15vw, 82.4px); }
 .scenario-page .hero-description { display: none; }
 .scenario-page .questionnaire-content { margin-top: 30px; }
-.scenario-page .question-title.long { font-size: 24px; max-width: 1000px; }
+.scenario-page .question-title.long { font-size: 24.72px; max-width: 1000px; }
 .market-scenario { overflow: hidden; border-radius: 16px; background: #373a3e; color: #eee; margin: 20px 0 26px; }
-.market-bulletin { background: #ff9f9f; color: #252525; padding: 20px 24px; font-size: 21px; font-weight: 700; }
+.market-bulletin { background: #ff9f9f; color: #252525; padding: 20px 24px; font-size: 21.63px; font-weight: 700; }
 .market-body { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr); gap: 30px; padding: 24px; align-items: center; }
-.market-story h2 { font-size: 23px; font-weight: 700; }
-.market-story .market-amount { color: #ff9f9f; font-size: clamp(27px, 3.5vw, 44px); font-weight: 700; margin: 16px 0; line-height: 1.3; white-space: nowrap; }
+.market-story h2 { font-size: 23.69px; font-weight: 700; }
+.market-story .market-amount { color: #ff9f9f; font-size: clamp(27.81px, 3.605vw, 45.32px); font-weight: 700; margin: 16px 0; line-height: 1.3; white-space: nowrap; }
 .market-amount span { padding: 0 10px; }
-.market-story > p:not(.market-amount) { font-size: 18px; line-height: 1.65; }
-.market-story > small { display: block; margin-top: 14px; font-size: 12px; line-height: 1.6; color: #b8c0cb; }
+.market-story > p:not(.market-amount) { font-size: 18.54px; line-height: 1.65; }
+.market-story > small { display: block; margin-top: 14px; font-size: 12.36px; line-height: 1.6; color: #b8c0cb; }
 .market-chart { width: 100%; height: auto; display: block; border: 5px solid #f6f7f9; }
 .scenario-page .options.list { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .scenario-page .question-actions { max-width: 100%; }
 @media(max-width:1100px) {
   .question-illustration { padding: 26px; min-height: 590px; }
-  .question-illustration h2 { font-size: 34px; }
+  .question-illustration h2 { font-size: 35.02px; }
 }
 @media(max-width:720px) {
   .question-illustration { position: static; min-height: 0; margin-top: 32px; padding: 24px; display: grid; grid-template-columns: 120px minmax(0,1fr); gap: 12px; align-items: center; }
-  .illustration-kicker { grid-column: 1/-1; font-size: 8px; }
+  .illustration-kicker { grid-column: 1/-1; font-size: 8.24px; }
   .question-illustration > svg { margin: 0; width: 120px; }
-  .question-illustration h2 { font-size: 27px; letter-spacing: -.8px; }
-  .question-illustration p { font-size: 11px; margin-top: 10px; }
-  .question-illustration > small { grid-column: 1/-1; margin: 0; font-size: 8px; }
-  .scenario-page .question-title.long { font-size: 20px; }
-  .market-bulletin { font-size: 15px; padding: 16px; }
+  .question-illustration h2 { font-size: 27.81px; letter-spacing: -.8px; }
+  .question-illustration p { font-size: 11.33px; margin-top: 10px; }
+  .question-illustration > small { grid-column: 1/-1; margin: 0; font-size: 8.24px; }
+  .scenario-page .question-title.long { font-size: 20.6px; }
+  .market-bulletin { font-size: 15.45px; padding: 16px; }
   .market-body { grid-template-columns: minmax(0,1fr); padding: 18px; gap: 20px; }
-  .market-story h2 { font-size: 19px; }
-  .market-story .market-amount { font-size: clamp(25px, 7vw, 36px); }
+  .market-story h2 { font-size: 19.57px; }
+  .market-story .market-amount { font-size: clamp(25.75px, 7.21vw, 37.08px); }
   .market-amount span { padding: 0 4px; }
-  .market-story > p:not(.market-amount) { font-size: 14px; }
-  .market-story > small { font-size: 10px; }
+  .market-story > p:not(.market-amount) { font-size: 14.42px; }
+  .market-story > small { font-size: 10.3px; }
   .scenario-page .options.list { grid-template-columns: minmax(0,1fr); }
 }
 @media(max-width:380px) {
   .question-illustration { grid-template-columns: 80px minmax(0,1fr); padding: 18px; }
   .question-illustration > svg { width: 80px; }
-  .question-illustration h2 { font-size: 24px; }
+  .question-illustration h2 { font-size: 24.72px; }
+}
+
+/* The questionnaire is the primary reading area; illustrations support it. */
+.question-column { min-width: 0; }
+@media(min-width:721px) {
+  .onboarding { padding-top: 36px; row-gap: 30px; }
+  .onboarding:not(.scenario-page) { grid-template-columns: minmax(0,2.4fr) minmax(210px,1fr); column-gap: clamp(24px,3vw,48px); }
+  .onboarding .question-column > h1 { font-size: clamp(43.26px,4.532vw,65.92px); letter-spacing: -2px; margin: 16px 0; }
+  .onboarding .hero-description { font-size: 14.42px; line-height: 1.6; }
+  .onboarding .questionnaire-content { margin-top: 24px; }
+  .question-illustration { min-height: 0; margin-top: 170px; padding: 24px; border-radius: 18px; }
+  .question-illustration > svg { max-width: 220px; margin: 18px auto; }
+  .question-illustration h2 { font-size: 29.87px; letter-spacing: -.8px; }
+  .question-illustration p { font-size: 12.36px; line-height: 1.6; margin-top: 12px; }
+  .question-illustration > small { margin-top: 20px; font-size: 9.27px; }
+  .market-body { grid-template-columns: minmax(0,2.1fr) minmax(0,1fr); }
+}
+@media(max-width:720px) {
+  .onboarding .question-column > h1 { font-size: clamp(39.14px,9.27vw,51.5px); letter-spacing: -1.6px; margin: 16px 0; }
+  .onboarding .hero-description { font-size: 13.39px; }
+  .onboarding .questionnaire-content { margin-top: 22px; }
+  .progress-track { gap: 4px; }
 }

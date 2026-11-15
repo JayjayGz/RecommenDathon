@@ -24,6 +24,8 @@ Pour les tests de régression de l'interface uniquement : `npm.cmd ci`, puis `np
 
 ## Fonctionnement
 
+- Les 16 traits de progression sont des boutons : cliquez pour ouvrir une question, ou utilisez Tab puis Entrée. Le trait courant est plus épais ; le survol agrandit légèrement les traits. Les réponses sont conservées et les questions obligatoires restent contrôlées avant le résultat.
+- Sur ordinateur, les questions occupent environ 70 % de la largeur et l'illustration reste secondaire. Sur mobile, les questions précèdent l'illustration. Le titre d'introduction est réduit pour laisser davantage de place au formulaire.
 - Les seize questions et leurs choix proviennent du questionnaire fourni. Les réponses restent dans le stockage local du navigateur ; elles peuvent être exportées ou effacées depuis l’interface.
 - Sans moteur configuré, le portefeuille affiché est un **exemple fixe et illustratif**, sans calcul de profil, sans cours de marché et sans recommandation personnalisée. Les réponses ne sont pas utilisées pour inventer une allocation.
 - Un moteur de portefeuille externe peut fournir une première recommandation après le questionnaire. Le site vérifie son contrat de réponse ; le moteur demeure responsable des calculs, des preuves et de sa validation de conformité.

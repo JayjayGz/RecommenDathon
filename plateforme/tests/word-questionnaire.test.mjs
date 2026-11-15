@@ -160,6 +160,38 @@ test('all 16 questions are traversable and answers remain available on return', 
   assert.equal(app.$('input[value="none"]').checked, true);
 });
 
+test('progress navigation jumps freely and preserves radio and numeric answers', async t => {
+  const app = await open(t);
+  assert.equal(app.w.document.querySelectorAll('.progress-track button').length, QUESTIONS.length);
+  assert.equal(app.$('[aria-current="step"]').dataset.questionIndex, '0');
+  app.choose('partnered');
+  assert.equal(app.$('[data-question-index="0"]').classList.contains('filled'), true);
+  app.$('[data-question-index="5"] span').click();
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[5].title);
+  assert.equal(app.w.document.activeElement, app.$('#question-title'));
+  assert.equal(app.$('[aria-current="step"]').dataset.questionIndex, '5');
+  app.type('#main-answer', '100');
+  app.$('[data-question-index="0"]').click();
+  assert.equal(app.$('input[value="partnered"]').checked, true);
+  app.$('[data-question-index="5"]').click();
+  assert.equal(app.$('#main-answer').value, '100');
+  assert.equal(app.saved().step, 5);
+  assert.equal(app.saved().answers.emergencyFund, 100);
+  assert.equal(app.$('[role="progressbar"]').getAttribute('aria-valuenow'), '2');
+});
+
+test('jumping to the last question cannot bypass required answers', async t => {
+  const app = await open(t);
+  app.$('[data-question-index="15"]').click();
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[15].title);
+  app.next();
+  assert.equal(app.$('#question-title').textContent, QUESTIONS[0].title);
+  assert.equal(app.saved().step, 0);
+  assert.equal(app.$('[data-page="portfolio"]').disabled, true);
+  assert.notEqual(app.saved().complete, true);
+  assert.equal(app.w.document.querySelectorAll('.progress-track [aria-current="step"]').length, 1);
+});
+
 test('changing a completed profile invalidates earlier result and dependent navigation', async t => {
   const app = await open(t, { step: 9, page: 'questionnaire', complete: true, answers: completeAnswers(), messages: [{role:'user',content:'test'}] });
   const main = app.$('#main');

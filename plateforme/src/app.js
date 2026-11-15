@@ -89,7 +89,7 @@ function render() {
 }
 
 function header() {
-  const nav = [['questionnaire', 'Votre profil'], ['portfolio', 'Votre portefeuille'], ['assistant', 'Votre assistant']];
+  const nav = [['questionnaire', 'Votre profil'], ['portfolio', 'Votre portefeuille'], ['assistant', 'Affiner mon portefeuille']];
   return `<header class="header"><div class="header-inner">
     <a class="brand" href="#" data-action="brand" aria-label="Recommand, accueil">recommand<span class="brand-dot">.</span></a>
     <nav class="main-nav" aria-label="Votre parcours">${nav.map(([page, label], index) => `<button class="nav-item ${state.page === page ? 'active' : ''}" data-page="${page}" ${index > 0 && !state.complete ? 'disabled' : ''} ${state.page === page ? 'aria-current="page"' : ''}><span class="nav-number">${index === 0 && state.complete ? icon('check') : `0${index + 1}`}</span><span>${label}</span>${index > 0 && !state.complete ? icon('lock', 'nav-lock') : ''}</button>`).join('')}</nav>
@@ -110,10 +110,11 @@ function questionnaire() {
   return `<div class="onboarding page-enter ${question.scenario ? 'scenario-page' : ''}"><section class="question-column" aria-label="Questionnaire investisseur">
     <div class="eyebrow"><span class="tiny-star">✳</span> L’INVESTISSEMENT, À VOTRE IMAGE</div>
     <h1>Tout commence<br>par <em>vous.</em></h1>
-    <p class="hero-description">Vos envies, vos limites, votre horizon.<br>La première étape d’un portefeuille qui vous ressemble.</p>
+    <p class="hero-description">La première étape d’un portefeuille qui vous ressemble.</p>
     <div class="questionnaire-content">
       <div class="progress-meta"><span>VOTRE PROFIL INVESTISSEUR</span><span class="question-count"><strong>${String(state.step + 1).padStart(2, '0')}</strong><span> / ${QUESTIONS.length}</span></span></div>
-      <div class="progress-track" role="progressbar" aria-label="Avancement du questionnaire" aria-valuenow="${answered}" aria-valuemin="0" aria-valuemax="${QUESTIONS.length}">${QUESTIONS.map((q, index) => `<span class="${index === state.step ? 'current' : ''} ${isAnswered(q, state.answers) && (!q.optional || state.complete || index < state.step) ? 'filled' : ''}"></span>`).join('')}</div>
+      <div class="sr-only" role="progressbar" aria-label="Avancement du questionnaire" aria-valuenow="${answered}" aria-valuemin="0" aria-valuemax="${QUESTIONS.length}"></div>
+      <nav class="progress-track" aria-label="Naviguer entre les questions">${QUESTIONS.map((q, index) => `<button type="button" data-question-index="${index}" class="progress-step ${index === state.step ? 'current' : ''} ${isAnswered(q, state.answers) && (!q.optional || state.complete || index < state.step) ? 'filled' : ''}" aria-label="${escape(`Question ${index + 1} sur ${QUESTIONS.length} : ${q.title}`)}" title="${escape(`Question ${index + 1} : ${q.title}`)}" ${index === state.step ? 'aria-current="step"' : ''}><span aria-hidden="true"></span></button>`).join('')}</nav>
       <div class="section-label"><span>${String(question.section + 1).padStart(2, '0')} / ${String(SECTIONS.length).padStart(2, '0')}</span>${SECTIONS[question.section]}</div>
       <form id="question-form" novalidate>
         <fieldset><legend id="question-title" class="question-title ${question.title.length > 120 ? 'long' : ''}">${escape(question.title)}</legend>
@@ -193,8 +194,8 @@ function updateQuestionSelection(question) {
     if (state.answers.noNotes) $('#main-answer').value = '';
   }
   const answered = answeredCount();
-  $('.progress-track').setAttribute('aria-valuenow', answered);
-  document.querySelectorAll('.progress-track>span').forEach((segment,index) => segment.classList.toggle('filled', isAnswered(QUESTIONS[index],state.answers) && (!QUESTIONS[index].optional || state.complete || index < state.step)));
+  $('[role="progressbar"]').setAttribute('aria-valuenow', answered);
+  document.querySelectorAll('.progress-step').forEach((segment,index) => segment.classList.toggle('filled', isAnswered(QUESTIONS[index],state.answers) && (!QUESTIONS[index].optional || state.complete || index < state.step)));
   $('#answer-count').textContent = `${answered}/${QUESTIONS.length} étapes complétées`;
   $('#question-error').textContent = '';
   refreshConnectionUI();
@@ -204,6 +205,10 @@ function portfolio() {
   const selectedPortfolio = currentPortfolio();
   const positions = selectedPortfolio.positions;
   return `<div class="dashboard page-enter"><div class="dashboard-heading"><div><div class="eyebrow"><span class="status-dot"></span> VOTRE POINT DE DÉPART</div><h1>Votre portefeuille.<br><em>En toute clarté.</em></h1><p>Une vue d’ensemble aujourd’hui. Une conversation pour la suite.</p></div><div class="heading-actions"><button class="button outline" data-action="profile">${icon('edit')}Mes réponses</button><button class="icon-button" data-action="export" aria-label="Exporter le portefeuille et les réponses">${icon('download')}</button></div></div>
+    <aside class="investment-notice" role="note" aria-labelledby="investment-notice-title">
+      <strong id="investment-notice-title">Information importante : aucun conseil financier</strong>
+      <p>Les recommandations présentées sont fournies à titre indicatif et éducatif. <strong>Vous êtes libre de les considérer ou de les ignorer.</strong> Elles ne constituent pas un conseil financier personnalisé. Aucun rendement n’est garanti.</p>
+    </aside>
     ${portfolioBanner()}
     <div class="portfolio-grid"><section class="allocation-card"><div class="card-heading"><div><span class="eyebrow">LA VUE D’ENSEMBLE</span><h2>Une place pour chaque actif.</h2></div><span class="soft-badge">${positions.length} positions</span></div><div class="allocation-visual"><div class="donut" role="img" aria-label="${escape(allocationGroups(selectedPortfolio).map(group => `${group.weight} % ${group.name}`).join(", "))}" style="background:${donutGradient(positions)}"><div class="donut-hole"><span>Répartition</span><strong>100<span>%</span></strong><small>${selectedPortfolio.isDemo ? "Exemple illustratif" : "Simulation du moteur"}</small></div></div><div class="allocation-legend">${allocationGroups(selectedPortfolio).map(group => `<div><span style="--dot:${group.color}"></span><div><strong>${escape(group.name)}</strong><small>${group.count} position${group.count > 1 ? 's' : ''}</small></div><b>${formatWeight(group.weight)} %</b></div>`).join('')}</div></div><div class="allocation-footnote">${icon('leaf')}Une représentation de la répartition, sans projection de rendement.</div></section>
     <aside class="agent-card"><span class="eyebrow">LA SUITE, ENSEMBLE</span>${spark('agent-spark')}<h2>Un portefeuille.<br>Encore plus <em>vous.</em></h2><p>Précisez vos préférences, explorez vos options et posez vos questions dans un seul espace.</p><button class="button dark" data-page="assistant">Ouvrir la conversation${icon('arrow')}</button><small><span class="status-dot neutral"></span>${agentConnected ? 'Service agent configuré' : 'Espace prêt · Agent à connecter'}</small></aside>
@@ -388,6 +393,14 @@ async function sendMessage() {
 }
 
 document.addEventListener('click', event => {
+  const questionButton = event.target.closest('[data-question-index]');
+  if (questionButton && state.page === 'questionnaire') {
+    const index = Number(questionButton.dataset.questionIndex);
+    if (Number.isInteger(index) && index >= 0 && index < QUESTIONS.length && index !== state.step) {
+      state.step = index; persist(); render(); focusQuestion();
+    }
+    return;
+  }
   const pageButton = event.target.closest('[data-page]');
   if (pageButton) { event.preventDefault(); navigate(pageButton.dataset.page); return; }
   const actionButton = event.target.closest('[data-action]');
