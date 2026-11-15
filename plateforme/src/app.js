@@ -352,8 +352,9 @@ async function generatePortfolio() {
   loadingPortfolio = true; portfolioError = ''; render();
   try {
     const response = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionnaire: makeQuestionnairePayload(state.answers) }), signal: AbortSignal.any([request.signal, AbortSignal.timeout(35000)]) });
-    if (!response.ok) throw new Error('Le moteur n’a pas pu fournir une simulation complète. Vos réponses sont conservées.');
-    const result = normalizeRecommendation(await response.json());
+    const payload = await response.json();
+    if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Le moteur n’a pas pu fournir une simulation complète. Vos réponses sont conservées.');
+    const result = normalizeRecommendation(payload);
     if (!portfolioGuard.isCurrent(request)) return;
     requestGuard.invalidate(); sending = false; sendError = '';
     state.result = result; state.proposal = null; state.messages = []; persist();

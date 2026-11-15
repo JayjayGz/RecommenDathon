@@ -8,12 +8,22 @@ This document describes the target runtime pipeline; see `architecture.md` for i
 
 | Part | Owner | Notes |
 | --- | --- | --- |
-| Interactive questionnaire, risk-level assessment, profile matching | Teammates | Produces an `InvestorProfile` (contract: `investor-profile-schema.json`). Agree on any schema changes with this group. |
+| Questionnaire UI and validated financial-risk-capacity assessment | Teammates | The broader normalized contract remains `investor-profile-schema.json`. |
+| Backend reference-template matching and personalization | This repo, at the user's request | See `questionnaire-workflow.md` for actual raw JSON contracts, approved risk mapping and limitations. |
 | Recommendation pipeline, evidence, trade-offs, limitations, compliance gate, audit trail | This repo | Described below. |
 
 Personas will be added later as predefined `InvestorProfile` examples. They are plain input files, so the pipeline needs no change.
 
 ## Pipeline agents
+
+For post-questionnaire additions, the screening step first resolves the requested
+name or ticker in `assets_universe.csv` and checks whether its asset class is
+supported. Unknown or unsupported holdings stop before engine calls. The data
+step validates `prices_weekly.csv` for the requested asset and current holdings,
+and loads `macro_rates.csv` context only for evaluated bond ETFs. Bond ETFs still
+need prices. The deterministic engine then checks the proposed allocation and its
+portfolio impact under the existing policy; an LLM does not calculate metrics or
+override a rejected change. See [the implemented request flow](questionnaire-workflow.md#follow-up-requests).
 
 | Agent | Uses LLM | Responsibility | Output |
 | --- | --- | --- | --- |

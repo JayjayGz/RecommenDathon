@@ -474,6 +474,215 @@
           "scope": "Structure only; both lesson branches preserved after conflict resolution."
         }
       ]
+    },
+    {
+      "id": "L-018",
+      "roles": [
+        "data",
+        "screening",
+        "portfolio",
+        "risk",
+        "backtest",
+        "evidence",
+        "explanation",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Integrating raw questionnaire JSON, reference-template matching or dataset-bound personalization",
+      "boundary": "Does not authorize invented financial-risk-capacity scoring, outside-asset recommendations, personal data in development memory, or AWS deployment",
+      "defect": "The user supplied a different 16-question French form than the existing eight-answer frontend contract. Initial new personalization tests also failed because NVIDIA followed by sentence punctuation did not resolve, and a new test incorrectly assumed bond weights could never change under whole-point rounding.",
+      "cause": "The initial adapter targeted the existing frontend shape; the name parser treated a sentence-final period as part of a ticker boundary, while the test overlooked the existing largest-bond rounding residual.",
+      "evidence": [
+        "User clarified the supplied fr-CA questionnaire shape and approved very_low/low -> low, medium -> medium, high/very_high -> high. Trailing ambiguous instructions were explicitly withdrawn.",
+        "Initial backend/tests/test_investor_workflow.py run: 2 failed, 29 passed. Repaired replay: 32 passed, including amount-only clarification after NVIDIA. and rejection of NVDA.OTHER.",
+        "backend/tests/test_investor_workflow.py checks both questionnaire formats, incomplete forms, approved risk mapping, current-portfolio follow-ups, conflicts, metadata/price limits, audit release and the actual frontend validator.",
+        "Real local fictional-answer French event matched reference profile 1, returned MISSING_HOLDING_HISTORY for XBB.TO, XIU.TO and ZST.TO, and saved its local audit. No weights or missing prices were fabricated.",
+        "Contract and ownership changes are documented in docs/questionnaire-workflow.md, AGENTS.md, docs/architecture.md and docs/agent-responsibilities.md."
+      ],
+      "prevention": "Validate stable question/option IDs and require unanswered mandatory fields. Version and document explicit risk-band mappings; never infer risk capacity from desired returns, debt or income without an agreed model. Match using sourced metadata, re-evaluate current weights and proposed alternatives, expose rounding and actual trade-offs, reject ambiguous or outside-asset requests, and retain interpretation context in the private audit. Use shared profile-driven stages rather than duplicated per-profile policy implementations.",
+      "regression": "Replay completed and blank French forms, legacy frontend compatibility, five-level risk mapping, NVIDIA with punctuation plus unknown dotted-symbol rejection, repeated additions from current weights, explicit caps/exclusions, unsupported assets, actual frontend response validation and audit failure.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-bond-scope-final",
+          "result": "189 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite, including synthetic questionnaire/personalization regressions and the actual Node frontend response validator. Real source history remains incomplete; no AWS deployment or live model invocation."
+        },
+        {
+          "command": "node --check frontend/server.mjs; node --check frontend/src/app.js; node --check frontend/src/questionnaire-contract.js",
+          "result": "All three syntax checks passed.",
+          "scope": "JavaScript syntax only; does not establish browser behavior or live HTTP integration."
+        }
+      ]
+    },
+    {
+      "id": "L-019",
+      "roles": [
+        "data",
+        "infrastructure",
+        "portfolio",
+        "risk",
+        "backtest",
+        "evidence"
+      ],
+      "trigger": "Using macro_rates.csv when evaluating dataset-bound portfolio assets",
+      "boundary": "Macro rates provide bond context only. They do not replace bond ETF prices, establish historical publication availability, or supply an allocation strategy.",
+      "defect": "The initial questionnaire integration omitted the requested macro check; the subsequent general macro stage was broader than the user's clarified bond-only requirement.",
+      "cause": "The first integration focused on asset eligibility and price history; the later macro stage did not yet distinguish bond context from the price checks required for every supported holding.",
+      "evidence": [
+        "User first requested checking macro_rates and prices_weekly for assets in the universe, then clarified that macro_rates is only for bonds and other assets must be verified in prices_weekly.",
+        "The orchestrator now reads macro data only when evaluated starting holdings or requested changes include dataset-classified etf_bond assets. Macro evidence lists only those bond tickers.",
+        "backend/tests/test_macro_context.py checks bond-only evidence scope, no-bond macro-read bypass, invalid non-bond scope, release-date filtering and source-hash invalidation.",
+        "The supplied macro catalog has nine series and no release_date column; output discloses unverified publication timing and does not claim point-in-time availability."
+      ],
+      "prevention": "Derive asset classes from the validated universe, require prices for every evaluated holding, and condition the macro read on bond exposure. Preserve raw macro hashes, reference dates and units; report publication limits and do not infer weight changes from rates without an agreed strategy.",
+      "regression": "Replay bond exposure with scoped macro context, equity-only portfolios without a macro read, an equity addition to a bond portfolio without applying macro evidence to the equity, future publication filtering and missing-price rejection.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-bond-scope-final",
+          "result": "189 passed, 10 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline suite with synthetic portfolios and macro boundary regressions. No source dataset changes, live AWS calls or deployment."
+        }
+      ]
+    },
+    {
+      "id": "L-020",
+      "roles": [
+        "screening",
+        "data",
+        "portfolio",
+        "compliance",
+        "infrastructure"
+      ],
+      "trigger": "Routing asset additions after a completed investor questionnaire",
+      "boundary": "Does not repair questionnaire transport, rewrite CSV values, change the funding policy, or use macro rates as bond prices",
+      "defect": "The user clarified that a requested asset must be checked in the universe before calling the calculation engine. Previously structured edits were checked after reference matching and engine construction preceded asset checks.",
+      "cause": "Requested-change resolution and membership validation were embedded in profile preparation, while the orchestrator constructed the engine immediately after loading the snapshot.",
+      "evidence": [
+        "User correction: check assets_universe membership before engine calculations, with macro_rates used for bonds.",
+        "backend/src/alphaforge/application/orchestrator.py now records VALIDATE_REQUESTED_ASSETS before MATCH_PROFILE and constructs the engine after preparation.",
+        "The first focused regression run returned 4 passed and 1 failed: the bond case incorrectly expected a passing allocation, but the existing engine rejects direct bond changes. The test now preserves that policy and checks routing and explicit rejection."
+      ],
+      "prevention": "Resolve names and structured ticker edits against captured universe metadata before matching or engine calls. Reject unknown and unsupported holdings. Require prices for evaluated assets, add macro context only for bond ETFs, and keep existing allocation and release checks. Input snapshot parsing still precedes the membership stage.",
+      "regression": "Replay unknown ticker, known unsupported yield series, known asset with missing history, a supported equity addition and a bond request that reaches the engine but retains its existing funding-policy rejection.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-asset-routing-full",
+          "result": "202 passed, 2 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite, including synthetic universe-before-engine routing, missing history, equity additions and existing direct-bond-change rejection. Does not establish real CSV completeness or frontend compatibility."
+        },
+        {
+          "command": "python scripts/check_agent_workflow.py",
+          "result": "PASS: 9 agent files; 11 lesson records.",
+          "scope": "Instruction and lesson structure only; no live model calls, AWS actions or deployment."
+        }
+      ]
+    },
+    {
+      "id": "L-021",
+      "roles": [
+        "data",
+        "infrastructure",
+        "backtest",
+        "risk",
+        "evidence"
+      ],
+      "trigger": "Selecting price columns for cryptocurrency valuation and snapshot validation",
+      "boundary": "Does not substitute equity raw closes for adjusted closes, fill missing crypto closes, expand allocation permissions, or repair FX coverage",
+      "defect": "The user required cryptocurrency calculations to use close; the shared converter and snapshot loader previously required adj_close for every asset, rejecting 2528 missing crypto adjusted closes in the local price snapshot.",
+      "cause": "Both valuation and input validation selected adj_close without an asset-specific price policy.",
+      "evidence": [
+        "User correction: for cryptocurrency use close instead of adj_close.",
+        "backend/tests/test_crypto_close.py covers all five supplied crypto tickers, different or absent adjusted prices, invalid selected values, FX, snapshot hashes and portfolio growth.",
+        "Initial test run: 69 passed and 1 failed because the new test used initial instead of the existing start_value argument; the corrected replay passed.",
+        "Real local snapshot loaded 71072 rows across 127 tickers; all five crypto series have close values. CSV SHA-256 remained 98df41224fcca0b3328699d72600c28b71278dbaeb93d6a8c510794f886374f3.",
+        "Superseded by the user request to revert runtime crypto column selection and copy close into adj_close in the CSV; see L-022."
+      ],
+      "prevention": "Use the shared valuation_prices selector for crypto close and other-asset adj_close. Validate finite positive selected values without a fallback. Keep raw CSV bytes intact and record the versioned policy in snapshot manifests and explanation limitations.",
+      "regression": "Replay all five crypto tickers with missing or conflicting adjusted prices, reject missing/nonpositive crypto closes, preserve equity adjusted prices, and verify CAD conversion and hand-computable portfolio growth.",
+      "status": "superseded",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_crypto_close.py backend/tests/test_market_data_currency.py backend/tests/test_weekly_backtest.py backend/tests/test_workflow_storage.py backend/tests/test_portfolio_regressions.py -q -p no:cacheprovider --basetemp .pytest-tmp-crypto-close-final",
+          "result": "70 passed in 9.72s.",
+          "scope": "Offline pricing, storage, backtest and engine regressions. Full orchestration checks remain blocked by pre-existing unresolved merge conflicts."
+        }
+      ]
+    },
+    {
+      "id": "L-022",
+      "roles": [
+        "data",
+        "infrastructure",
+        "backtest",
+        "evidence"
+      ],
+      "trigger": "Preparing supplied cryptocurrency prices for the shared adj_close engine contract",
+      "boundary": "Applies only to rows classified crypto in assets_universe.csv; do not change other rows, other fields, allocation rules or FX history",
+      "defect": "The prior change introduced a separate crypto close selector; the user instead requested the original adj_close engine and an explicit close-to-adj_close copy in the CSV.",
+      "cause": "The prior implementation applied the price policy at runtime rather than normalizing the supplied dataset as now requested.",
+      "evidence": [
+        "User correction: revert the runtime change and copy cryptocurrency close into adj_close.",
+        "Updated 2528 rows: BCH-USD 467, BTC-USD 568, ETH-USD 483, LTC-USD 492 and XRP-USD 518. All other fields and all non-crypto rows were verified byte-for-byte unchanged.",
+        "prices_weekly.csv SHA-256 changed from 98df41224fcca0b3328699d72600c28b71278dbaeb93d6a8c510794f886374f3 to 27f8982c5589b481280253cedaa105c30b61b3e73864972cb0a84e7493e9a2ea."
+      ],
+      "prevention": "Keep runtime valuation and validation on adj_close. For the supplied crypto rows only, copy the existing finite positive close value into adj_close and explicitly document that the crypto values are copied closes. Preserve all other CSV bytes.",
+      "regression": "Verify every crypto adj_close equals close, all other cells are unchanged, the restored snapshot loader accepts the CSV, and CAD conversion works for all five crypto tickers.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_market_data_currency.py backend/tests/test_weekly_backtest.py backend/tests/test_workflow_storage.py backend/tests/test_portfolio_regressions.py -q -p no:cacheprovider --basetemp .pytest-tmp-crypto-normalized",
+          "result": "51 passed in 13.58s.",
+          "scope": "Offline regression checks. Direct real-file validation also loaded 71072 rows, confirmed all 2528 crypto adj_close values equal close and tested CAD conversion. Existing merge conflicts still block full orchestration checks."
+        }
+      ]
+    },
+    {
+      "id": "L-023",
+      "roles": [
+        "infrastructure",
+        "screening",
+        "portfolio",
+        "compliance",
+        "data"
+      ],
+      "trigger": "Applying a feature stash or rebasing overlapping questionnaire workflow changes",
+      "boundary": "Does not authorize commits, pushes, deployment, replacing unrelated edits or treating merge completion as end-to-end frontend readiness",
+      "defect": "Applying the questionnaire workflow stash on debug left deleted-by-us feature files, conflict markers in the orchestrator, and absent questionnaire and macro dependencies.",
+      "cause": "debug pointed to 5a69526 while the stash was based on 6a6783e; the stash stored incremental changes rather than the complete feature implementation.",
+      "evidence": [
+        "Initial git status: conflicts in AGENTS.md, orchestrator.py, memory/lessons.json and deleted-by-us investor workflow, tests and questionnaire workflow documentation.",
+        "Feature commit 6a6783e contains the missing adapters, request contracts, matching, macro, Lambda, evidence and frontend files; restored its dependencies while retaining the stashed asset gate.",
+        "Merged lesson records by trigger, restoring original L-011 identity and preserving L-020 through L-022; the crypto CSV hash remains 27f8982c5589b481280253cedaa105c30b61b3e73864972cb0a84e7493e9a2ea.",
+        "Rebase of debug commit 69b418a onto e7ec78f produced six conflicts and duplicated questionnaire preparation outside the marked import conflict. The duplicate reset effective/starting_weights and called prepare_investor with the obsolete two-argument signature."
+      ],
+      "prevention": "Compare the stash base, target branch and required imports before resolving conflicts. Restore the coherent feature dependency set, preserve both distinct lesson histories under unique IDs, validate imports and tests, and stage every required file when marking the resolution complete. Inspect automatically merged code outside conflict markers for duplicate preparation, resets and outdated call signatures; accepting conflict blocks alone is insufficient.",
+      "regression": "Run backend regressions, frontend HTTP and syntax checks, structural lesson checks, then replay the supported French event with local CSVs and an in-memory audit. Confirm no conflict markers or unmerged entries and preserve the crypto normalization. Verify that a real supported French questionnaire reaches exactly one VALIDATE_REQUESTED_ASSETS and one MATCH_PROFILE state before a recommendation.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-merge-debug-final",
+          "result": "202 passed, 2 skipped, 2 xfailed; 17 subtests passed.",
+          "scope": "Offline backend suite including restored questionnaire, metadata matching, macro context, Lambda, evidence and asset-before-engine regressions."
+        },
+        {
+          "command": "node --check plateforme/server.mjs; node --check plateforme/src/app.js; node --check plateforme/src/questionnaire-contract.js; node --test plateforme/tests/server-questionnaire.test.mjs",
+          "result": "All syntax checks passed; HTTP questionnaire test passed.",
+          "scope": "Local Node checks; full browser questionnaire-to-backend compatibility and live deployment remain outside this merge resolution."
+        },
+        {
+          "command": "Local French example replay with as_of 2026-11-15, actual CSVs and an in-memory audit store",
+          "result": "PASS with recommendation and in-memory audit; crypto CSV hash unchanged.",
+          "scope": "Supported French JSON input, no LLM calls, no persistent or cloud audit, no deployment."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q -p no:cacheprovider --basetemp .pytest-tmp-rebase-merge-repair",
+          "result": "202 passed, 2 skipped, 2 xfailed; 17 subtests passed in 51.78s.",
+          "scope": "Complete offline backend regression replay after the overlapping rebase conflicts and duplicated preparation were repaired. Supported French JSON replay with real CSVs also passed with exactly one membership and matching stage; audit was in memory and no LLM or AWS calls were made."
+        }
+      ]
     }
   ]
 }

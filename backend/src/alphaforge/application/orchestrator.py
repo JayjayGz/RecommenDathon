@@ -9,6 +9,10 @@ from .evidence import (build_evidence, canonical, fallback_draft, fingerprint,
 from .llm import LLMCallError
 from .portfolio_engine import PortfolioEngine
 from .snapshots import DataUnavailable
+from .investor_requests import InvestorRequest
+from .investor_workflow import prepare_investor, frontend_recommendation, validate_requested_assets
+from alphaforge.domain.profile_matching import InvestorInputError, investible_universe
+from alphaforge.domain.macro_context import macro_context
 
 SYSTEM_PROMPT = (
     'Order the supplied verified statements for an educational portfolio assessment. '
@@ -57,25 +61,70 @@ class RecommendationOrchestrator:
         try:
             transition("LOAD_INPUTS")
             require_time()
-            snapshot = self.source.load(request.as_of)
+            investor = isinstance(request, InvestorRequest)
+            if investor:
+                transition("VALIDATE_QUESTIONNAIRE")
+                _, missing = request.normalized_answers()
+                if missing:
+                    raise InvestorInputError("QUESTIONNAIRE_INCOMPLETE",
+                        "Le questionnaire est incomplet. Veuillez remplir les réponses obligatoires avant de demander un portefeuille.",
+                        {"missing_answers": missing})
+            snapshot = self.source.load(request.as_of, include_universe=True) if investor else self.source.load(request.as_of)
             artifacts["data_manifest"] = snapshot.manifest
+            effective, starting_weights, constraints, match = request, None, None, None
+            if investor:
+                transition("VALIDATE_REQUESTED_ASSETS")
+                changes = validate_requested_assets(request, snapshot.assets)
+                transition("MATCH_PROFILE")
+                effective, profile, starting_weights, constraints, match = prepare_investor(request, snapshot, changes)
+                artifacts["profile"] = {"request": request.to_dict(), "reference_profile": profile, "match": match}
             engine = PortfolioEngine(snapshot)
             try:
-                profile = engine.get_profile(request.profile_id)
+                profile = engine.get_profile(effective.profile_id)
             except ValueError:
                 return finish("INVALID_REQUEST", {"error": {"code": "INVALID_PROFILE"}})
-            artifacts["profile"] = {"request": request.to_dict(), "reference_profile": profile}
-            if any(c.ticker not in set(snapshot.prices.ticker) for c in request.changes):
+            if not investor:
+                artifacts["profile"] = {"request": request.to_dict(), "reference_profile": profile}
+            if any(c.ticker not in set(snapshot.prices.ticker) for c in effective.changes):
                 return finish("INVALID_REQUEST", {"error": {"code": "UNKNOWN_TICKER"}})
-            snapshot.check_holdings(profile, request.changes)
+            checked_profile = {**profile, "weights": starting_weights} if investor else profile
+            snapshot.check_holdings(checked_profile, effective.changes)
+            macro = None
+            bond_tickers = (sorted(t for t in set(starting_weights) | {c.ticker for c in effective.changes}
+                                   if snapshot.assets[t]["asset_class"] == "etf_bond") if investor else [])
+            if bond_tickers:
+                transition("CHECK_MACRO_CONTEXT")
+                require_time()
+                frame, reference = self.source.load_macro(request.as_of)
+                snapshot.manifest["inputs"]["macro"] = reference
+                snapshot.manifest["macro_window"] = {"first_reference_date": frame.date.min().date().isoformat(),
+                    "last_reference_date": frame.date.max().date().isoformat(), "rows": len(frame)}
+                macro = macro_context(frame, request.as_of, bond_tickers)
+                if not macro["series"]:
+                    raise DataUnavailable("MACRO_CONTEXT_UNAVAILABLE")
             transition("EVALUATE_PORTFOLIO")
-            evaluation = engine.evaluate(request.profile_id, [c.to_dict() for c in request.changes],
-                                         remaining_ms=remaining_ms)
+            extra = {"starting_weights": starting_weights, "constraints": constraints} if investor else {}
+            evaluation = engine.evaluate(effective.profile_id, [c.to_dict() for c in effective.changes],
+                                         remaining_ms=remaining_ms, **extra)
+            if investor:
+                evaluation.update(profile_match=match, asset_metadata=snapshot.assets,
+                                  allowed_tickers=sorted(investible_universe(snapshot.assets) & set(snapshot.prices.ticker)),
+                                  requested_changes=[c.to_dict() for c in effective.changes],
+                                  macro_context=macro,
+                                  funding_policy="proportional_non_bond_holdings_whole_points_v1")
             artifacts["decisions"] = evaluation
             status = evaluation["status"]
             if status not in {"PASS", "CONFLICT"}:
                 code = "DATA_UNAVAILABLE" if status == "MISSING_INFO" else "INVALID_PROPOSAL"
-                return finish(status, {"error": {"code": code}})
+                payload = {"error": {"code": code}}
+                if investor:
+                    if status == "INVALID_REQUEST":
+                        reasons = evaluation["as_requested"]["validation"].get("errors", [])
+                        payload["message"] = "The requested change cannot be evaluated. " + "; ".join(
+                            item["message"] for item in reasons)
+                    else:
+                        payload["message"] = "Usable common price history is unavailable. No portfolio has been validated."
+                return finish(status, payload)
             # A capped alternative is eligible only if it actually passes every implemented check.
             selected = next((branch for branch in ("as_requested", "adjusted")
                              if evaluation[branch] and evaluation[branch]["validation"].get("passes") is True), None)
@@ -137,9 +186,21 @@ class RecommendationOrchestrator:
             if selected:
                 public["portfolio"] = {"weights": evaluation[selected]["weights"],
                                        "validation": evaluation[selected]["validation"]}
+            if investor:
+                public["profile_match"] = match
+                public["macro_context"] = macro
+                public["message"] = public["explanation"]
+                if selected:
+                    public["recommendation"] = frontend_recommendation(run_id, public, match, snapshot.assets)
             return finish(status, public)
+        except InvestorInputError as error:
+            artifacts["decisions"] = {"status": "MISSING_INFO", "code": error.code, "details": error.details}
+            return finish("MISSING_INFO", {"error": {"code": error.code, **error.details}, "message": str(error)})
         except DataUnavailable as error:
-            return finish("MISSING_INFO", {"error": {"code": error.code}})
+            payload = {"error": {"code": error.code}}
+            if isinstance(request, InvestorRequest):
+                payload["message"] = f"Dataset inputs are missing or unusable ({error.code}). No portfolio has been validated."
+            return finish("MISSING_INFO", payload)
         except TimeoutError:
             return finish("TIMEOUT", {"error": {"code": "WORKFLOW_DEADLINE"}})
         except Exception:

@@ -8,7 +8,8 @@ Assumption: the datathon brief was not in the repository, so the scope below is 
 
 | Part | Owner |
 | --- | --- |
-| Interactive questionnaire (including questions that assess risk level), questionnaire agent, matching users to profiles | Teammates |
+| Questionnaire UI and validated financial-risk-capacity assessment | Teammates |
+| Backend reference-template matching and personalized proposal evaluation | This repo; see questionnaire-workflow.md |
 | Recommendation pipeline, evidence-grounded explanations, trade-offs, limitations, compliance gate, S3 audit trail | This repo |
 
 The two sides meet at the `InvestorProfile` contract (`investor-profile-schema.json`). Persona profiles will be added later as example inputs.
@@ -46,6 +47,14 @@ See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step
 5. The **Compliance Gate** validates evidence, the disclaimer, limitations, wording and constraints. Repairable explanation failures share at most 2 retries, followed by one deterministic template fallback checked by the same gate. Structural failures or a failed fallback return an explicit error. See `agents-workflow.md` for the bounded sequence.
 6. The result goes to the UI together with the limitations. The whole run is written to S3.
 
+For post-questionnaire additions, the implemented workflow validates the requested
+asset against `assets_universe.csv` before matching or constructing the engine.
+Supported holdings require `prices_weekly.csv` history; evaluated bond ETFs also
+load `macro_rates.csv` as context. Unknown or unsupported assets stop before
+calculation. The engine then evaluates the change under the existing allocation
+policy, including its current restriction on direct bond-weight changes. See
+[follow-up request routing](questionnaire-workflow.md#follow-up-requests).
+
 ## Design features
 
 - **Evidence-grounded explanations:** the LLM sees only the Evidence Bundle, and a code validator rejects any number or citation that is not in it. This addresses invented figures.
@@ -73,7 +82,7 @@ dataset/                         # All local CSV inputs; ignored by Git
 profiles.json                    # Existing profile contract, retained at root
 ```
 
-The web interface lives in `plateforme/`. It sends raw questionnaire answers through optional HTTP adapters; a backend mapper to the investor schema and response contract is still required. The Streamlit viewer is a separate developer presentation of saved reference portfolios.
+The web interface lives in `plateforme/`. Its proxy accepts the current versioned Word questionnaire payload and the supplied 16-question French form. The backend also retains support for the legacy eight-answer payload. Backend matching and checked proposal responses use the contracts in [questionnaire-workflow.md](questionnaire-workflow.md). An authenticated HTTP adapter is still needed to connect the local proxy to the deployed Lambda; no public endpoint is provisioned here. The Streamlit viewer is a separate developer presentation of saved reference portfolios.
 
 Application code depends on `PortfolioRepository` and Domain functions. `LocalPortfolioRepository` implements that port; `bootstrap.create_engine()` supplies the adapter. Domain imports no presentation, application or infrastructure code and performs no I/O. LLM ports and Bedrock retain their existing layer placement.
 
@@ -100,7 +109,7 @@ Python module paths in this table are under `backend/src/alphaforge/`. Existing 
 
 ### Implemented versus planned
 
-The code provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The [proposal workflow](orchestrator.md) connects the Lambda handler to per-run local/S3 snapshots, the existing engine, structured evidence, bounded explanation ordering/repairs, deterministic release checks and local/S3 audit-before-release. It supports the explicit profile ID/change contract. The full questionnaire-to-recommendation flow above remains the target: questionnaire mapping, sector/ESG screening, teammate-owned per-ticker risk and frontend HTTP contract mapping remain pending. The template enables runtime storage only when its bucket and reviewed policy parameters are set; no deployment is implied by the code. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
+The code provides deterministic proposal assessment, reference builds/comparisons, local CSV/JSON storage and a Bedrock text adapter. The [proposal workflow](orchestrator.md) connects the Lambda handler to per-run local/S3 snapshots, the existing engine, structured evidence, bounded explanation ordering/repairs, deterministic release checks and local/S3 audit-before-release. It supports the explicit profile ID/change contract. The full questionnaire-to-recommendation flow above remains the target: questionnaire risk-capacity scoring, activity/ESG screening and teammate-owned per-ticker risk remain pending. Reference-template matching, dataset metadata explanations and frontend response mapping are now implemented as described in [the questionnaire workflow](questionnaire-workflow.md). The template enables runtime storage only when its bucket and reviewed policy parameters are set; no deployment is implied by the code. The frontend's unconnected demonstration does not certify a recommendation. Strands role concepts in team notes are optional proposals; calculation stages remain deterministic.
 
 The active 99-ticker price snapshot differs from the legacy profile universe; see [DATA.md](DATA.md) before running real-data validation. The original starter generator cannot reproduce the expanded history.
 
@@ -121,6 +130,7 @@ The offline suite returned **48 passed, 8 skipped, 2 xfailed; 17 subtests passed
 ## Data handling rules (from the starter dataset)
 
 - Use `adj_close` for returns. Prices are in listing currency (`.TO` is CAD, others USD). Convert with `fx_usdcad_daily.csv`.
+- For cryptocurrencies, `prices_weekly.csv` stores a copy of `close` in `adj_close`, as explicitly requested. The engine continues reading `adj_close` for every asset; crypto rows are not independently adjusted prices.
 - Align calendars explicitly (TSX, U.S. and 7-day crypto) and record the method in the data manifest.
 - Do not use monthly macro values before their publication date in backtests.
 - The universe has survivorship bias. The limitations list states this on every result.

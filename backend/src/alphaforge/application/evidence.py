@@ -33,6 +33,61 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
                         "source": source, "manifest_hash": manifest_hash,
                         "method": "proposal_workflow_v1"})
 
+    match = evaluation.get("profile_match")
+    if match:
+        mapping_description = ("the explicitly supplied assessed risk band" if match["risk_mapping_source"] == "explicit_assessment"
+                               else "the configured questionnaire-to-band mapping")
+        add("profile_match", {"id": match["profile_id"], "band": match["risk_band"], "style": match["style"]},
+            "reference_profile", f"Reference profile {match['profile_id']} ({match['style']}) was matched "
+            f"in the {match['risk_band']} band using {mapping_description}.", "profiles.json")
+        for index, reason in enumerate(match["reasons"]):
+            add(f"profile_match.reason.{index}", reason, "matching_reason", reason, match["method"])
+        overlap = match["selected_overlap"]
+        add("profile_match.overlap", {"preferences": match["preference_inputs"], **overlap}, "matching_weights",
+            f"The selected template has {overlap['asset_class_weight'] * 100:g}% in the requested asset classes "
+            f"and {overlap['direct_sector_weight'] * 100:g}% in directly held stocks in the requested sectors. "
+            "These overlaps explain its template ranking; they do not establish future performance or investor suitability.",
+            "profiles.json_and_assets_universe.csv")
+        descriptions = []
+        for change in evaluation["requested_changes"]:
+            if "exclude" in change:
+                descriptions.append(f"exclude {change['exclude']}")
+            else:
+                verb = "add" if change["add_pct"] >= 0 else "reduce"
+                descriptions.append(f"{verb} {abs(change['add_pct']):g} percentage points {'to' if verb == 'add' else 'from'} {change['ticker']}")
+        changes_description = "; ".join(descriptions) if descriptions else "no allocation edits"
+        add("requested_changes", evaluation["requested_changes"], "percentage_point_edits",
+            f"Requested edits: {changes_description}. Additions are percentage-point changes, not target total weights.",
+            "validated_personalization_request")
+        add("funding_policy", evaluation["funding_policy"], "method",
+            "Additions are funded proportionally from other non-bond holdings. Funding preserves known reference bond weights before rounding; weights are rounded to whole percentages and any residual goes to the largest reference bond holding. An adjusted alternative is a checked proposal, not a guarantee that the requested weight can be included.",
+            "domain.proposals.apply_proposal")
+        add("starting_weights_source", match["starting_weights_source"], "source",
+            "This assessment starts from " + ("the submitted current portfolio" if match["starting_weights_source"] == "submitted_current_portfolio" else "the matched reference portfolio") +
+            "; its weights and every new proposal are re-evaluated against the matched profile's current policy and snapshot.",
+            "validated_personalization_request")
+        for index, note in enumerate(evaluation["notes"]):
+            add(f"adjustment.{index}", note, "actual_decision", note, "domain.proposals.apply_proposal")
+        for ticker, maximum in sorted(evaluation["max_allowed"].items()):
+            result_description = (f"the searched conditional maximum addition is {maximum} percentage points"
+                                  if maximum is not None else "no passing addition was found")
+            add(f"conditional_maximum.{ticker}", maximum, "additional_percentage_points",
+                f"For {ticker}, {result_description} within the requested range. Separate maxima cannot be combined.",
+                "PortfolioEngine.evaluate/uncapped_trials")
+        macro = evaluation.get("macro_context")
+        if macro:
+            add("macro.bond_scope", macro["applies_to_tickers"], "bond_tickers",
+                "Macro observations apply only to bond assets evaluated in this request: " +
+                ", ".join(macro["applies_to_tickers"]) + ". Equities and other supported asset classes are checked using price history.",
+                "assets_universe.csv")
+            for row in macro["series"]:
+                availability = (f"a release date of {row['release_date']} is supplied"
+                                if row["release_date"] else "publication timing is unverified")
+                add(f"macro.{row['series_id']}", row, "macro_dataset_observation",
+                    f"Bond macro context: {row['label']} ({row['series_id']}) reports {row['value']:g} {row['unit']} "
+                    f"for reference date {row['reference_date']}; {availability}. This observation does not change portfolio weights.",
+                    "macro_rates.csv")
+
     status = evaluation["status"]
     add("requested.status", status, "status", f"The requested proposal has assessment status {status}.",
         "PortfolioEngine.evaluate/as_requested")
@@ -72,7 +127,26 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
         for ticker, weight in sorted(selected["weights"].items()):
             add(f"selected.weights.{ticker}", weight, "fraction",
                 f"The passing allocation assigns {weight * 100:g}% to {ticker}.", "PortfolioEngine.evaluate")
-    limitations = LIMITATIONS + [f"Input snapshot as-of date: {manifest['as_of']}; later observations are excluded."]
+            if match:
+                asset = evaluation["asset_metadata"][ticker]
+                add(f"selected.asset.{ticker}", asset, "dataset_asset_metadata",
+                    f"{ticker} is {asset['name']}, classified as {asset['asset_class']} in {asset['sector']} by the dataset.",
+                    "assets_universe.csv")
+                previous = evaluation["base"]["weights"].get(ticker, 0)
+                if abs(previous - weight) > 1e-8:
+                    add(f"selected.change.{ticker}", {"before": previous, "after": weight}, "weight_fractions",
+                        f"The proposed weight of {ticker} changes from {previous * 100:g}% to {weight * 100:g}%.",
+                        "PortfolioEngine.evaluate/base_and_selected")
+        if match:
+            for ticker, previous in sorted(evaluation["base"]["weights"].items()):
+                if previous > 0 and ticker not in selected["weights"]:
+                    add(f"selected.removed.{ticker}", {"before": previous, "after": 0}, "weight_fractions",
+                        f"The proposed allocation removes the previous {previous * 100:g}% position in {ticker}.",
+                        "PortfolioEngine.evaluate/base_and_selected")
+    limitations = (LIMITATIONS[1:] + match["limitations"] if match else LIMITATIONS) + [
+        f"Input snapshot as-of date: {manifest['as_of']}; later observations are excluded."]
+    if evaluation.get("macro_context"):
+        limitations += evaluation["macro_context"]["limitations"]
     return {"run_id": run_id, "manifest_hash": manifest_hash, "entries": entries,
             "limitations": limitations, "disclaimer": DISCLAIMER}
 
@@ -103,6 +177,11 @@ def render(draft, bundle):
 
 def release_errors(bundle, manifest, evaluation, selected_branch):
     errors = []
+    macro = evaluation.get("macro_context")
+    if macro and (not macro.get("applies_to_tickers") or any(
+            evaluation.get("asset_metadata", {}).get(ticker, {}).get("asset_class") != "etf_bond"
+            for ticker in macro["applies_to_tickers"])):
+        errors.append("MACRO_SCOPE_MISMATCH")
     if evaluation["status"] == "PASS" and selected_branch != "as_requested":
         errors.append("INCONSISTENT_VERDICT")
     if bundle != build_evidence(bundle["run_id"], manifest, evaluation, selected_branch):
@@ -115,6 +194,8 @@ def release_errors(bundle, manifest, evaluation, selected_branch):
         selected = evaluation[selected_branch]
         validation = selected["validation"]
         weights = selected["weights"]
+        if evaluation.get("profile_match") and set(weights) - set(evaluation["allowed_tickers"]):
+            errors.append("ASSET_OUTSIDE_DATASET")
         if (validation.get("status") != "PASS" or validation.get("passes") is not True or
                 not validation.get("checks") or
                 any(c.get("passes") is not True for c in validation["checks"].values())):

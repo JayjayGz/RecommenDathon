@@ -39,7 +39,7 @@ def test_malformed_http_context_does_not_crash(context):
 @pytest.mark.parametrize("method,path,status", [
     ("GET", "/health", 200),
     ("POST", "/portfolio", 400),
-    ("POST", "/chat", 501),
+    ("POST", "/chat", 400),
     ("GET", "/portfolio", 404),
     ("POST", "/health", 404),
     ("GET", "/unknown", 404),
@@ -54,3 +54,8 @@ def test_unknown_action_does_not_echo_untrusted_input():
     result = handler({"action": marker}, None)
     assert result["statusCode"] == 400
     assert marker not in result["body"]
+
+
+@pytest.mark.parametrize("action", [[], {}, True])
+def test_nonstring_actions_fail_without_a_transport_exception(action):
+    assert handler({"action": action}, None)["statusCode"] == 400
