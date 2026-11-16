@@ -4,8 +4,8 @@ import math
 from .contracts import RequestError
 from .questionnaires import normalize_french
 
-WORD_VERSION = "questionnaire-word-16-v4"
-WORD_VERSIONS = (WORD_VERSION, "questionnaire-word-16-v2")
+WORD_VERSION = "questionnaire-word-15-v5"
+WORD_VERSIONS = (WORD_VERSION, "questionnaire-word-16-v4", "questionnaire-word-16-v2")
 # Option order is the same as the supplied French questionnaire, not a risk score.
 CHOICES = {
     "marital": ("situation_conjugale", ("single", "partnered", "separated", "other")),
@@ -56,12 +56,20 @@ def normalize_word(questionnaire):
             or not isinstance(questionnaire["answers"], dict)):
         raise RequestError("Invalid Word questionnaire contract")
     answers = questionnaire["answers"]
-    if questionnaire["version"] == WORD_VERSION and (
+    current = questionnaire["version"] == WORD_VERSION
+    if questionnaire["version"] != "questionnaire-word-16-v2" and (
             answers.get("marital") == "separated" or answers.get("exclusions") == "discussion"
             or "targetAmount" in answers):
         raise RequestError("Cette réponse a été retirée du questionnaire actuel")
-    if set(answers) - (set(CHOICES) | set(DETAILS) | {"emergencyFund", "notes", "noNotes"}):
+    if current and {"marital", "maritalOther", "withdrawalTiming"} & set(answers):
+        raise RequestError("Cette question a été retirée du questionnaire actuel")
+    if set(answers) - (set(CHOICES) | set(DETAILS) | {"emergencyFund", "notes", "noNotes"} | ({"context"} if current else set())):
         raise RequestError("Unknown Word questionnaire fields")
+    context = answers.get("context", {})
+    context_ids = (set(CHOICES) - {"marital"}) | {"emergencyFund"}
+    if (not isinstance(context, dict) or set(context) - context_ids
+            or any(not _text(value) for value in context.values())):
+        raise RequestError("Invalid questionnaire context")
     rows = {}
     for key, (french, options) in CHOICES.items():
         value = answers.get(key)
@@ -107,4 +115,21 @@ def normalize_word(questionnaire):
         {"id": "precisions_finales", "reponse": answers.get("notes"),
          "champ_rien_a_ajouter": {"reponse": answers.get("noNotes")}},
     ]
-    return normalize_french({"langue": "fr-CA", "devise": "CAD", "questions": questions})
+    normalized, missing = normalize_french({"langue": "fr-CA", "devise": "CAD", "questions": questions})
+    if current:
+        if context:
+            normalized["financial_context"]["question_context"] = dict(context)
+        # v5 explicitly removed these questions. Do not invent replacement answers
+        # or relax the independently supported French/v2/v4 contracts.
+        removed = {"situation_conjugale", "delai_retrait"}
+        missing = [key for key in missing if key not in removed]
+        for key in removed:
+            normalized["financial_context"].pop(key, None)
+        for key in ("dependentsOther", "incomeOther", "debtOther", "goalDetails", "exclusionDetails"):
+            french, parent, visible = DETAILS[key]
+            required = answers.get(parent) == ("limits" if key == "exclusionDetails" else "other")
+            if required and key not in answers:
+                missing.append(french)
+        if not answers.get("notes") and answers.get("noNotes") is not True:
+            missing.append("precisions_finales")
+    return normalized, sorted(missing)

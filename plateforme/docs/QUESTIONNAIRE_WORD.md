@@ -45,8 +45,16 @@ Le questionnaire courant contient 15 questions. La question conjugale complete e
 ### Compatibilité après résolution du rebase
 
 La résolution combine la nouvelle interface v5 avec les contrôles de confirmation
-du portefeuille. Les 53 tests frontend passent. Le backend Python accepte encore
-les contrats Word v2 et v4 : une requête v5 est refusée avec
-`Unsupported questionnaire version`. L’adaptation du backend à la suppression
-des champs reste donc nécessaire avant un parcours financier complet. Aucun
-champ supprimé n’a été recréé ni aucune réponse supposée pendant la fusion.
+du portefeuille. Le refus Python `Unsupported questionnaire version` a été
+reproduit puis corrigé : le backend accepte maintenant v5, ainsi que les contrats
+historiques v2/v4. Les champs conjugaux et le délai de retrait ne sont ni exigés
+ni recréés en v5 ; leur envoi est refusé. Les précisions conditionnelles restent
+obligatoires. Le parcours HTTP local avec le véritable formulaire v5 retourne
+200 : 30 contrôles connectés réussis, 14 exécutions auditées, sans appel AWS/LLM.
+
+Handoff : infrastructure (propriétaire), revue du contrat par screening,
+portfolio et compliance ; entrées : module frontend courant et contrats
+historiques ; sorties : normaliseur Python, régressions et générateur du contrôle
+connecté. Statut : complete ; prochain propriétaire : utilisateur pour redémarrer
+son serveur local et recharger le site. Les calculs et limites restent ceux du
+moteur existant. Leçon appliquée et enrichie : L-024.

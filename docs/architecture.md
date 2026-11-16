@@ -40,6 +40,15 @@ Dependency rule: dependencies point downward only. The Domain Layer imports noth
 
 See `pipeline.mmd` for the diagram and `agent-responsibilities.md` for each step.
 
+The implemented questionnaire path now begins with
+`application/questionnaire_interpretation.py`: each normalized answer and note
+has provenance, a declared use, grounded preference signals and clarification
+findings. Matching compares admissible reference templates using classes,
+dated sector exposures and explicit ticker preferences; a derived style is a
+tie-break rather than an early filter. The release check rebuilds the deterministic
+understanding. See [questionnaire coverage and matching](questionnaire-coverage.md)
+for supported inputs, the exact scoring objective and contextual-policy limits.
+
 1. The questionnaire (teammates) produces an `InvestorProfile`.
 2. The orchestrator runs the Data, Screening, Risk, Portfolio and Backtest agents. These are deterministic Python and do not call the LLM.
 3. The Domain Layer collects every computed number into an **Evidence Bundle**.

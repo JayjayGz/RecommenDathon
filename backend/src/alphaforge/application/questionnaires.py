@@ -102,6 +102,6 @@ def normalize_french(form):
         "exclusions": choice("exclusions", ["none", "limits", "discussion"]),
         "sectors": [sector_codes[int(s.rsplit("_", 1)[1]) - 1] for s in (values["secteurs"] or [])],
         "assets": assets,
-        "financial_context": {**values, **extras},
+        "financial_context": {**values, **extras, "rien_a_ajouter": no_notes.get("reponse")},
     }
     return answers, sorted(missing)

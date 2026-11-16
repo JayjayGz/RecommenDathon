@@ -49,12 +49,18 @@ def quantities(message):
     return result
 
 
+def asset_aliases(ticker, asset):
+    # Explicit controlled name alias; still requires the canonical catalogue row.
+    extra = ("Ethereum",) if ticker == "ETH-USD" and asset.get("asset_class") == "crypto" else ()
+    return (ticker, asset["name"], *extra)
+
+
 def asset_mentions(message, assets):
     # Keep identifier punctuation intact: TD.TO.OTHER must not resolve to TD.TO.
     text = re.sub(r'[.!?]+(?=\s|$)', '', fold(message))
     return {ticker for ticker, asset in assets.items()
             if any(re.search(r'(?<![\w.^=-])' + re.escape(fold(alias)) + r'(?![\w.^=-])', text)
-                   for alias in (ticker, asset['name']))}
+                   for alias in asset_aliases(ticker, asset))}
 
 
 def ambiguous(message):

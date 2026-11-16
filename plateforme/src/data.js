@@ -570,6 +570,12 @@ export function cleanAnswers(input) {
     }
   }
   if (result.noNotes === true) delete result.notes;
+  if (input.context && typeof input.context === 'object' && !Array.isArray(input.context)) {
+    const ids = new Set(QUESTIONS.filter(q => q.type !== 'text').map(q => q.id));
+    const context = Object.fromEntries(Object.entries(input.context).filter(([id, value]) => ids.has(id)
+      && typeof value === 'string' && value.trim().length > 0 && value.length <= 1000));
+    if (Object.keys(context).length) result.context = context;
+  }
   return result;
 }
 
@@ -592,7 +598,7 @@ export function answerLabel(question, answers) {
     const value = answers[field.key];
     return `${field.label} : ${field.type === 'single' ? field.options.find(([key]) => key === value)[1] : field.type === 'number' ? `${value} $ CA` : value}`;
   });
-  return [label, ...details].filter(Boolean).join('\n');
+  return [label, ...details, answers.context?.[question.id] ? `Vos précisions : ${answers.context[question.id]}` : ''].filter(Boolean).join('\n');
 }
 
 export function makeQuestionnairePayload(answers) {

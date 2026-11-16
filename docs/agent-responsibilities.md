@@ -27,6 +27,7 @@ override a rejected change. See [the implemented request flow](questionnaire-wor
 
 | Agent | Uses LLM | Responsibility | Output |
 | --- | --- | --- | --- |
+| Questionnaire Understanding | Optional, bounded review | Trace every answer and precision, extract grounded preferences, identify contradictions and unresolved constraints before matching | Versioned understanding, field coverage, input hash, source quotes, constraints and clarifications; see [coverage](questionnaire-coverage.md) |
 | Data Agent | No | Load the CSVs, convert currency, align calendars, record the method used | Clean return matrix and data manifest |
 | Screening Agent | No | Apply the profile's exclusions and limits (sectors, tickers, asset classes, crypto cap) | Eligible assets, plus a reason for each excluded asset |
 | Risk Agent | No | Compute volatility, drawdown and correlations for candidates | Risk metrics |

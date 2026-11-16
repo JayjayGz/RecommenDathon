@@ -73,6 +73,24 @@ def investor_summary(evaluation, selected, answers):
     mapping = evaluation.get("profile_match", {}).get("questionnaire_mapping")
     if mapping:
         paragraphs.append("Le profil de référence tient compte de votre réaction aux pertes, de vos connaissances, de votre horizon et de la stabilité de vos revenus, en plus de la tolérance au risque déclarée. Ce classement ne remplace pas une évaluation financière complète.")
+    understanding = evaluation.get("questionnaire_understanding")
+    match = evaluation.get("profile_match", {})
+    if understanding and mapping:
+        overlap = match["selected_overlap"]
+        paragraphs.append(f"Correspondance : {len(match['candidates'])} modèles admissibles comparés ; "
+            f"{number(round(overlap['asset_class_weight'] * 100, 2))} % dans vos classes d'actifs souhaitées "
+            f"et {number(round(overlap['measured_sector_weight'] * 100, 2))} % dans vos secteurs documentés, fonds inclus lorsque disponibles. "
+            "Le style départage les scores égaux. Ces recouvrements ne prouvent pas une adéquation financière.")
+        findings = list(dict.fromkeys(f["message"] for f in understanding["findings"]))
+        if findings:
+            paragraphs.append("Contexte du questionnaire examiné : " + " ".join(findings))
+        unmatched = match.get("unmatched_preferences", {})
+        if unmatched.get("asset_classes") or unmatched.get("tickers"):
+            labels = {"stocks": "actions directes", "equity_funds": "fonds d'actions", "bonds": "obligations",
+                      "commodity_funds": "fonds de matières premières", "crypto": "cryptomonnaies",
+                      "commodity_futures": "contrats à terme", "fx": "devises", "cash": "liquidités", "funds": "fonds"}
+            absent = [labels.get(code, code) for code in unmatched.get("asset_classes", [])] + unmatched.get("tickers", [])
+            paragraphs.append("Préférences non couvertes par le modèle retenu : " + ", ".join(absent) + ". Les modèles disponibles et les contraintes limitent la correspondance ; aucun poids n'a été inventé pour combler ces écarts.")
     exposures = evaluation.get("portfolio_analysis", {}).get("exposures")
     if exposures:
         sectors = exposures["dimensions"]["sectors"]

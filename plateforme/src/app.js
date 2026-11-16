@@ -129,6 +129,7 @@ function questionnaire() {
           ${question.scenario ? marketScenario() : ''}
           ${mainField(question)}
           <div id="question-details">${detailField(question)}</div>
+          ${question.type !== 'text' ? `<div class="detail-field"><label for="question-context">Vos précisions (facultatif)</label><textarea id="question-context" data-context="${question.id}" rows="3" maxlength="1000" placeholder="Décrivez votre situation ou précisez votre réponse…">${escape(state.answers.context?.[question.id] || '')}</textarea><small>Ces précisions accompagnent vos choix pour donner du contexte à l’agent.</small></div>` : ''}
           ${question.id === 'assets' ? '<p class="field-note">Si vous cochez « Toutes les catégories ci-dessus », il n’est pas nécessaire de cocher les autres choix.</p>' : ''}
         </fieldset>
         <p id="question-error" class="field-error" role="alert"></p>
@@ -152,7 +153,7 @@ function fieldPlaceholder(field) {
     mortgageAmount: 'Ex. : 100 000',
     goalDetails: 'Ex. : achat d’une résidence',
     cryptoDetails: 'Précisez vos préférences…',
-    exclusionDetails: 'Ex. : secteurs ou placements à exclure',
+    exclusionDetails: 'Ex. : TSLA, AAPL ou noms complets du catalogue',
   };
   return examples[field.key] || (field.type === 'number' ? 'Ex. : 100' : 'Précisez votre situation…');
 }
@@ -640,6 +641,17 @@ function saveQuestionInput(target) {
   const wasComplete = state.complete;
   invalidateConversation();
   state.complete = false;
+  if (target.dataset.context) {
+    const context = { ...state.answers.context };
+    if (target.value.trim()) context[target.dataset.context] = target.value;
+    else delete context[target.dataset.context];
+    if (Object.keys(context).length) state.answers.context = context;
+    else delete state.answers.context;
+    persist();
+    updateQuestionSelection(question);
+    if (wasComplete) $('.header').outerHTML = header();
+    return;
+  }
   const key = target.dataset.detail || target.dataset.answer || question.id;
   if (target.dataset.detail || target.dataset.answer) {
     const field = question.details.find(item => item.key === key) || question;
@@ -664,7 +676,7 @@ document.addEventListener('change', event => {
   if (event.target.matches('#question-form input[type="radio"], #question-form input[type="checkbox"]')) saveQuestionInput(event.target);
 });
 document.addEventListener('input', event => {
-  if (event.target.closest('#question-form') && (event.target.dataset.detail || event.target.dataset.answer) && !event.target.matches('[type="radio"], [type="checkbox"]')) saveQuestionInput(event.target);
+  if (event.target.closest('#question-form') && (event.target.dataset.detail || event.target.dataset.answer || event.target.dataset.context) && !event.target.matches('[type="radio"], [type="checkbox"]')) saveQuestionInput(event.target);
   if (event.target.id === 'chat-input') { state.draft = event.target.value; persist(); $('.send-button').disabled = !agentConnected || sending || !state.draft.trim(); }
 });
 

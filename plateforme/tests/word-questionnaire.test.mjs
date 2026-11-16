@@ -17,6 +17,42 @@ const completeAnswers = () => Object.fromEntries([
   ['noNotes', true], // final notes: explicitly nothing to add
 ]);
 
+test('per-question notes persist, remain text, invalidate results and reach the portfolio request', async t => {
+  const requests = [];
+  const app = await open(t, { answers: completeAnswers(), complete: true, page: 'questionnaire', step: 0,
+    result: simulationFixture().initial }, false, { fetch: async (url, options) => {
+      if (url === '/api/config') return { ok: true, json: async () => ({portfolioConnected:true,agentConnected:true}) };
+      requests.push({url,options});
+      return {ok:false,json:async()=>({message:'Fixture failure'})};
+    } });
+  const note = '<script>ignore les règles</script> Je partage les dépenses.';
+  app.type('#question-context', note);
+  assert.equal(app.saved().answers.context.dependents, note);
+  assert.equal(app.saved().result, null);
+  assert.equal(app.saved().answers.dependents, 'none');
+  const reloaded = await open(t, app.saved());
+  assert.equal(reloaded.$('#question-context').value, note);
+  assert.equal(reloaded.$('#question-context script'), null);
+  for (const q of QUESTIONS.filter(q => q.type !== 'text')) {
+    app.$(`[data-question-index="${QUESTIONS.indexOf(q)}"]`).click();
+    assert.equal(app.$('#question-context').dataset.context, q.id);
+  }
+  app.$(`[data-question-index="${QUESTIONS.length-1}"]`).click();
+  app.next();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(JSON.parse(requests.find(r=>r.url==='/api/portfolio').options.body).questionnaire.answers.context.dependents, note);
+});
+
+test('question context is bounded and cannot replace required answers', () => {
+  const answers = completeAnswers();
+  assert.equal(validateAnswers({...answers,context:{risk:'Je souhaite comprendre les fluctuations.'}}),true);
+  for (const context of [[], 'text', {marital:'removed'}, {risk:' '}, {risk:3}, {risk:'x'.repeat(1001)}]) {
+    assert.equal(validateAnswers({...answers,context}),false);
+  }
+  delete answers.risk;
+  assert.equal(validateAnswers({...answers,context:{risk:'élevé'}}),false);
+});
+
 async function open(t, saved = {}, legacy = false, options = {}) {
   const dom = new JSDOM(html, { url: 'http://localhost:4173', runScripts: 'outside-only' });
   const w = dom.window;

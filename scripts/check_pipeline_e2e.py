@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 import argparse
+from copy import deepcopy
 from datetime import date
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--as-of", default=date.today().isoformat())
@@ -105,7 +106,8 @@ try:
     check("Local frontend proxy connects to both handler routes", status == 200 and all(config.values()))
 
     script = """import {QUESTIONS,fieldVisible,validateAnswers,makeQuestionnairePayload} from './plateforme/src/data.js';
-const a={};for(const q of QUESTIONS){if(q.optional)continue;a[q.id]=q.type==='number'?5000:q.type==='multi'?[q.options[0][0]]:q.options[0][0];for(const d of q.details){if(d.required&&fieldVisible(d,a))a[d.key]=d.type==='number'?100:d.type==='single'?d.options[0][0]:'Example';}}
+const a={noNotes:true};for(const q of QUESTIONS){if(q.optional||q.type==='text')continue;a[q.id]=q.type==='number'?5000:q.type==='multi'?[q.options[0][0]]:q.options[0][0];for(const d of q.details){if(d.required&&fieldVisible(d,a))a[d.key]=d.type==='number'?100:d.type==='single'?d.options[0][0]:'Example';}}
+a.context={goal:'Projet fictif : mieux comprendre la répartition.',income:'Précisions fictives sur les revenus.'};
 console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePayload(a)}));"""
     native = json.loads(subprocess.check_output(["node", "--input-type=module", "-e", script], cwd=ROOT, text=True))
     assert native["valid"]
@@ -119,10 +121,50 @@ console.log(JSON.stringify({valid:validateAnswers(a),payload:makeQuestionnairePa
           http_status=status, proxy_error=response.get("code"), backend_reason=reason,
           questionnaire_version=native["payload"]["version"])
     if status == 200 and frontend_valid(response):
+        saved_profile = json.loads((AUDIT / response["runId"] / "profile.json").read_text())
+        check("Les précisions par question traversent le proxy et restent dans l'audit",
+              saved_profile["request"]["questionnaire"]["answers"]["context"] == native["payload"]["answers"]["context"])
         native_audit = json.loads((AUDIT / response["runId"] / "decisions.json").read_text())
         check("Le questionnaire du site utilise le nouveau mapping",
               native_audit["profile_match"]["risk_mapping_source"] == "capacity_tolerance_style_v1"
               and native_audit["profile_match"]["questionnaire_mapping"]["risk_level"] == 1)
+        understanding = native_audit["questionnaire_understanding"]
+        check("Chaque réponse normalisée est tracée avant la sélection",
+              understanding["coverage"]["received_fields"] == understanding["coverage"]["examined_fields"]
+              and understanding["method"] == "questionnaire_understanding_v1"
+              and native_audit["profile_match"]["ranking_policy"]["optimality_scope"] == "eligible_reference_profiles_only")
+        ranked = native_audit["profile_match"]["candidates"]
+        check("Le profil retenu maximise le score déclaré parmi les modèles admissibles",
+              ranked[0]["profile_id"] == native_audit["profile_match"]["profile_id"]
+              and ranked[0]["score"] == max(row["score"] for row in ranked))
+
+    preference_form = deepcopy(native["payload"])
+    preference_form["answers"]["context"]["goal"] = "Je privilégie la santé et les obligations."
+    status, personalized = request(base, "/api/portfolio", {"questionnaire": preference_form, "as_of": report["as_of"]})
+    preference_applied = False
+    if status == 200:
+        decision = json.loads((AUDIT / personalized["runId"] / "decisions.json").read_text())
+        preference_applied = ("health" in decision["questionnaire_answers"]["sectors"]
+                              and "bonds" in decision["questionnaire_answers"]["assets"])
+    check("Les préférences textuelles fondées alimentent réellement la sélection",
+          status == 200 and frontend_valid(personalized) and preference_applied, http_status=status)
+    contradictory = deepcopy(native["payload"])
+    contradictory["answers"]["horizon"] = "15_plus"
+    contradictory["answers"]["context"]["goal"] = "Je dois retirer dans 2 ans."
+    status, clarification = request(base, "/api/portfolio", {"questionnaire": contradictory, "as_of": report["as_of"]})
+    check("Une contradiction texte-choix ne devient pas une recommandation automatique",
+          status == 422 and "horizon" in clarification.get("message", ""), http_status=status)
+
+    exclusion_form = deepcopy(native["payload"])
+    exclusion_form["answers"].update(exclusions="limits", exclusionDetails="Je souhaite exclure TSLA et AAPL")
+    status, excluded = request(base, "/api/portfolio", {"questionnaire": exclusion_form, "as_of": report["as_of"]})
+    check("Les exclusions nommées dans le texte sont résolues et respectées",
+          status == 200 and frontend_valid(excluded)
+          and not {"TSLA", "AAPL"} & {p["symbol"] for p in excluded.get("portfolio", {}).get("positions", [])}, http_status=status)
+    exclusion_form["answers"]["exclusionDetails"] = "TSLA et le tabac"
+    status, unclear = request(base, "/api/portfolio", {"questionnaire": exclusion_form, "as_of": report["as_of"]})
+    check("Une exclusion non vérifiable exige une clarification sans abandonner silencieusement la contrainte",
+          status == 422 and "précisions sont conservées" in unclear.get("message", ""), http_status=status)
 
     event = json.loads((ROOT / "backend/events/questionnaire-fr.json").read_text())
     form = event["request"]["questionnaire"]

@@ -29,7 +29,7 @@ Paths below are relative to this Git repository, which is the inner `RecommenDat
 | Rationale, trade-offs, Bedrock explanation prompt | `agents/explanation-agent.md` | evidence, compliance |
 | Output checks, retry policy, disclaimers, invalid results | `agents/compliance-agent.md` | evidence; role responsible for failure |
 | Lambda, S3, Bedrock adapter, audit storage, API wiring | `agents/infrastructure-agent.md` | relevant pipeline role |
-| Profile schema or questionnaire integration | Router owns contract review | screening, portfolio, compliance; questionnaire belongs to teammates |
+| Profile schema, questionnaire interpretation or answer coverage | `agents/questionnaire-agent.md` | screening, portfolio, explanation, compliance; preserve the approved scoring policy |
 | Architecture, orchestration, full feature | Router owns integration | only affected roles; all roles for a full pipeline |
 
 ## Repository locations

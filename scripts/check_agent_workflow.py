@@ -12,7 +12,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 ROLES = {
     "data", "screening", "risk", "portfolio", "backtest", "evidence",
-    "explanation", "compliance", "infrastructure",
+    "explanation", "compliance", "infrastructure", "questionnaire",
 }
 FIELDS = {
     "id", "roles", "trigger", "boundary", "defect", "cause", "evidence",
@@ -83,7 +83,7 @@ def check_files(root):
         errors.append("router specialist paths do not match the expected roles")
     actual = {path.relative_to(root).as_posix() for path in (root / "agents").rglob("*.md")}
     if actual != expected:
-        errors.append("agent files must use the nine flat <role>-agent.md filenames")
+        errors.append("agent files must use the registered flat <role>-agent.md filenames")
     for relative in sorted(expected):
         path = root / relative
         if not path.is_file():

@@ -728,7 +728,8 @@
         "All 13 backend runs wrote seven audit artifacts. Crypto conflict reconstruction changed ordering of max_crypto_pct and crypto_allowed checks; facts and sources matched when compared by field without ordinal IDs.",
         "Repair: word_questionnaire.py adapts and validates the browser Word contract; the .TO target regex excludes ticker punctuation; evidence sorts failed checks and uses proposal_evidence_v2_sorted_checks.",
         "Requested bond repair removes the hard-coded prohibition, passes dataset bond_tickers into proportional funding and rounding, and deterministically breaks reserve ties. Caps and release checks remain enforced.",
-        "Initial focused repair test: 110 passed and 2 failed. One new fixture tried funding SPY from a portfolio whose only other holding was a bond, contrary to the preserved non-bond funding rule; corrected it to a bond addition. An old invalid-change test assumed every bond reduction was forbidden; replaced it with an actual over-sale."
+        "Initial focused repair test: 110 passed and 2 failed. One new fixture tried funding SPY from a portfolio whose only other holding was a bond, contrary to the preserved non-bond funding rule; corrected it to a bond addition. An old invalid-change test assumed every bond reduction was forbidden; replaced it with an actual over-sale.",
+        "2026-11-15 recurrence: user reported repeated POST /api/portfolio 400 responses. After repairing stale test generators (text questions and required Other details), the actual browser v5 payload reproduced Unsupported questionnaire version. Python still accepted only v2/v4. The v5 adapter now rejects removed fields, omits removed requirements/context without inventing answers, and preserves historical/French requirements. Connected replay is preserved in .local-runs/portfolio-v5-e2e/report.json."
       ],
       "prevention": "Validate and normalize the current browser payload by stable field IDs and visibility rules while preserving French and legacy contracts. Keep target-instruction matching separate from ticker suffixes. Sort policy-check evidence before assigning IDs and version the method. Classify all evaluated bond ETFs from metadata for funding groups and rounding; preserve funding, price and release checks. Exercise all these paths through connected transports and disk-reloaded audits.",
       "regression": "Replay native payload rejection against supported French input; compare message and structured XEF.TO requests; compare BND and XBB.TO bond edits; reconstruct a released conflict evidence bundle from canonical persisted artifacts.",
@@ -753,6 +754,16 @@
           "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15",
           "result": "18 checks passed, 0 failed; 14 real-data backend runs wrote complete local audit artifacts.",
           "scope": "Real local proxy, Lambda handler, CSV calculations, frontend response validation, and audit reconstruction. Browser-native and supplied French forms passed; stocks, equity/commodity/bond ETFs and .TO messages passed; crypto constraints and invalid requests remained enforced. No graphical browser, deployed AWS, S3 or live Bedrock calls."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15 --output-dir .local-runs/portfolio-v5-e2e",
+          "result": "30 checks passed, 0 failed; browser-native questionnaire-word-15-v5 returned HTTP 200; 14 audited runs; source CSV unchanged.",
+          "scope": "Real local proxy and Python handler using source CSVs and disk audits, including French compatibility and invalid input rejection. No graphical browser, AWS or live LLM calls."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_pipeline_repairs.py backend/tests/test_exposures.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/portfolio-v5-tests",
+          "result": "51 passed, including every current browser option, removed-field rejection, required conditional details, incomplete-form stop and historical v2/v4 compatibility.",
+          "scope": "Offline backend and actual frontend contract generator. The initial default temporary-directory run had 41 passes and 10 setup errors due to Windows permissions; replay used a workspace temporary directory."
         },
         {
           "command": "node --test plateforme/tests/server-questionnaire.test.mjs; node --check plateforme/server.mjs",
@@ -1256,6 +1267,77 @@
           "command": "cd plateforme; node --test --test-isolation=none tests/*.test.mjs",
           "result": "35 passed, 0 failed, including deferred chat response, retry in place, reload recovery, failure cases and concise portfolio copy.",
           "scope": "Actual UI handlers under deterministic HTTP mocks and local API/static checks; no real agent call or live browser chat submission."
+        }
+      ]
+    },
+    {
+      "id": "L-038",
+      "roles": ["infrastructure", "screening", "portfolio", "explanation", "evidence", "compliance"],
+      "trigger": "Accepting per-question free-text context or resolving questionnaire exclusion details",
+      "boundary": "Text supplements structured answers; it cannot invent risk scores, relax constraints, certify ESG/activity exclusions, authorize live AWS calls or override system instructions",
+      "defect": "The user reported HTTP 422 portfolio failures and requested choice questions with text precisions passed to agents. Recent local audit result codes showed repeated EXCLUSIONS_NEED_CLARIFICATION. The explanation prompt contained evidence only; no general per-question context field existed.",
+      "cause": "Questionnaire exclusion details were retained but never resolved into excluded_tickers, while matching required explicit excluded_tickers. Browser precision fields and an explicit model-context contract were absent.",
+      "evidence": [
+        "Redacted local audit inspection: latest four result codes were MISSING_INFO / EXCLUSIONS_NEED_CLARIFICATION; no investor text copied into development memory.",
+        "User selected choices with precision fields at each step. Implemented answers.context with active IDs and a 1000-character per-question limit; normalized notes enter financial_context.question_context and the model questionnaire_context payload.",
+        "Exact catalogue exclusion lists resolve before matching and propagate into engine constraints; unsupported or ambiguous text still stops with a French clarification. No unknown tail is discarded.",
+        ".local-runs/question-context-e2e/report.json: 33 passing local HTTP checks, including context audit round-trip, named exclusions returning 200, unsupported mixed exclusions returning 422, and unchanged source CSV."
+      ],
+      "prevention": "Keep notes separate from typed scoring fields, preserve them across navigation and both HTTP transports, invalidate derived results on edit, and supply them explicitly as untrusted model context. Resolve whole exclusion list items against exact catalogue identities and pass the resulting constraints through every calculation; request clarification for unsupported text instead of silently ignoring it.",
+      "regression": "Replay note persistence/reload, actual portfolio payload, invalid context IDs/types/length, prompt delivery including final notes, instruction-like notes with unchanged portfolio facts, exact exclusion lists and unsupported/negated/mixed exclusions. Verify both model and fallback paths without live cloud calls.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests/test_pipeline_repairs.py -q --tb=short -p no:cacheprovider --basetemp=.local-runs/question-context-focused",
+          "result": "52 passed.",
+          "scope": "Offline synthetic engine, actual browser contract generator, fake model context inspection, audit and exclusion constraints."
+        },
+        {
+          "command": "$testPaths = @(rg --files plateforme/tests -g '*.test.mjs'); & node --test --test-reporter=spec $testPaths",
+          "result": "58 passed; after the HTTP context additions, all 58 passed again with the dot reporter.",
+          "scope": "DOM and local HTTP checks; notes persist, escape safely, invalidate results and reach the request. No graphical browser capture."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15 --output-dir .local-runs/question-context-e2e",
+          "result": "33 passed, 0 failed; 16 audited runs; source CSV unchanged.",
+          "scope": "Real local Node proxy and Python handler, source CSVs and disk audits; no live model, AWS or deployed endpoint."
+        }
+      ]
+    },
+    {
+      "id": "L-039",
+      "roles": ["questionnaire", "portfolio", "screening", "explanation", "evidence", "compliance", "infrastructure"],
+      "trigger": "Interpreting complete questionnaire answers and selecting the most compatible available reference profile",
+      "boundary": "No invented financial-capacity thresholds, weights, metadata or suitability guarantee; maximum compatibility is scoped to the stated objective and admissible reference templates. Semantic review cannot override typed scoring or Python constraints.",
+      "defect": "The user required the entire questionnaire and free-text context to influence profile choice. The inferred preferred_style was passed as a hard assessment filter, preventing comparison with better-overlap profiles. General text context reached explanation only, with no complete pre-selection interpretation trace.",
+      "cause": "prepare_investor merged the mapped style into explicit assessment; matching ranked direct-stock sector overlap only after filtering by that style. No runtime understanding stage distinguished applied preferences, contextual facts, contradictions and unsupported demands.",
+      "evidence": [
+        "User explicitly requested necessary agents and maximum questionnaire correspondence. Three delegated sessions supplied design recommendations but had no executable tools; root performed implementation and repository checks.",
+        "Added QuestionnaireUnderstandingAgent and pure rules with source hashes, all-field coverage, grounded text signals, contradictions, constraints and bounded advisory semantic review. Dated GICS fund exposures participate in current-form matching; inferred styles now break ties instead of filtering candidates.",
+        "First focused replay: 9 failed, 120 passed; historical profile selection and exclusion error-code compatibility were restored while preserving the enhanced current-form path. Replay: 129 passed.",
+        "First full replay: 440 passed, 1 failed on the existing concise-summary bound (352 words against less than 350). Summary was shortened; 11 summary tests passed. Intermediate full replay then passed 448 tests, 2 skipped, 2 expected failures and 17 subtests before final adversarial safeguards.",
+        "Combined details test exposed Ethereum not matching the catalogue name Ether. Added a controlled alias only for an existing ETH-USD crypto row; replay with the language regressions passed 59 tests.",
+        "Review of the supplied implementation description identified negative-scope and mixed-instruction hazards. Added negation guards, short-word ticker disambiguation, ETF-only enforcement, imminent-withdrawal and explicit-weight clarifications, plus reconstruction of the selected candidate and ranking.",
+        ".local-runs/understanding-final-e2e/report.json: 37 local connected checks passed, including grounded preference use, complete field trace, candidate score maximization, contradictory horizon rejection, audit reconstruction and unchanged source CSV."
+      ],
+      "prevention": "Interpret before matching, preserve original choices and source quotes, identify every received field's actual use, and explicitly mark contextual-policy gaps. Compare all admissible current-form templates with a versioned objective and sourced exposures; treat inferred style only as a tie-break. Never silently drop unknown exclusion tails or infer a positive preference from negation. Rebuild both interpretation and ranking at release, and exercise all source options and valid neighboring cases.",
+      "regression": "Exercise all 62 source choices through normalization and named workflow outcomes; test all 1280 combinations of the approved five risk signals, all optional/Other details and precision fields together, model grounding/failure/deadline, non-investment context, exclusions, negations, exclusive classes, text-choice contradictions, missing policies and tampered audit ranking. Run backend, frontend, routing structural checks and real local proxy/audit replay without cloud calls.",
+      "status": "verified",
+      "verification": [
+        {
+          "command": "../.venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp=.local-runs/understanding-release-tests",
+          "result": "461 passed, 2 skipped, 2 xfailed; 17 subtests passed. The final dedicated-exclusion phrase adjustment was then replayed in 8 targeted cases, all passing, under .local-runs/understanding-exclusion-phrases.",
+          "scope": "Offline backend, full source-option workflow matrix, risk combinations, adversarial notes, model fixtures, ranking reconstruction and historical contracts. No live AWS/model calls."
+        },
+        {
+          "command": "node --test --test-reporter=dot <all plateforme/tests/*.test.mjs>; python scripts/check_agent_workflow.py; python scripts/check_agent_workflow.py --self-test",
+          "result": "58 frontend tests passed; 10 registered agent files and 39 lesson records structurally valid; 8 checker self-tests passed.",
+          "scope": "DOM/HTTP contracts and development routing structure; no graphical browser or independent review claimed."
+        },
+        {
+          "command": "../.venv/Scripts/python.exe scripts/check_pipeline_e2e.py --as-of 2026-11-15 --output-dir .local-runs/understanding-release-e2e",
+          "result": "37 passed, 0 failed; 18 audited runs; source CSV unchanged.",
+          "scope": "Final implementation through actual local Node proxy, Python handler, source CSVs, frontend response validation and reconstructed disk audits. No deployment, S3 or live Bedrock invocation."
         }
       ]
     }

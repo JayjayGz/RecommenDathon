@@ -5,7 +5,7 @@ from .contracts import RecommendationRequest
 from .snapshots import DataUnavailable
 from alphaforge.domain import profile_mapping
 from alphaforge.domain.profile_matching import (InvestorInputError, investible_universe,
-                                               match_profile, resolve_message)
+                                               match_profile, resolve_message, questionnaire_requirements)
 
 
 def validate_requested_assets(request, assets, interpret=None):
@@ -37,13 +37,23 @@ def validate_requested_assets(request, assets, interpret=None):
     return changes
 
 
-def prepare_investor(request, snapshot, changes):
+def prepare_investor(request, snapshot, changes, interpretation=None, exposures=None):
     answers, missing = request.normalized_answers()
     if missing:
         raise InvestorInputError("QUESTIONNAIRE_INCOMPLETE",
             "Le questionnaire est incomplet. Veuillez remplir les réponses obligatoires avant de demander un portefeuille.",
             {"missing_answers": missing})
     assessment = dict(request.assessment)
+    if interpretation is not None:
+        blocking = [f for f in interpretation["findings"] if f["blocking"]]
+        if blocking:
+            code = ("EXCLUSIONS_NEED_CLARIFICATION" if all(
+                f["field"].endswith("exclusions_details") or f["field"] == "exclusionDetails" for f in blocking)
+                else "QUESTIONNAIRE_NEEDS_CLARIFICATION")
+            raise InvestorInputError(code,
+                " ".join(dict.fromkeys(f["message"] for f in blocking)),
+                {"clarifications": [{"code": f["code"], "field": f["field"]} for f in blocking]})
+        answers = deepcopy(interpretation["answers"])
     mapping = None
     if answers.get("knowledge") is not None:
         mapped = profile_mapping.to_assessment(answers)
@@ -51,16 +61,30 @@ def prepare_investor(request, snapshot, changes):
                    "tolerance_score": profile_mapping.tolerance_score(answers),
                    "risk_level": profile_mapping.risk_level(answers), "mapped_assessment": mapped,
                    "explicit_overrides": dict(assessment)}
-        assessment = {**mapped, **assessment}
-    match = match_profile(answers, assessment, request.requirements, snapshot.profiles, snapshot.assets)
+        # A derived style is a tie-break preference, never a filter that discards
+        # other admissible templates before their actual holdings are compared.
+        assessment = {"risk_band": mapped["risk_band"], **assessment}
+        answers.setdefault("_preferences", {}).setdefault("styles", []).append(mapped["preferred_style"])
+    requirements = questionnaire_requirements(answers, request.requirements, snapshot.assets)
+    if interpretation is not None:
+        combined = set(requirements.get("excluded_tickers", [])) | set(interpretation["requirements"].get("excluded_tickers", []))
+        if combined:
+            requirements["excluded_tickers"] = sorted(combined)
+    match = match_profile(answers, assessment, requirements, snapshot.profiles, snapshot.assets,
+                          exposures if answers.get("knowledge") is not None else None)
+    match["assessment_used"] = deepcopy(assessment)
+    match["requirements_used"] = deepcopy(requirements)
+    if requirements.get("excluded_tickers") != request.requirements.get("excluded_tickers"):
+        match["questionnaire_exclusions"] = {"method": "exact_catalogue_list_v1",
+                                             "excluded_tickers": requirements["excluded_tickers"]}
     if mapping:
         match["questionnaire_mapping"] = mapping
-        match["method"] = mapping["method"]
         if "risk_band" not in request.assessment:
             match["risk_mapping_source"] = mapping["method"]
-        match["reasons"] = ["Le profil provient du minimum des scores de tolérance et de capacité définis par le module de correspondance du questionnaire.",
-                            "Le style suit les préférences déclarées ; les éventuelles évaluations explicites sont conservées séparément."]
+        match["reasons"].append("La bande de référence provient des scores de tolérance et de capacité du module fourni ; les évaluations explicites restent identifiées séparément.")
         match["limitations"][1] = "Les scores de référence utilisent les connaissances, la réaction aux pertes, la tolérance déclarée, l’horizon et la stabilité des revenus. Ils ne valident pas la capacité financière complète et ne prévoient aucun rendement."
+    if interpretation is not None:
+        match["questionnaire_understanding"] = deepcopy(interpretation)
     profile = deepcopy(next(p for p in snapshot.profiles["profiles"] if p["id"] == match["profile_id"]))
     effective = RecommendationRequest.from_dict({"profile_id": profile["id"], "changes": changes,
                                                   "as_of": request.as_of.isoformat()})
@@ -84,7 +108,7 @@ def prepare_investor(request, snapshot, changes):
             "Required holding currencies disagree between the price file and asset metadata. No conversion assumptions were substituted.",
             {"tickers": inconsistent})
     constraints = {
-        **request.requirements,
+        **requirements,
         "crypto_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"] == "crypto"),
         "etf_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"].startswith("etf_")),
         "bond_tickers": sorted(t for t, a in snapshot.assets.items() if a["asset_class"] == "etf_bond"),

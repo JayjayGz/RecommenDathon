@@ -1,6 +1,6 @@
 """French investor-facing messages. Machine identifiers and audit facts stay intact."""
 MESSAGES = {
-    'EXCLUSIONS_NEED_CLARIFICATION': 'Précisez les symboles exacts des actifs à exclure. Les exclusions d’activités ou ESG en texte libre ne peuvent pas être certifiées avec ces données.',
+    'EXCLUSIONS_NEED_CLARIFICATION': 'Vos précisions sont conservées. Dans la question Exclusions, indiquez les symboles ou les noms complets du catalogue, séparés par des virgules (ex. : TSLA, AAPL). Une exclusion d’activité ou ESG nécessite une clarification : les données ne permettent pas de la vérifier.',
     'MISSING_ASSET_UNIVERSE': 'Le catalogue des actifs est indisponible. Aucune comparaison n’a été effectuée.',
     'RISK_MAPPING_REQUIRED': 'Cette réponse ne correspond à aucun profil de risque configuré. Une clarification est nécessaire.',
     'UNKNOWN_EXCLUSION': 'Un symbole à exclure est absent du catalogue. Précisez son symbole exact.',

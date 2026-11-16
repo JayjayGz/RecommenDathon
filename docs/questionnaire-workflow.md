@@ -1,12 +1,19 @@
 # Questionnaire matching and personalized proposals
 
-Mise à jour : le formulaire actuel Word v4 utilise le module fourni
+Current interpretation and matching: [complete questionnaire coverage](questionnaire-coverage.md).
+The runtime understanding agent now runs before matching. Derived styles no longer
+filter out better-scoring admissible profiles; dated fund sector exposures and
+explicit, grounded text preferences participate in the comparison. Financial facts
+without an approved quantitative rule remain explicitly examined context.
+
+Mise à jour : le formulaire actuel Word v5 utilise le module fourni
 `profile_mapping.py`, avec les connaissances normalisées. Les analyses utilisent
 également le catalogue d’exposition daté. Les contrats historiques restent
 distincts ; voir [Expositions et questionnaire](expositions-et-questionnaire.md)
 pour les règles actuellement appliquées et leurs limites.
 
-The backend accepts the browser's `questionnaire-word-16-v2` payload, the supplied
+The backend accepts the browser's `questionnaire-word-15-v5` payload (and historical
+Word v4/v2 payloads), the supplied
 16-question French form, and the legacy eight-answer `rendements-seuls-v1` payload.
 It matches against `profiles.json`, evaluates
 allocations with current captured prices, and releases only checked, audited results.
@@ -32,12 +39,46 @@ flowchart LR
 
 ## Input contracts
 
-The current browser sends `{version: "questionnaire-word-16-v2", answers: {...}}`.
+The current browser sends `{version: "questionnaire-word-15-v5", answers: {...}}`.
 `application/word_questionnaire.py` validates its typed fields, visibility rules,
 exclusive `all` option and optional notes, then maps stable IDs and supplementary
 fields to the same normalization used by the French form. Missing required answers
 stop the workflow before data loading. Raw answers are retained in the private audit.
 This adapter does not invent financial risk scoring or change the approved risk map.
+Word v5 rejects the removed `marital`, `maritalOther`, `withdrawalTiming` and
+`targetAmount` fields. It does not require or invent marital-status or withdrawal
+answers. Visible Other details, exclusion details and explicit final notes (or
+`noNotes: true`) remain required. French and historical Word contracts retain
+their own requirements.
+
+The current browser also accepts optional `answers.context`, a map from active
+question IDs to nonblank text (at most 1000 characters per question). Every choice
+or amount step has a precision field; the final notes step already accepts text.
+These notes persist across navigation/reload and travel with portfolio and chat
+requests. Editing them invalidates earlier results. The backend retains them as
+`financial_context.question_context` and supplies all normalized questionnaire
+answers, including Other details and final notes, to the explanation model under
+`questionnaire_context`. The model uses this untrusted context to prioritize
+verified statements; notes cannot change risk scores, weights or release rules.
+
+Explicit exclusion details can be a list of exact catalogue symbols or full names,
+separated by commas, semicolons or French `et`, optionally prefixed by
+`Je souhaite exclure`. Resolved exclusions enter both matching and engine
+constraints, with method `exact_catalogue_list_v1` recorded in the match audit.
+Unknown, conditional, negated, activity-based or mixed unsupported text still
+requires clarification; a partially recognized list is never silently applied.
+HTTP 422 can therefore mean a genuine unresolved exclusion, with a French message
+explaining how to clarify it. General precision fields supply context rather than
+new automatic allocation or exclusion instructions.
+
+Handoff for question context: router/infrastructure owns transport and integration;
+screening/portfolio review exclusion propagation; explanation/evidence/compliance
+review the model-data boundary. Inputs: current v5 form, catalogue and existing
+constraints. Outputs: frontend note fields, typed normalization, model context,
+exact exclusion resolver and regression checks. Status: complete; next owner:
+local runtime operator to restart servers and reload the page. Local HTTP checks
+and mocked-model tests are deterministic checks, not independent review or a live
+Bedrock acceptance test. See lesson L-038.
 
 For Lambda console testing, use `action: recommend` with a `request` containing
 `questionnaire` and optional `as_of`, `assessment`, and `requirements`. The complete

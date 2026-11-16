@@ -28,8 +28,34 @@ def investible_universe(assets):
     return {t for t, a in assets.items() if a["asset_class"] in INVESTIBLE_CLASSES}
 
 
-def match_profile(answers, assessment, requirements, config, assets):
-    if answers["exclusions"] != "none" and not requirements.get("excluded_tickers"):
+def questionnaire_requirements(answers, requirements, assets):
+    """Resolve an explicit exclusion list; retain unsupported prose for clarification."""
+    from .request_language import fold, asset_aliases
+
+    result = dict(requirements)
+    if answers.get("exclusions") != "limits" or result.get("excluded_tickers"):
+        return result
+    text = answers.get("financial_context", {}).get("exclusions_details", "")
+    if not isinstance(text, str) or not text.strip():
+        return result
+    text = fold(text).strip()
+    text = re.sub(r"^(?:(?:je (?:veux|souhaite|voudrais) )?exclure|exclusions?)\s*:?\s*", "", text)
+    # Match entire list items, never pick a known ticker out of unsupported prose
+    # (e.g. 'SPY et le tabac') or invert a negated/conditional request.
+    aliases = {}
+    for ticker, asset in assets.items():
+        for alias in asset_aliases(ticker, asset):
+            aliases.setdefault(fold(alias), set()).add(ticker)
+    parts = [part.strip().rstrip('.').strip() for part in re.split(r"[,;\n]|\s+et\s+", text)]
+    resolved = [aliases.get(part, set()) for part in parts]
+    if resolved and all(len(found) == 1 for found in resolved):
+        result["excluded_tickers"] = sorted(set().union(*resolved))
+    return result
+
+
+def match_profile(answers, assessment, requirements, config, assets, exposures=None):
+    if (answers["exclusions"] != "none" and not requirements.get("excluded_tickers")
+            and not answers.get("_preferences", {}).get("excluded_classes")):
         raise InvestorInputError("EXCLUSIONS_NEED_CLARIFICATION",
             "Please provide the exact excluded tickers. Free-text activity or ESG exclusions cannot be certified from this dataset.")
     if not assets:
@@ -48,6 +74,14 @@ def match_profile(answers, assessment, requirements, config, assets):
                                  {"tickers": sorted(excluded - set(assets))})
     classes = set().union(*(CLASS_PREFERENCES[a] for a in answers["assets"]))
     sectors = set().union(*(SECTOR_PREFERENCES[s] for s in answers["sectors"]))
+    preferences = answers.get("_preferences", {})
+    preferred_tickers = set(preferences.get("tickers", []))
+    preferred_styles = set(preferences.get("styles", []))
+    if not classes:
+        raise InvestorInputError("UNSUPPORTED_ASSET_PREFERENCES",
+            "Les classes d'actifs demandées ne sont pas disponibles dans le moteur. Choisissez au moins une classe prise en charge ; aucune préférence de remplacement n'a été supposée.")
+    from .exposures import SECTORS
+    catalog_sectors = set().union(*(SECTORS[s] for s in answers["sectors"]))
     candidates, rejected = [], []
     for p in config["profiles"]:
         if p["band"] != band:
@@ -73,26 +107,57 @@ def match_profile(answers, assessment, requirements, config, assets):
         class_score = sum(w for t, w in weights.items() if assets[t]["asset_class"] in classes)
         sector_score = sum(w for t, w in weights.items()
                            if assets[t]["asset_class"] == "equity" and assets[t]["sector"] in sectors)
+        measured_sector, measured_coverage = 0., 0.
+        if exposures is not None:
+            for ticker, weight in weights.items():
+                row = exposures.get(ticker, {})
+                allocation = row.get("sectors")
+                if allocation is not None and row.get("sectors_basis") == "GICS":
+                    fractions = allocation["fractions"]
+                    measured_sector += weight * sum(v for key, v in fractions.items() if key in catalog_sectors)
+                    measured_coverage += weight * sum(fractions.values())
+                elif assets[ticker]["asset_class"] == "equity":
+                    measured_sector += weight * (assets[ticker]["sector"] in sectors)
+                    measured_coverage += weight
+        ranking_sector = measured_sector if exposures is not None else sector_score
+        ticker_score = sum(w for t, w in weights.items() if t in preferred_tickers)
         candidates.append({"profile_id": p["id"], "style": p["style"],
                            "asset_preference_weight": round(class_score, 8),
                            "direct_sector_preference_weight": round(sector_score, 8),
-                           "score": round(class_score + sector_score, 8)})
+                           "measured_sector_preference_weight": round(ranking_sector, 8),
+                           "sector_coverage_weight": round(measured_coverage, 8),
+                           "ticker_preference_weight": round(ticker_score, 8),
+                           "style_preference_match": p["style"] in preferred_styles,
+                           "score": round(class_score + ranking_sector + ticker_score, 8)})
     if not candidates:
         raise InvestorInputError("NO_COMPATIBLE_REFERENCE_PROFILE",
             "No reference profile matches the explicit band and constraints. No constraints were relaxed.",
             {"risk_band": band, "rejected_candidates": rejected})
-    candidates.sort(key=lambda p: (-p["score"], p["style"] != "Broad diversifier", p["profile_id"]))
+    candidates.sort(key=lambda p: (-p["score"], not p["style_preference_match"],
+                                   -p["sector_coverage_weight"], p["style"] != "Broad diversifier", p["profile_id"]))
     chosen = candidates[0]
+    selected_weights = next(p["weights"] for p in config["profiles"] if p["id"] == chosen["profile_id"])
+    unmatched = {"asset_classes": sorted(code for code in answers["assets"] if not any(
+                    w > 0 and assets[t]["asset_class"] in CLASS_PREFERENCES[code] for t, w in selected_weights.items())),
+                 "tickers": sorted(preferred_tickers - {t for t, w in selected_weights.items() if w > 0}),
+                 "styles": sorted(preferred_styles - {chosen["style"]})}
     return {"profile_id": chosen["profile_id"], "risk_band": band, "style": chosen["style"],
+            "unmatched_preferences": unmatched,
             "preference_inputs": {"asset_classes": sorted(classes), "direct_stock_sectors": sorted(sectors)},
             "selected_overlap": {"asset_class_weight": chosen["asset_preference_weight"],
-                                 "direct_sector_weight": chosen["direct_sector_preference_weight"]},
-            "method": "reference_metadata_overlap_v1",
+                                 "direct_sector_weight": chosen["direct_sector_preference_weight"],
+                                 "measured_sector_weight": chosen["measured_sector_preference_weight"],
+                                 "ticker_preference_weight": chosen["ticker_preference_weight"]},
+            "method": "questionnaire_preference_overlap_v2",
+            "ranking_policy": {"formula": "asset_class_weight + measured_sector_weight + preferred_ticker_weight",
+                               "style_usage": "explicit_assessment_filter_or_inferred_tiebreak",
+                               "sector_source": "dated_catalog_GICS_with_direct_stock_fallback" if exposures is not None else "direct_stocks_only",
+                               "optimality_scope": "eligible_reference_profiles_only"},
             "risk_mapping_source": "explicit_assessment" if "risk_band" in assessment else
                 policy.get("version", "approved_five_to_three_v1"),
             "candidates": candidates, "rejected_candidates": rejected,
             "reasons": [f"The selected reference profile uses the explicitly matched {band} band.",
-                "Candidates are ranked by the sum of portfolio weights in requested asset classes and direct-stock sectors; ties prefer Broad diversifier, then the lowest profile ID."],
+                "Les profils admissibles sont comparés par poids dans les classes d'actifs souhaitées, secteurs documentés et actifs explicitement préférés ; un style déduit ne peut pas éliminer un meilleur candidat."],
             "limitations": [
                 "This is reference-template matching, not a validated investor-risk assessment or a claim of optimal suitability.",
                 "Family situation, dependants, income, debt, emergency funds, goals, liquidity, horizon, experience and loss reaction are retained as context; this matcher does not infer financial risk capacity or forecast returns.",
@@ -107,7 +172,7 @@ def resolve_message(message, assets, conversation=(), interpret=None):
     Optional semantic interpretation can select an operation only; Python owns
     identity, amounts, units, ambiguity checks and all financial validation.
     """
-    from .request_language import asset_mentions, ambiguous, fold, intent, quantities
+    from .request_language import asset_mentions, asset_aliases, ambiguous, fold, intent, quantities
 
     def unclear():
         return InvestorInputError("AMBIGUOUS_PERSONALIZATION_REQUEST",
@@ -139,7 +204,7 @@ def resolve_message(message, assets, conversation=(), interpret=None):
     # do not masquerade as instructions for a second asset.
     masked = text
     for ticker in found:
-        for alias in (ticker, assets[ticker]["name"]):
+        for alias in asset_aliases(ticker, assets[ticker]):
             masked = masked.replace(fold(alias), " ")
     for match, _ in quantities(masked)[::-1]:
         masked = masked[:match.start()] + " " + masked[match.end():]

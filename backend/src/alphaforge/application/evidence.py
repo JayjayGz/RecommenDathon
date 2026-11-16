@@ -46,6 +46,13 @@ def build_evidence(run_id, manifest, evaluation, selected_branch):
             add("profile_match.questionnaire_mapping", match["questionnaire_mapping"], "mapping_scores",
                 "La correspondance utilise le minimum des scores de capacité et de tolérance du questionnaire ; ce classement de référence ne constitue pas une évaluation financière complète.",
                 "domain.profile_mapping/capacity_tolerance_style_v1")
+        understanding = evaluation.get("questionnaire_understanding")
+        if understanding is not None:
+            add("profile_match.questionnaire_understanding",
+                {key: understanding[key] for key in ("method", "input_hash", "coverage", "preferences", "findings")},
+                "questionnaire_interpretation",
+                "Chaque réponse et précision reçue est tracée : règle de risque, préférence, contrainte ou contexte examiné. Les précisions ne peuvent pas assouplir les contraintes.",
+                understanding["method"])
         overlap = match["selected_overlap"]
         add("profile_match.overlap", {"preferences": match["preference_inputs"], **overlap}, "matching_weights",
             f"The selected template has {overlap['asset_class_weight'] * 100:g}% in the requested asset classes "
@@ -237,6 +244,37 @@ def render(draft, bundle):
 
 def release_errors(bundle, manifest, evaluation, selected_branch):
     errors = []
+    understanding = evaluation.get("questionnaire_understanding")
+    if understanding is not None:
+        from alphaforge.domain.questionnaire_understanding import understand_questionnaire
+        try:
+            expected = understand_questionnaire(understanding["original_answers"], evaluation["asset_metadata"])
+            if any(understanding.get(key) != expected[key] for key in (
+                    "method", "input_hash", "original_answers", "answers", "fields", "signals", "preferences", "requirements", "coverage")):
+                errors.append("QUESTIONNAIRE_INTERPRETATION_MISMATCH")
+            deterministic_findings = [f for f in understanding["findings"] if f["code"] != "SEMANTIC_CLARIFICATION"]
+            if deterministic_findings != expected["findings"] or any(f["blocking"] for f in understanding["findings"]):
+                errors.append("UNRESOLVED_QUESTIONNAIRE")
+            if evaluation["questionnaire_answers"] != understanding["answers"]:
+                errors.append("QUESTIONNAIRE_INPUT_DRIFT")
+            if not set(understanding["requirements"]["excluded_tickers"]) <= set(evaluation["constraints"].get("excluded_tickers", [])):
+                errors.append("QUESTIONNAIRE_CONSTRAINT_OMITTED")
+            from copy import deepcopy
+            from alphaforge.domain import profile_mapping
+            from alphaforge.domain.profile_matching import match_profile
+            answers = deepcopy(expected["answers"])
+            match = evaluation["profile_match"]
+            if answers.get("knowledge") is not None:
+                answers.setdefault("_preferences", {}).setdefault("styles", []).append(profile_mapping.investment_style(answers))
+            rebuilt = match_profile(answers, match["assessment_used"], match["requirements_used"],
+                evaluation["matching_config"], evaluation["asset_metadata"],
+                evaluation["asset_exposures"] if answers.get("knowledge") is not None else None)
+            if any(match.get(key) != rebuilt[key] for key in (
+                    "profile_id", "risk_band", "style", "candidates", "rejected_candidates", "selected_overlap",
+                    "preference_inputs", "ranking_policy", "method", "unmatched_preferences")):
+                errors.append("QUESTIONNAIRE_PROFILE_RANKING_MISMATCH")
+        except (KeyError, TypeError, ValueError):
+            errors.append("INVALID_QUESTIONNAIRE_INTERPRETATION")
     if evaluation.get("profile_match") and evaluation.get("requested_changes"):
         from .change_review import build_change_review
         try:

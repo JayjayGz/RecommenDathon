@@ -27,6 +27,10 @@ test('HTTP adapter accepts the typed Word contract and rejects stale or malforme
   const accepted = await send(QUESTIONNAIRE_VERSION,answers);
   assert.equal(accepted.status,503); // Valid input reaches the explicitly unconfigured adapter.
   assert.equal((await accepted.json()).code,'PORTFOLIO_NOT_CONNECTED');
+  assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,context:{goal:'Projet fictif dans dix ans.'}})).status,503);
+  for (const context of [{marital:'retiré'}, {risk:'x'.repeat(1001)}, {goal:5}]) {
+    assert.equal((await send(QUESTIONNAIRE_VERSION,{...answers,context})).status,400);
+  }
   assert.equal((await send('rendements-seuls-v1',answers)).status,400);
   assert.equal((await send('questionnaire-word-16-v3',answers)).status,400);
   assert.equal((await send('questionnaire-word-16-v4',answers)).status,400);
