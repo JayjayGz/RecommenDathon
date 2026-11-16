@@ -14,7 +14,11 @@ La demande d’allègement de l’écran portefeuille remplace le slogan, le sur
 
 Propriétaire : Router présentation et infrastructure ; frontière compliance conservée pour la mention financière et les résultats acceptés. Entrées : gestionnaire de chat et contrat HTTP existants, correction utilisateur et capture. Fichiers : `src/app.js`, `src/theme.css`, tests et documentation de connexion. Statut : complete. Prochain propriétaire : utilisateur pour le test local ; équipe agent pour le traitement distant.
 
-Vérifications : `node --test --test-isolation=none tests/*.test.mjs` depuis `plateforme` : 35 tests réussis. Les cas supplémentaires contrôlent l’affichage avant une réponse différée, le contexte sans doublon, le réessai, la préservation d’un autre brouillon, le rechargement et les erreurs réseau/délai/format. Les tests existants de reset pendant une requête passent aussi. Le premier lancement sans isolation désactivée a rencontré `spawn EPERM` ; le mode local habituel a permis la reproduction puis la vérification. Leçon L-031.
+Vérifications : `node --test --test-isolation=none tests/*.test.mjs` depuis `plateforme` : 35 tests réussis. Les cas supplémentaires contrôlent l’affichage avant une réponse différée, le contexte sans doublon, le réessai, la préservation d’un autre brouillon, le rechargement et les erreurs réseau/délai/format. Les tests existants de reset pendant une requête passent aussi. Le premier lancement sans isolation désactivée a rencontré `spawn EPERM` ; le mode local habituel a permis la reproduction puis la vérification. Leçon L-037.
 
 Vérification DOM et HTTP locale, sans envoi à un agent réel ni capture d’un échange réel. Aucun calcul, CSV, service cloud, commit, push ou déploiement modifié.
 
+
+## Saisie libre
+
+Correction utilisateur : les quatre suggestions de messages sont retirees, ainsi que leur gestionnaire de clic. Le texte d’accueil invite directement a saisir un message. Le brouillon, l’envoi immediat et les questions contextuelles depuis le portefeuille restent disponibles. Role presentation/infrastructure ; lecon L-036 ; statut complete ; prochain proprietaire : utilisateur pour le test local.

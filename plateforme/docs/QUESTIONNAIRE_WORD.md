@@ -34,6 +34,19 @@ Le bouton Recommencer est disponible dans l’en-tête des trois pages. Il effac
 
 L’espace de discussion conserve le thème crème et noir : titre plus mesuré, résumé latéral compact sans image décorative, quatre suggestions cliquables et libellé de saisie visible. L’accueil vide ne crée plus de défilement interne. Un agent non connecté reste clairement indisponible ; les suggestions préparent seulement un brouillon.
 
-Handoff : Router présentation/contrat, appui infrastructure et revue des limites compliance. Entrées : contrat Word existant et corrections explicites utilisateur ; aucune interprétation financière ajoutée. Sorties : `src/app.js`, `src/data.js`, `src/theme.css`, modèle JSON, importeur, tests et documentation. Leçons appliquées : L-011, L-013, L-014 ; nouvelle leçon L-029 sur la remise à zéro globale. Statut : complete. Prochain propriétaire : utilisateur pour tester, équipe questionnaire/moteur pour l’adaptation métier de la version v4.
+Handoff : Router présentation/contrat, appui infrastructure et revue des limites compliance. Entrées : contrat Word existant et corrections explicites utilisateur ; aucune interprétation financière ajoutée. Sorties : `src/app.js`, `src/data.js`, `src/theme.css`, modèle JSON, importeur, tests et documentation. Leçons appliquées : L-011, L-013, L-014 ; nouvelle leçon L-035 sur la remise à zéro globale. Statut : complete. Prochain propriétaire : utilisateur pour tester, équipe questionnaire/moteur pour l’adaptation métier de la version v4.
 
 Vérifications exécutées : `node --test --test-isolation=none tests/*.test.mjs` dans `plateforme` : 25 tests réussis, 0 échec. Les tests couvrent les trois pages, le rechargement après remise à zéro, les anciennes clés, une réponse tardive de discussion/portefeuille, les champs retirés et les cas valides voisins. L’ancienne attente de fidélité intégrale au Word a d’abord échoué sur le choix retiré ; elle compare désormais la source intacte avec les corrections utilisateur explicites. Un premier contrôle du libellé de saisie a détecté son absence après une substitution de texte ; le libellé a été ajouté et le cas rejoué avec succès. Chrome a été actualisé et l’espace de discussion inspecté visuellement via capture native : titre, résumé, quatre suggestions et zone de saisie visibles, sans barre de défilement interne sur l’accueil vide. Ce contrôle visuel ne couvre pas toutes les tailles d’écran. Aucun appel à un agent, simulation, commit, push ou déploiement.
+
+## Retraits supplementaires - contrat v5
+
+Le questionnaire courant contient 15 questions. La question conjugale complete et le sous-champ de delai de retrait sont retires apres extraction du Word original, qui reste intact dans la fixture. La version devient questionnaire-word-15-v5. Les reponses compatibles sont conservees, les champs retires nettoyes et les anciens resultats invalides. Les tests de navigation et de validation utilisent ce contrat courant.
+
+### Compatibilité après résolution du rebase
+
+La résolution combine la nouvelle interface v5 avec les contrôles de confirmation
+du portefeuille. Les 53 tests frontend passent. Le backend Python accepte encore
+les contrats Word v2 et v4 : une requête v5 est refusée avec
+`Unsupported questionnaire version`. L’adaptation du backend à la suppression
+des champs reste donc nécessaire avant un parcours financier complet. Aucun
+champ supprimé n’a été recréé ni aucune réponse supposée pendant la fusion.

@@ -90,17 +90,38 @@ folder.mkdir(exist_ok=True)
 (folder / 'questionnaire-word.json').write_text(json.dumps(fixture, ensure_ascii=False, indent=2)+'\n',encoding='utf-8')
 # Keep the Word snapshot intact; apply the user's explicit UI override afterward.
 output[14]['options'] = [option for option in output[14]['options'] if option[0] != 'discussion']
-output[14]['details'][0]['label'] = 'Si limites, vos précisions facultatives'
+output[14]['details'][0]['label'] = 'Précisez ce que vous voulez exclure (obligatoire)'
 output[14]['details'][0]['when']['values'] = ['limits']
+# "Limites" without saying what to exclude cannot be applied by the engine.
+output[14]['details'][0]['required'] = True
+# Final notes: write something or explicitly tick "rien à ajouter", so a blank
+# answer is a confirmation rather than a possibly skipped question.
+notes = next(question for question in output if question['id'] == 'notes')
+notes.pop('optional', None)
+notes['help'] = notes['help'].replace('Réponse facultative.', 'Écrivez vos précisions ou cochez « Je n’ai rien à ajouter ».')
+notes['confirmField'] = 'noNotes'
 output[0]['options'] = [option for option in output[0]['options'] if option[0] != 'separated']
 output[6]['details'] = [field for field in output[6]['details'] if field['key'] != 'targetAmount']
+
+for question in output:
+    for field in question['details']:
+        if field['key'] in ['maritalOther', 'dependentsOther', 'incomeOther', 'debtOther']:
+            field['required'] = True
+            field['label'] = 'Pr\u00e9cisez votre situation (obligatoire)'
+        if field['key'] == 'goalDetails':
+            field['requiredWhen'] = {'field': 'goal', 'values': ['other']}
+            field['label'] = 'Pr\u00e9cisez votre objectif (obligatoire si Autre)'
+
+output = [question for question in output if question['id'] != 'marital']
+for question in output:
+    question['details'] = [field for field in question['details'] if field['key'] != 'withdrawalTiming']
 
 data = root / 'plateforme/src/data.js'
 old = data.read_text(encoding='utf-8')
 demo = old[old.index('export const DEMO_PORTFOLIO'):old.index('export function fieldVisible')]
 helpers = old[old.index('export function fieldVisible'):]
 header = '// Source exclusive : ' + source.name + '\n'
-header += "export const QUESTIONNAIRE_VERSION = 'questionnaire-word-16-v4';\n"
+header += "export const QUESTIONNAIRE_VERSION = 'questionnaire-word-15-v5';\n"
 header += 'export const SECTIONS = ' + json.dumps(sections, ensure_ascii=False) + ';\n'
 header += 'export const QUESTIONS = ' + json.dumps(output, ensure_ascii=False, indent=2) + ';\n\n'
 data.write_text((header + demo + helpers).rstrip() + '\n', encoding='utf-8')

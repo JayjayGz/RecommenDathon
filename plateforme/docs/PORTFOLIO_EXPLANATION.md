@@ -45,5 +45,29 @@ Commande : `node --test --test-isolation=none tests/*.test.mjs` depuis `platefor
 
 Le navigateur Chrome a affiché la répartition, la nouvelle zone d’explication et les onglets de la démonstration. Un contrôle visuel de Ctrl+End a révélé son interception par le gestionnaire d’onglets ; les modificateurs sont désormais exclus et le cas est couvert par un contrôle DOM. Le CSS et la page retournent HTTP 200. Le contrôle visuel couvre la fenêtre de bureau existante, pas toutes les dimensions mobiles. Le rendu responsive est implémenté et les styles se parsèment.
 
-Leçon L-030 : garder l’explication près du résultat et strictement liée au résultat accepté. Aucun appel à un agent réel, modification des CSV, calcul financier, commit, push ou déploiement. L’adaptateur de l’agent reste à configurer pour recevoir de vraies explications.
+Leçon L-036 : garder l’explication près du résultat et strictement liée au résultat accepté. Aucun appel à un agent réel, modification des CSV, calcul financier, commit, push ou déploiement. L’adaptateur de l’agent reste à configurer pour recevoir de vraies explications.
 
+
+## Remplacement du brouillon pour un actif
+
+Correction utilisateur : le bouton Demander pourquoi cet actif remplace toujours le brouillon existant par la question contenant le symbole et le poids de la position choisie. Le chat est ouvert et la saisie prend le focus. La question est sauvegardee et reste prete a envoyer, sans envoi automatique. La clarification generale conserve son comportement precedent. Cette regle remplace les mentions anterieures de preservation du brouillon pour les questions sur un actif.
+
+Handoff : presentation/infrastructure ; lecon L-036 ; sorties : app.js, test et documentation ; 36 tests reussis ; statut complete ; prochain proprietaire : utilisateur pour test local.
+
+## Exploration de la repartition
+
+La nouvelle representation utilise un anneau SVG et une legende synchronisee, par categorie ou par actif. Les donnees proviennent uniquement des positions acceptees ou de la demonstration explicitement identifiee. Les categories utilisent allocationGroups, sans nouvelle classification sectorielle ni exposition sous-jacente inventee. Les lignes sont triees par poids decroissant ; les valeurs ne sont pas modifiees. Les barres representent la meme echelle de 0 a 100 pour cent. Les parts sont selectionnables au clic ou par Entree/Espace ; Voir le total retablit le centre. Le contenu du graphique ne represente aucun rendement et ne certifie aucune diversification ou adequation du portefeuille.
+
+Inspirations consultees : Fidelity Portfolio Analysis (https://www.fidelity.com/webxpress/help/topics/learn_portfolio_analysis.shtml), Schwab Portfolio Checkup (https://www.schwab.com/content/how-to-use-schwab-portfolio-checkup) et Wealthsimple Portfolios Graph Disclosure (https://www.wealthsimple.com/en-ca/legal/portfolios-graph-disclosure). Adaptation originale, sans copie d'actifs visuels.
+
+Handoff : Router presentation/integration, appuis infrastructure et evidence. Sorties : app.js, portfolio.css et regression DOM. 37 tests passes avec node --test --test-isolation=none plateforme/tests/*.test.mjs : coherence 50/40/10 des groupes de demonstration, detail des six positions, selection clavier, retour au total et resultat accepte a une position. Verification DOM et CSS ; pas de nouvelle capture navigateur pour ce graphique. Statut complete pour implementation et tests ; prochain proprietaire : utilisateur pour la previsualisation locale. Aucun changement de calcul financier, CSV ou service externe.
+
+## Source des categories : correction utilisateur
+
+Les changements de sommes decimales et de repartition des arrondis proposes ensuite ont ete retires a la demande de l'utilisateur. La validation des poids conserve sa regle preexistante et les poids ne sont pas renormalises.
+
+La classification du graphique et du tableau vient exclusivement de la colonne asset_class de dataset/exposures_profile_tickers.csv, reliee par ticker. Les libelles francais traduisent les codes sans fusionner equity et etf_equity. La colonne composition_classes_actifs n'est pas utilisee : il s'agit de la classe du titre, pas d'une decomposition des avoirs sous-jacents d'un fonds. Les champs group/category transmis par l'agent ne servent plus a cette classification visuelle. Les donnees envoyees a l'agent restent les donnees originales.
+
+GET /api/asset-categories lit le CSV courant cote serveur et fournit seulement ticker -> asset_class, nom de source et SHA-256. Les descriptions et notes du CSV restent des donnees inertes, jamais des instructions. Une classification absente affiche Non classe ; aucune categorie n'est inventee a partir du nom de l'actif ou de l'agent. Un CSV manquant, malforme ou contenant un ticker duplique fait retourner 503. Si le service est indisponible, le graphique par categorie signale le probleme. Le serveur local doit etre redemarre pour ajouter cette nouvelle route.
+
+Handoff : Router presentation/integration, appuis data/infrastructure/evidence ; sorties : lecteur CSV, route HTTP, graphique/tableau, tests et documentation. 39 tests passent : 82 tickers du fichier reel, codes connus, mauvais groupe fourni par le moteur ignore, symbole inconnu conserve, CSV avec virgules/guillemets/sauts de ligne et validation HTTP. Statut complete pour implementation et tests locaux ; prochain proprietaire : utilisateur pour redemarrer son serveur local existant. Le serveur existant sur 4173 repond encore 404 sur la nouvelle route ; il n'a pas ete arrete. Aucun CSV, poids financier, backend Python, commit, push ou deploiement modifie.
