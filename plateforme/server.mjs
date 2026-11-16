@@ -8,8 +8,12 @@ import { validateRecommendation } from './src/integration.js';
 import { isFrenchQuestionnaire } from './src/questionnaire-contract.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const HOST = '127.0.0.1';
+const HOST = process.env.WEB_HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || 4173);
+const publicUrl = process.env.PUBLIC_ORIGIN || process.env.RENDER_EXTERNAL_URL || '';
+const PUBLIC_ORIGIN = publicUrl ? new URL(publicUrl).origin : '';
+const allowedHosts = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`, ...(PUBLIC_ORIGIN ? [new URL(PUBLIC_ORIGIN).host] : [])]);
+const allowedOrigins = new Set([`http://127.0.0.1:${PORT}`, `http://localhost:${PORT}`, ...(PUBLIC_ORIGIN ? [PUBLIC_ORIGIN] : [])]);
 const AGENT_URL = process.env.AGENT_API_URL || '';
 const PORTFOLIO_URL = process.env.PORTFOLIO_API_URL || '';
 const MAX_BODY = 64 * 1024;
@@ -121,9 +125,9 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');
   try {
     const requestHost = String(req.headers.host || '').toLowerCase();
-    if (![`${HOST}:${PORT}`, `localhost:${PORT}`].includes(requestHost)) return json(res, 403, { code: 'INVALID_HOST', message: 'Accès local uniquement.' });
+    if (!allowedHosts.has(requestHost)) return json(res, 403, { code: 'INVALID_HOST', message: 'Hôte non autorisé.' });
     const origin = req.headers.origin;
-    if (origin && ![`http://${HOST}:${PORT}`, `http://localhost:${PORT}`].includes(origin)) return json(res, 403, { code: 'INVALID_ORIGIN', message: 'Origine non autorisée.' });
+    if (origin && !allowedOrigins.has(origin)) return json(res, 403, { code: 'INVALID_ORIGIN', message: 'Origine non autorisée.' });
     const url = new URL(req.url, `http://${HOST}:${PORT}`);
     if (url.pathname === '/api/asset-categories' && req.method === 'GET') {
       try { return json(res,200,await loadExposureCategories()); }
